@@ -2,7 +2,6 @@ package com.bitdf.txing.oj.controller;
 
 import com.bitdf.txing.oj.common.BaseResponse;
 import com.bitdf.txing.oj.common.ErrorCode;
-import com.bitdf.txing.oj.common.ResultUtils;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.model.dto.postthumb.PostThumbAddRequest;
 import com.bitdf.txing.oj.model.entity.User;
@@ -10,6 +9,8 @@ import com.bitdf.txing.oj.service.PostThumbService;
 import com.bitdf.txing.oj.service.UserService;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import com.bitdf.txing.oj.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -42,7 +43,7 @@ public class PostThumbController {
      * @return resultNum 本次点赞变化数
      */
     @PostMapping("/")
-    public BaseResponse<Integer> doThumb(@RequestBody PostThumbAddRequest postThumbAddRequest,
+    public R doThumb(@RequestBody PostThumbAddRequest postThumbAddRequest,
             HttpServletRequest request) {
         if (postThumbAddRequest == null || postThumbAddRequest.getPostId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -51,7 +52,7 @@ public class PostThumbController {
         final User loginUser = userService.getLoginUser(request);
         long postId = postThumbAddRequest.getPostId();
         int result = postThumbService.doPostThumb(postId, loginUser);
-        return ResultUtils.success(result);
+        return R.ok(result);
     }
 
 }

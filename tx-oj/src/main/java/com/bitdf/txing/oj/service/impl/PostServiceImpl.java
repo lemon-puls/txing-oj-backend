@@ -21,7 +21,7 @@ import com.bitdf.txing.oj.model.vo.PostVO;
 import com.bitdf.txing.oj.model.vo.UserVO;
 import com.bitdf.txing.oj.service.PostService;
 import com.bitdf.txing.oj.service.UserService;
-import com.bitdf.txing.oj.utils.SqlUtils;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

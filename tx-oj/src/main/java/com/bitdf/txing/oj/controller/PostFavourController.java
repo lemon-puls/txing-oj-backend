@@ -3,7 +3,6 @@ package com.bitdf.txing.oj.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bitdf.txing.oj.common.BaseResponse;
 import com.bitdf.txing.oj.common.ErrorCode;
-import com.bitdf.txing.oj.common.ResultUtils;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.model.dto.post.PostQueryRequest;
@@ -17,6 +16,8 @@ import com.bitdf.txing.oj.service.PostService;
 import com.bitdf.txing.oj.service.UserService;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import com.bitdf.txing.oj.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,7 +53,7 @@ public class PostFavourController {
      * @return resultNum 收藏变化数
      */
     @PostMapping("/")
-    public BaseResponse<Integer> doPostFavour(@RequestBody PostFavourAddRequest postFavourAddRequest,
+    public R doPostFavour(@RequestBody PostFavourAddRequest postFavourAddRequest,
             HttpServletRequest request) {
         if (postFavourAddRequest == null || postFavourAddRequest.getPostId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -61,7 +62,7 @@ public class PostFavourController {
         final User loginUser = userService.getLoginUser(request);
         long postId = postFavourAddRequest.getPostId();
         int result = postFavourService.doPostFavour(postId, loginUser);
-        return ResultUtils.success(result);
+        return R.ok(result);
     }
 
     /**
@@ -71,7 +72,7 @@ public class PostFavourController {
      * @param request
      */
     @PostMapping("/my/list/page")
-    public BaseResponse<Page<PostVO>> listMyFavourPostByPage(@RequestBody PostQueryRequest postQueryRequest,
+    public R listMyFavourPostByPage(@RequestBody PostQueryRequest postQueryRequest,
             HttpServletRequest request) {
         if (postQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -83,7 +84,7 @@ public class PostFavourController {
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         Page<Post> postPage = postFavourService.listFavourPostByPage(new Page<>(current, size),
                 postService.getQueryWrapper(postQueryRequest), loginUser.getId());
-        return ResultUtils.success(postService.getPostVOPage(postPage, request));
+        return R.ok(postService.getPostVOPage(postPage, request));
     }
 
     /**
@@ -93,7 +94,7 @@ public class PostFavourController {
      * @param request
      */
     @PostMapping("/list/page")
-    public BaseResponse<Page<PostVO>> listFavourPostByPage(@RequestBody PostFavourQueryRequest postFavourQueryRequest,
+    public R listFavourPostByPage(@RequestBody PostFavourQueryRequest postFavourQueryRequest,
             HttpServletRequest request) {
         if (postFavourQueryRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -105,6 +106,6 @@ public class PostFavourController {
         ThrowUtils.throwIf(size > 20 || userId == null, ErrorCode.PARAMS_ERROR);
         Page<Post> postPage = postFavourService.listFavourPostByPage(new Page<>(current, size),
                 postService.getQueryWrapper(postFavourQueryRequest.getPostQueryRequest()), userId);
-        return ResultUtils.success(postService.getPostVOPage(postPage, request));
+        return R.ok(postService.getPostVOPage(postPage, request));
     }
 }

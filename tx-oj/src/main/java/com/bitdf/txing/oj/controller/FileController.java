@@ -3,7 +3,6 @@ package com.bitdf.txing.oj.controller;
 import cn.hutool.core.io.FileUtil;
 import com.bitdf.txing.oj.common.BaseResponse;
 import com.bitdf.txing.oj.common.ErrorCode;
-import com.bitdf.txing.oj.common.ResultUtils;
 import com.bitdf.txing.oj.constant.FileConstant;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.manager.CosManager;
@@ -11,10 +10,13 @@ import com.bitdf.txing.oj.model.dto.file.UploadFileRequest;
 import com.bitdf.txing.oj.model.entity.User;
 import com.bitdf.txing.oj.model.enums.FileUploadBizEnum;
 import com.bitdf.txing.oj.service.UserService;
+
 import java.io.File;
 import java.util.Arrays;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
+import com.bitdf.txing.oj.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -50,8 +52,8 @@ public class FileController {
      * @return
      */
     @PostMapping("/upload")
-    public BaseResponse<String> uploadFile(@RequestPart("file") MultipartFile multipartFile,
-            UploadFileRequest uploadFileRequest, HttpServletRequest request) {
+    public R uploadFile(@RequestPart("file") MultipartFile multipartFile,
+                                           UploadFileRequest uploadFileRequest, HttpServletRequest request) {
         String biz = uploadFileRequest.getBiz();
         FileUploadBizEnum fileUploadBizEnum = FileUploadBizEnum.getEnumByValue(biz);
         if (fileUploadBizEnum == null) {
@@ -70,7 +72,7 @@ public class FileController {
             multipartFile.transferTo(file);
             cosManager.putObject(filepath, file);
             // 返回可访问地址
-            return ResultUtils.success(FileConstant.COS_HOST + filepath);
+            return R.ok(FileConstant.COS_HOST + filepath);
         } catch (Exception e) {
             log.error("file upload error, filepath = " + filepath, e);
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");

@@ -2,7 +2,6 @@ package com.bitdf.txing.oj.exception;
 
 import com.bitdf.txing.oj.common.BaseResponse;
 import com.bitdf.txing.oj.common.ErrorCode;
-import com.bitdf.txing.oj.common.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;

@@ -15,7 +15,7 @@ import com.bitdf.txing.oj.model.enums.UserRoleEnum;
 import com.bitdf.txing.oj.model.vo.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.UserVO;
 import com.bitdf.txing.oj.service.UserService;
-import com.bitdf.txing.oj.utils.SqlUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
