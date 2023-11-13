@@ -1,14 +1,13 @@
 package com.bitdf.txing.oj.controller;
 
 import cn.hutool.core.io.FileUtil;
-import com.bitdf.txing.oj.common.BaseResponse;
-import com.bitdf.txing.oj.common.ErrorCode;
 import com.bitdf.txing.oj.constant.FileConstant;
+import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.manager.CosManager;
 import com.bitdf.txing.oj.model.dto.file.UploadFileRequest;
 import com.bitdf.txing.oj.model.entity.User;
-import com.bitdf.txing.oj.model.enums.FileUploadBizEnum;
+import com.bitdf.txing.oj.enume.FileUploadBizEnum;
 import com.bitdf.txing.oj.service.UserService;
 
 import java.io.File;
@@ -57,7 +56,7 @@ public class FileController {
         String biz = uploadFileRequest.getBiz();
         FileUploadBizEnum fileUploadBizEnum = FileUploadBizEnum.getEnumByValue(biz);
         if (fileUploadBizEnum == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         validFile(multipartFile, fileUploadBizEnum);
         User loginUser = userService.getLoginUser(request);
@@ -75,7 +74,7 @@ public class FileController {
             return R.ok(FileConstant.COS_HOST + filepath);
         } catch (Exception e) {
             log.error("file upload error, filepath = " + filepath, e);
-            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
+            throw new BusinessException(TxCodeEnume.COMMON_SYSTEM_UNKNOWN_EXCEPTION, "上传失败");
         } finally {
             if (file != null) {
                 // 删除临时文件
@@ -101,10 +100,10 @@ public class FileController {
         final long ONE_M = 1024 * 1024L;
         if (FileUploadBizEnum.USER_AVATAR.equals(fileUploadBizEnum)) {
             if (fileSize > ONE_M) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件大小不能超过 1M");
+                throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION, "文件大小不能超过 1M");
             }
             if (!Arrays.asList("jpeg", "jpg", "svg", "png", "webp").contains(fileSuffix)) {
-                throw new BusinessException(ErrorCode.PARAMS_ERROR, "文件类型错误");
+                throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION, "文件类型错误");
             }
         }
     }

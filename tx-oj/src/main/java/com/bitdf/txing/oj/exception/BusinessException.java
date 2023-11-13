@@ -1,6 +1,6 @@
 package com.bitdf.txing.oj.exception;
 
-import com.bitdf.txing.oj.common.ErrorCode;
+import com.bitdf.txing.oj.enume.TxCodeEnume;
 
 /**
  * 自定义异常类
@@ -21,12 +21,12 @@ public class BusinessException extends RuntimeException {
         this.code = code;
     }
 
-    public BusinessException(ErrorCode errorCode) {
-        super(errorCode.getMessage());
+    public BusinessException(TxCodeEnume errorCode) {
+        super(errorCode.getMsg());
         this.code = errorCode.getCode();
     }
 
-    public BusinessException(ErrorCode errorCode, String message) {
+    public BusinessException(TxCodeEnume errorCode, String message) {
         super(message);
         this.code = errorCode.getCode();
     }

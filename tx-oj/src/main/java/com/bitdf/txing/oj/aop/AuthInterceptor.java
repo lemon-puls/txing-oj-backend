@@ -1,10 +1,10 @@
 package com.bitdf.txing.oj.aop;
 
 import com.bitdf.txing.oj.annotation.AuthCheck;
-import com.bitdf.txing.oj.common.ErrorCode;
+import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.model.entity.User;
-import com.bitdf.txing.oj.model.enums.UserRoleEnum;
+import com.bitdf.txing.oj.enume.UserRoleEnum;
 import com.bitdf.txing.oj.service.UserService;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -49,17 +49,17 @@ public class AuthInterceptor {
         if (StringUtils.isNotBlank(mustRole)) {
             UserRoleEnum mustUserRoleEnum = UserRoleEnum.getEnumByValue(mustRole);
             if (mustUserRoleEnum == null) {
-                throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+                throw new BusinessException(TxCodeEnume.COMMON_NOT_PERM_EXCEPTION);
             }
             String userRole = loginUser.getUserRole();
             // 如果被封号，直接拒绝
             if (UserRoleEnum.BAN.equals(mustUserRoleEnum)) {
-                throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+                throw new BusinessException(TxCodeEnume.COMMON_NOT_PERM_EXCEPTION);
             }
             // 必须有管理员权限
             if (UserRoleEnum.ADMIN.equals(mustUserRoleEnum)) {
                 if (!mustRole.equals(userRole)) {
-                    throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+                    throw new BusinessException(TxCodeEnume.COMMON_NOT_PERM_EXCEPTION);
                 }
             }
         }

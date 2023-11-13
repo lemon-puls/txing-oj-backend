@@ -1,12 +1,11 @@
 package com.bitdf.txing.oj.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.utils.R;
 import com.google.gson.Gson;
 import com.bitdf.txing.oj.annotation.AuthCheck;
-import com.bitdf.txing.oj.common.BaseResponse;
 import com.bitdf.txing.oj.common.DeleteRequest;
-import com.bitdf.txing.oj.common.ErrorCode;
 import com.bitdf.txing.oj.constant.UserConstant;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
@@ -16,7 +15,6 @@ import com.bitdf.txing.oj.model.dto.post.PostQueryRequest;
 import com.bitdf.txing.oj.model.dto.post.PostUpdateRequest;
 import com.bitdf.txing.oj.model.entity.Post;
 import com.bitdf.txing.oj.model.entity.User;
-import com.bitdf.txing.oj.model.vo.PostVO;
 import com.bitdf.txing.oj.service.PostService;
 import com.bitdf.txing.oj.service.UserService;
 import java.util.List;
@@ -62,7 +60,7 @@ public class PostController {
     @PostMapping("/add")
     public R addPost(@RequestBody PostAddRequest postAddRequest, HttpServletRequest request) {
         if (postAddRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         Post post = new Post();
         BeanUtils.copyProperties(postAddRequest, post);
@@ -76,7 +74,7 @@ public class PostController {
         post.setFavourNum(0);
         post.setThumbNum(0);
         boolean result = postService.save(post);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        ThrowUtils.throwIf(!result, TxCodeEnume.COMMON_OPS_FAILURE_EXCEPTION);
         long newPostId = post.getId();
         return R.ok(newPostId);
     }
@@ -91,16 +89,16 @@ public class PostController {
     @PostMapping("/delete")
     public R deletePost(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         User user = userService.getLoginUser(request);
         long id = deleteRequest.getId();
         // 判断是否存在
         Post oldPost = postService.getById(id);
-        ThrowUtils.throwIf(oldPost == null, ErrorCode.NOT_FOUND_ERROR);
+        ThrowUtils.throwIf(oldPost == null, TxCodeEnume.COMMON_TARGET_NOT_EXIST_EXCEPTION);
         // 仅本人或管理员可删除
         if (!oldPost.getUserId().equals(user.getId()) && !userService.isAdmin(request)) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_NOT_PERM_EXCEPTION);
         }
         boolean b = postService.removeById(id);
         return R.ok(b);
@@ -116,7 +114,7 @@ public class PostController {
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public R updatePost(@RequestBody PostUpdateRequest postUpdateRequest) {
         if (postUpdateRequest == null || postUpdateRequest.getId() <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         Post post = new Post();
         BeanUtils.copyProperties(postUpdateRequest, post);
@@ -129,7 +127,7 @@ public class PostController {
         long id = postUpdateRequest.getId();
         // 判断是否存在
         Post oldPost = postService.getById(id);
-        ThrowUtils.throwIf(oldPost == null, ErrorCode.NOT_FOUND_ERROR);
+        ThrowUtils.throwIf(oldPost == null, TxCodeEnume.COMMON_TARGET_NOT_EXIST_EXCEPTION);
         boolean result = postService.updateById(post);
         return R.ok(result);
     }
@@ -143,11 +141,11 @@ public class PostController {
     @GetMapping("/get/vo")
     public R getPostVOById(long id, HttpServletRequest request) {
         if (id <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         Post post = postService.getById(id);
         if (post == null) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_TARGET_NOT_EXIST_EXCEPTION);
         }
         return R.ok(postService.getPostVO(post, request));
     }
@@ -165,7 +163,7 @@ public class PostController {
         long current = postQueryRequest.getCurrent();
         long size = postQueryRequest.getPageSize();
         // 限制爬虫
-        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(size > 20, TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         Page<Post> postPage = postService.page(new Page<>(current, size),
                 postService.getQueryWrapper(postQueryRequest));
         return R.ok(postService.getPostVOPage(postPage, request));
@@ -182,14 +180,14 @@ public class PostController {
     public R listMyPostVOByPage(@RequestBody PostQueryRequest postQueryRequest,
             HttpServletRequest request) {
         if (postQueryRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         User loginUser = userService.getLoginUser(request);
         postQueryRequest.setUserId(loginUser.getId());
         long current = postQueryRequest.getCurrent();
         long size = postQueryRequest.getPageSize();
         // 限制爬虫
-        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(size > 20, TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         Page<Post> postPage = postService.page(new Page<>(current, size),
                 postService.getQueryWrapper(postQueryRequest));
         return R.ok(postService.getPostVOPage(postPage, request));
@@ -209,7 +207,7 @@ public class PostController {
             HttpServletRequest request) {
         long size = postQueryRequest.getPageSize();
         // 限制爬虫
-        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(size > 20, TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         Page<Post> postPage = postService.searchFromEs(postQueryRequest);
         return R.ok(postService.getPostVOPage(postPage, request));
     }
@@ -224,7 +222,7 @@ public class PostController {
     @PostMapping("/edit")
     public R editPost(@RequestBody PostEditRequest postEditRequest, HttpServletRequest request) {
         if (postEditRequest == null || postEditRequest.getId() <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         Post post = new Post();
         BeanUtils.copyProperties(postEditRequest, post);
@@ -238,10 +236,10 @@ public class PostController {
         long id = postEditRequest.getId();
         // 判断是否存在
         Post oldPost = postService.getById(id);
-        ThrowUtils.throwIf(oldPost == null, ErrorCode.NOT_FOUND_ERROR);
+        ThrowUtils.throwIf(oldPost == null, TxCodeEnume.COMMON_TARGET_NOT_EXIST_EXCEPTION);
         // 仅本人或管理员可编辑
         if (!oldPost.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_NOT_PERM_EXCEPTION);
         }
         boolean result = postService.updateById(post);
         return R.ok(result);

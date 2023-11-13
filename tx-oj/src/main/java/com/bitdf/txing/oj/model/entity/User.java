@@ -16,7 +16,7 @@ import lombok.Data;
  * @date 2023/1/24 3:44:13
  * 注释：
  */
-@TableName(value = "user")
+@TableName(value = "tx_oj_user")
 @Data
 public class User implements Serializable {
 
@@ -67,6 +67,32 @@ public class User implements Serializable {
     private String userRole;
 
     /**
+     * 大学
+     */
+    private String school;
+    /**
+     * 专业
+     */
+    private String profession;
+    /**
+     * 工作经验
+     */
+    private Integer workExperience;
+    /**
+     * 刷题数
+     */
+    private Integer questionCount;
+    /**
+     * 通过率
+     */
+    private Float acceptedRate;
+    /**
+     * 个性签名
+     */
+    private String personSign;
+
+
+    /**
      * 创建时间
      */
     private Date createTime;
@@ -80,6 +106,7 @@ public class User implements Serializable {
      * 是否删除
      */
     @TableLogic
+    @TableField("is_delete")
     private Integer isDelete;
 
     @TableField(exist = false)

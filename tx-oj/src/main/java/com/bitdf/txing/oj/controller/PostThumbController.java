@@ -1,7 +1,6 @@
 package com.bitdf.txing.oj.controller;
 
-import com.bitdf.txing.oj.common.BaseResponse;
-import com.bitdf.txing.oj.common.ErrorCode;
+import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.model.dto.postthumb.PostThumbAddRequest;
 import com.bitdf.txing.oj.model.entity.User;
@@ -46,7 +45,7 @@ public class PostThumbController {
     public R doThumb(@RequestBody PostThumbAddRequest postThumbAddRequest,
             HttpServletRequest request) {
         if (postThumbAddRequest == null || postThumbAddRequest.getPostId() <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         // 登录才能点赞
         final User loginUser = userService.getLoginUser(request);

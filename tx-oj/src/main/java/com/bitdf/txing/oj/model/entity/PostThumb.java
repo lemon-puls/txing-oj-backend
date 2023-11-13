@@ -15,7 +15,7 @@ import lombok.Data;
  * @date 2023/1/24 3:44:13
  * 注释：
  */
-@TableName(value = "post_thumb")
+@TableName(value = "tx_oj_post_thumb")
 @Data
 public class PostThumb implements Serializable {
 

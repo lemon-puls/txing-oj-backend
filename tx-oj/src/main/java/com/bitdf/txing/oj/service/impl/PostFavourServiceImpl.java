@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.bitdf.txing.oj.common.ErrorCode;
+import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.mapper.PostFavourMapper;
 import com.bitdf.txing.oj.model.entity.Post;
@@ -44,7 +44,7 @@ public class PostFavourServiceImpl extends ServiceImpl<PostFavourMapper, PostFav
         // 判断是否存在
         Post post = postService.getById(postId);
         if (post == null) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_TARGET_NOT_EXIST_EXCEPTION);
         }
         // 是否已帖子收藏
         long userId = loginUser.getId();
@@ -92,7 +92,7 @@ public class PostFavourServiceImpl extends ServiceImpl<PostFavourMapper, PostFav
                         .update();
                 return result ? -1 : 0;
             } else {
-                throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+                throw new BusinessException(TxCodeEnume.COMMON_SYSTEM_UNKNOWN_EXCEPTION);
             }
         } else {
             // 未帖子收藏
@@ -105,7 +105,7 @@ public class PostFavourServiceImpl extends ServiceImpl<PostFavourMapper, PostFav
                         .update();
                 return result ? 1 : 0;
             } else {
-                throw new BusinessException(ErrorCode.SYSTEM_ERROR);
+                throw new BusinessException(TxCodeEnume.COMMON_SYSTEM_UNKNOWN_EXCEPTION);
             }
         }
     }

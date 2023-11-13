@@ -16,7 +16,7 @@ import lombok.Data;
  * @date 2023/1/24 3:44:13
  * 注释：
  */
-@TableName(value = "post")
+@TableName(value = "tx_oj_post")
 @Data
 public class Post implements Serializable {
 
@@ -70,6 +70,7 @@ public class Post implements Serializable {
      * 是否删除
      */
     @TableLogic
+    @TableField("is_delete")
     private Integer isDelete;
 
     @TableField(exist = false)

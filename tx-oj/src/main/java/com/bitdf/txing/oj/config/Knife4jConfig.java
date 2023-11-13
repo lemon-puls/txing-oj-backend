@@ -27,7 +27,7 @@ public class Knife4jConfig {
     public Docket defaultApi2() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(new ApiInfoBuilder()
-                        .title("接口文档")
+                        .title("Txing OJ系统接口文档")
                         .description("txing-oj")
                         .version("1.0")
                         .build())

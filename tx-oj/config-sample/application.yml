@@ -58,7 +58,7 @@ mybatis-plus:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
-      logic-delete-field: isDelete # 全局逻辑删除的实体字段名
+      logic-delete-field: is_delete # 全局逻辑删除的实体字段名
       logic-delete-value: 1 # 逻辑已删除值（默认为 1）
       logic-not-delete-value: 0 # 逻辑未删除值（默认为 0）
 # 微信相关
@@ -90,3 +90,11 @@ cos:
     secretKey: xxx
     region: xxx
     bucket: xxx
+
+lemon:
+  generator:
+    basePath: com.bitdf.txing.oj.model.entity
+    driver: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/txing_oj?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    username: root
+    password: 123456

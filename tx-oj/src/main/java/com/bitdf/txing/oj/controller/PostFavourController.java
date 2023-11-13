@@ -1,8 +1,7 @@
 package com.bitdf.txing.oj.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.bitdf.txing.oj.common.BaseResponse;
-import com.bitdf.txing.oj.common.ErrorCode;
+import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.model.dto.post.PostQueryRequest;
@@ -10,7 +9,6 @@ import com.bitdf.txing.oj.model.dto.postfavour.PostFavourAddRequest;
 import com.bitdf.txing.oj.model.dto.postfavour.PostFavourQueryRequest;
 import com.bitdf.txing.oj.model.entity.Post;
 import com.bitdf.txing.oj.model.entity.User;
-import com.bitdf.txing.oj.model.vo.PostVO;
 import com.bitdf.txing.oj.service.PostFavourService;
 import com.bitdf.txing.oj.service.PostService;
 import com.bitdf.txing.oj.service.UserService;
@@ -56,7 +54,7 @@ public class PostFavourController {
     public R doPostFavour(@RequestBody PostFavourAddRequest postFavourAddRequest,
             HttpServletRequest request) {
         if (postFavourAddRequest == null || postFavourAddRequest.getPostId() <= 0) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         // 登录才能操作
         final User loginUser = userService.getLoginUser(request);
@@ -75,13 +73,13 @@ public class PostFavourController {
     public R listMyFavourPostByPage(@RequestBody PostQueryRequest postQueryRequest,
             HttpServletRequest request) {
         if (postQueryRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         User loginUser = userService.getLoginUser(request);
         long current = postQueryRequest.getCurrent();
         long size = postQueryRequest.getPageSize();
         // 限制爬虫
-        ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(size > 20, TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         Page<Post> postPage = postFavourService.listFavourPostByPage(new Page<>(current, size),
                 postService.getQueryWrapper(postQueryRequest), loginUser.getId());
         return R.ok(postService.getPostVOPage(postPage, request));
@@ -97,13 +95,13 @@ public class PostFavourController {
     public R listFavourPostByPage(@RequestBody PostFavourQueryRequest postFavourQueryRequest,
             HttpServletRequest request) {
         if (postFavourQueryRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         long current = postFavourQueryRequest.getCurrent();
         long size = postFavourQueryRequest.getPageSize();
         Long userId = postFavourQueryRequest.getUserId();
         // 限制爬虫
-        ThrowUtils.throwIf(size > 20 || userId == null, ErrorCode.PARAMS_ERROR);
+        ThrowUtils.throwIf(size > 20 || userId == null, TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         Page<Post> postPage = postFavourService.listFavourPostByPage(new Page<>(current, size),
                 postService.getQueryWrapper(postFavourQueryRequest.getPostQueryRequest()), userId);
         return R.ok(postService.getPostVOPage(postPage, request));

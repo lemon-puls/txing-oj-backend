@@ -3,8 +3,9 @@ package com.bitdf.txing.oj.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.utils.page.SQLFilter;
 import com.google.gson.Gson;
-import com.bitdf.txing.oj.common.ErrorCode;
 import com.bitdf.txing.oj.constant.CommonConstant;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
@@ -75,21 +76,21 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
     @Override
     public void validPost(Post post, boolean add) {
         if (post == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         String title = post.getTitle();
         String content = post.getContent();
         String tags = post.getTags();
         // 创建时，参数不能为空
         if (add) {
-            ThrowUtils.throwIf(StringUtils.isAnyBlank(title, content, tags), ErrorCode.PARAMS_ERROR);
+            ThrowUtils.throwIf(StringUtils.isAnyBlank(title, content, tags), TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         // 有参数则校验
         if (StringUtils.isNotBlank(title) && title.length() > 80) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "标题过长");
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION, "标题过长");
         }
         if (StringUtils.isNotBlank(content) && content.length() > 8192) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "内容过长");
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION, "内容过长");
         }
     }
 
@@ -129,7 +130,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         queryWrapper.eq(ObjectUtils.isNotEmpty(id), "id", id);
         queryWrapper.eq(ObjectUtils.isNotEmpty(userId), "userId", userId);
         queryWrapper.eq("isDelete", false);
-        queryWrapper.orderBy(SqlUtils.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
+        queryWrapper.orderBy(SQLFilter.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField);
         return queryWrapper;
     }

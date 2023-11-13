@@ -20,6 +20,12 @@
     </properties>
     <dependencies>
 
+        <dependency>
+            <groupId>com.lemon.util</groupId>
+            <artifactId>table-creator</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+
         <!-- JSON -->
         <dependency>
             <groupId>com.alibaba</groupId>
