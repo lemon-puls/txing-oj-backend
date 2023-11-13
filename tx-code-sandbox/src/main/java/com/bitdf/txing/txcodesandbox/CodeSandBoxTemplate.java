@@ -11,6 +11,15 @@ import com.bitdf.txing.txcodesandbox.dto.ExecCodeResponse;
 public abstract class CodeSandBoxTemplate implements CodeSandBox {
     @Override
     public ExecCodeResponse execCode(ExecCodeRequest execCodeRequest) {
+        // 1、保存： 将用户提交的代码保存为文件
+
+        // 2. 编译：将.java文件编译为.class文件
+
+        // 3、执行：执行编译后的字节码文件 拿到执行结果
+
+        // 4、整理结果
+
+        // 5、删除文件：避免造成不必要的空间浪费
         return null;
     }
 }
