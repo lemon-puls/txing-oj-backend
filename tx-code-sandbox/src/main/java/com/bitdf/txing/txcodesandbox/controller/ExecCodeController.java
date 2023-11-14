@@ -1,8 +1,10 @@
 package com.bitdf.txing.txcodesandbox.controller;
 
+import com.bitdf.txing.txcodesandbox.JavaDockerCodeSandBox;
 import com.bitdf.txing.txcodesandbox.dto.ExecCodeRequest;
 import com.bitdf.txing.txcodesandbox.dto.ExecCodeResponse;
 import com.bitdf.txing.txcodesandbox.util.R;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -14,14 +16,17 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController("/codesandbox")
 public class ExecCodeController {
+    @Autowired
+    JavaDockerCodeSandBox javaDockerCodeSandBox;
     /**
      * 执行代码
      * @return
      */
     @PostMapping("/exec")
     public R execCode(@RequestBody ExecCodeRequest execCodeRequest) {
-
-        ExecCodeResponse execCodeResponse = new ExecCodeResponse();
+        ExecCodeResponse execCodeResponse = javaDockerCodeSandBox.execCode(execCodeRequest);
         return R.ok(execCodeResponse);
     }
+
+
 }
