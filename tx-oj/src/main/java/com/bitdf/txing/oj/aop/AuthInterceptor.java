@@ -28,6 +28,8 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 @Component
 public class AuthInterceptor {
 
+    public static ThreadLocal<User> userThreadLocal = new ThreadLocal<User>();
+
     @Resource
     private UserService userService;
 
@@ -46,7 +48,7 @@ public class AuthInterceptor {
         // 当前登录用户
         User loginUser = userService.getLoginUser(request);
         // 必须有该权限才通过
-        if (StringUtils.isNotBlank(mustRole)) {
+        if (StringUtils.isNotBlank(mustRole) && !mustRole.equals("login")) {
             UserRoleEnum mustUserRoleEnum = UserRoleEnum.getEnumByValue(mustRole);
             if (mustUserRoleEnum == null) {
                 throw new BusinessException(TxCodeEnume.COMMON_NOT_PERM_EXCEPTION);
@@ -63,6 +65,7 @@ public class AuthInterceptor {
                 }
             }
         }
+        userThreadLocal.set(loginUser);
         // 通过权限校验，放行
         return joinPoint.proceed();
     }

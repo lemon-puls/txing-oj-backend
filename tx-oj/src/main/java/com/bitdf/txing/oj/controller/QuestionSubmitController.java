@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Map;
 
 
+import com.bitdf.txing.oj.annotation.AuthCheck;
+import com.bitdf.txing.oj.model.dto.submit.QuestionSubmitDoRequest;
 import com.bitdf.txing.oj.model.entity.QuestionSubmit;
 import com.bitdf.txing.oj.utils.page.PageVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +25,7 @@ import com.bitdf.txing.oj.utils.page.PageUtils;
  * @date 2023-11-13 21:54:02
  */
 @RestController
-@RequestMapping("oj/questionsubmit")
+@RequestMapping("/question/submit")
 public class QuestionSubmitController {
     @Autowired
     private QuestionSubmitService questionSubmitService;
@@ -49,12 +51,12 @@ public class QuestionSubmitController {
     }
 
     /**
-     * 保存
+     * 提交作答
      */
-    @RequestMapping("/save")
-    public R save(@RequestBody QuestionSubmit questionSubmit){
-		questionSubmitService.save(questionSubmit);
-
+    @RequestMapping("/do")
+    @AuthCheck(mustRole = "login")
+    public R save(@RequestBody QuestionSubmitDoRequest questionSubmitDoRequest){
+		questionSubmitService.doSubmit(questionSubmitDoRequest);
         return R.ok();
     }
 

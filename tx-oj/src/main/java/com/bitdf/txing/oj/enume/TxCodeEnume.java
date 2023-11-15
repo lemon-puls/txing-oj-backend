@@ -28,6 +28,11 @@ public enum TxCodeEnume {
 
     CONDITION_NOT_VALID_EXCEPTION(10009,"不满足相关条件，该操作不予以执行"),
 
+    /**
+     * 11 判题相关
+     */
+    JUDGE_SUMBIT_STATUS_MODIFY_EXCEPTION(11001, "题目状态修改异常"),
+
     TO_MANY_REQUEST_EXCEPTION(10010,"请求流量过大，请稍后再试！");
 
 
