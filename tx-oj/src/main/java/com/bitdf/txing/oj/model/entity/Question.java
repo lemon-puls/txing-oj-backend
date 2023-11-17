@@ -1,6 +1,7 @@
 package com.bitdf.txing.oj.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -85,6 +86,7 @@ public class Question {
      */
     @TableLogic
     @TableField("is_delete")
+    @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
 
 

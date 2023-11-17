@@ -11,17 +11,21 @@ import com.bitdf.txing.oj.model.dto.submit.QuestionSubmitDoRequest;
 import com.bitdf.txing.oj.model.entity.Question;
 import com.bitdf.txing.oj.model.entity.QuestionSubmit;
 import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.vo.question.QuestionSubmitSimpleVO;
 import com.bitdf.txing.oj.service.QuestionService;
 import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.bitdf.txing.oj.utils.page.PageVO;
 import com.bitdf.txing.oj.utils.page.Query;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.service.QuestionSubmitService;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -79,6 +83,22 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
             judgeService.doJudge(questionSubmit.getId());
         });
         return questionSubmit.getId();
+    }
+
+    /**
+     * List<QuestionSubmit> ==> List<QuestionSubmitSimpleVO>
+     * @param list
+     * @return
+     */
+    @Override
+    public List<QuestionSubmitSimpleVO> getQuestionSubmitSimpleVOs(List<?> list) {
+        list.stream().map((item) -> {
+            QuestionSubmit questionSubmit = (QuestionSubmit) item;
+            QuestionSubmitSimpleVO questionSubmitSimpleVO = new QuestionSubmitSimpleVO();
+            BeanUtils.copyProperties(questionSubmit, questionSubmitSimpleVO);
+            
+        })
+        return null;
     }
 
 }

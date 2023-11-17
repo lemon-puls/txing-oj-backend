@@ -2,8 +2,11 @@ package com.bitdf.txing.oj.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.bitdf.txing.oj.model.entity.QuestionComment;
+import com.bitdf.txing.oj.model.vo.question.QuestionCommentVO;
 import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.bitdf.txing.oj.utils.page.PageVO;
+
+import java.util.List;
 
 /**
  * 
@@ -15,5 +18,7 @@ import com.bitdf.txing.oj.utils.page.PageVO;
 public interface QuestionCommentService extends IService<QuestionComment> {
 
     PageUtils queryPage(PageVO queryVO);
+
+    List<QuestionCommentVO> getQuestionCommentVOs(List<?> list);
 }
 

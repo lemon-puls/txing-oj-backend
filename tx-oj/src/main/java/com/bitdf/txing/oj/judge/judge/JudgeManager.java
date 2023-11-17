@@ -1,6 +1,10 @@
 package com.bitdf.txing.oj.judge.judge;
 
+import com.bitdf.txing.oj.enume.LanguageEnum;
 import com.bitdf.txing.oj.judge.JudgeInfo;
+import com.bitdf.txing.oj.judge.judge.strategy.DefaultJudgeStrategy;
+import com.bitdf.txing.oj.judge.judge.strategy.JudgeStrategy;
+import com.bitdf.txing.oj.utils.SpringContextUtils;
 
 /**
  * @author Lizhiwei
@@ -12,8 +16,14 @@ public class JudgeManager {
      * 判题
      * @return
      */
-    public JudgeInfo doJudge(JudgeContext judgeContext) {
-        return null;
+    public static JudgeInfo doJudge(JudgeContext judgeContext) {
+        JudgeStrategy judgeStrategy = (JudgeStrategy) SpringContextUtils.getBean("defaultJudgeStrategy");
+        if (judgeContext.getQuestionSubmit().getLanguage()
+                .equals(LanguageEnum.JAVA.getValue())) {
+            judgeStrategy = (JudgeStrategy) SpringContextUtils.getBean("javaJudgeStrategy");
+        }
+        JudgeInfo judgeInfo = judgeStrategy.doJudge(judgeContext);
+        return judgeInfo;
     }
 
 }

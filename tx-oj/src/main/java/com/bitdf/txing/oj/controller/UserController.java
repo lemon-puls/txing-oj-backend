@@ -2,6 +2,7 @@ package com.bitdf.txing.oj.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bitdf.txing.oj.annotation.AuthCheck;
+import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.common.DeleteRequest;
 import com.bitdf.txing.oj.constant.UserConstant;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
@@ -293,12 +294,13 @@ public class UserController {
      * @return
      */
     @PostMapping("/update/my")
+    @AuthCheck(mustRole = "login")
     public R updateMyUser(@RequestBody UserUpdateMyRequest userUpdateMyRequest,
             HttpServletRequest request) {
         if (userUpdateMyRequest == null) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = AuthInterceptor.userThreadLocal.get();
         User user = new User();
         BeanUtils.copyProperties(userUpdateMyRequest, user);
         user.setId(loginUser.getId());
@@ -306,4 +308,10 @@ public class UserController {
         ThrowUtils.throwIf(!result, TxCodeEnume.COMMON_OPS_FAILURE_EXCEPTION);
         return R.ok(true);
     }
+
+//    @PostMapping("/avatar/update")
+//    @AuthCheck(mustRole = "login")
+//    public R updateAvatar() {
+//
+//    }
 }

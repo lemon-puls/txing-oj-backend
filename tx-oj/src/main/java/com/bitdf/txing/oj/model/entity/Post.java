@@ -7,6 +7,8 @@ import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import java.io.Serializable;
 import java.util.Date;
+
+import com.lemon.util.anno.MysqlColumn;
 import lombok.Data;
 
 /**
@@ -71,6 +73,7 @@ public class Post implements Serializable {
      */
     @TableLogic
     @TableField("is_delete")
+    @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
 
     @TableField(exist = false)

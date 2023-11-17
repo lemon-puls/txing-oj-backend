@@ -1,6 +1,9 @@
-package com.bitdf.txing.oj.model.entity;
+package com.bitdf.txing.oj.model.vo.question;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,17 +12,17 @@ import lombok.NoArgsConstructor;
 import java.util.Date;
 
 /**
- * 题目评论
+ * @author Lizhiwei
+ * @date 2023/11/17 15:27:54
+ * 注释：
  */
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
-@TableName("tx_oj_question_comment")
-public class QuestionComment {
+public class QuestionCommentVO {
     /**
      * id
      */
-    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
     /**
      * 评论内容
@@ -30,6 +33,14 @@ public class QuestionComment {
      */
     private Long userId;
     /**
+     * 用户头像
+     */
+    private String userAvatar;
+    /**
+     * 用户昵称
+     */
+    private String userName;
+    /**
      * 目标题目Id
      */
     private Long questionId;
@@ -37,25 +48,12 @@ public class QuestionComment {
      * 点赞数
      */
     private Integer favourNum;
-
-
     /**
      * 创建时间
      */
-    @TableField(value = "create_time", fill = FieldFill.INSERT)
     private Date createTime;
-
     /**
-     * 更新时间
+     * 是否点赞
      */
-    @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
-    private Date updateTime;
-
-    /**
-     * 是否删除
-     */
-    @TableLogic
-    @TableField("is_delete")
-    @MysqlColumn(defaultValue = "0")
-    private Integer isDelete;
+    private Boolean isFavour;
 }

@@ -1,10 +1,12 @@
 package com.bitdf.txing.oj.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.bitdf.txing.oj.model.dto.question.QuestionVO;
 import com.bitdf.txing.oj.model.entity.Question;
 import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.bitdf.txing.oj.utils.page.PageVO;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,5 +19,9 @@ import java.util.Map;
 public interface QuestionService extends IService<Question> {
 
     PageUtils queryPage(PageVO queryVO);
+
+    void validQuestion(Question question, boolean b);
+
+    List<QuestionVO> getQuestionVOsByQuestions(List<?> list);
 }
 

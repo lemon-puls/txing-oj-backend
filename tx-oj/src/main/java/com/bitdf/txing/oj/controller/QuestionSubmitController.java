@@ -1,12 +1,16 @@
 package com.bitdf.txing.oj.controller;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 
 import com.bitdf.txing.oj.annotation.AuthCheck;
+import com.bitdf.txing.oj.enume.JudgeStatusEnum;
+import com.bitdf.txing.oj.model.dto.question.QuestionVO;
 import com.bitdf.txing.oj.model.dto.submit.QuestionSubmitDoRequest;
 import com.bitdf.txing.oj.model.entity.QuestionSubmit;
+import com.bitdf.txing.oj.model.vo.question.QuestionSubmitSimpleVO;
 import com.bitdf.txing.oj.utils.page.PageVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -31,11 +35,14 @@ public class QuestionSubmitController {
     private QuestionSubmitService questionSubmitService;
 
     /**
-     * 分页查询
+     * 分页查询(概要)
      */
     @PostMapping("/list")
+    @AuthCheck(mustRole = "login")
     public R list(@RequestBody PageVO queryVO){
         PageUtils page = questionSubmitService.queryPage(queryVO);
+        List<QuestionSubmitSimpleVO> questionSubmitSimpleVOList = questionSubmitService.getQuestionSubmitSimpleVOs(page.getList());
+        page.setList(questionSubmitSimpleVOList);
         return R.ok().put("data", page);
     }
 
@@ -43,7 +50,7 @@ public class QuestionSubmitController {
     /**
      * 信息
      */
-    @RequestMapping("/info/{id}")
+    @GetMapping("/info/{id}")
     public R info(@PathVariable("id") Long id){
 		QuestionSubmit questionSubmit = questionSubmitService.getById(id);
 
@@ -53,17 +60,18 @@ public class QuestionSubmitController {
     /**
      * 提交作答
      */
-    @RequestMapping("/do")
+    @PostMapping("/do")
     @AuthCheck(mustRole = "login")
-    public R save(@RequestBody QuestionSubmitDoRequest questionSubmitDoRequest){
-		questionSubmitService.doSubmit(questionSubmitDoRequest);
-        return R.ok();
+    public R doQuestionSubmit(@RequestBody QuestionSubmitDoRequest questionSubmitDoRequest){
+        Long aLong = questionSubmitService.doSubmit(questionSubmitDoRequest);
+        return R.ok(aLong);
     }
+
 
     /**
      * 修改
      */
-    @RequestMapping("/update")
+    @PostMapping("/update")
     public R update(@RequestBody QuestionSubmit questionSubmit){
 		questionSubmitService.updateById(questionSubmit);
 
@@ -73,11 +81,23 @@ public class QuestionSubmitController {
     /**
      * 删除
      */
-    @RequestMapping("/delete")
+    @PostMapping("/delete")
     public R delete(@RequestBody Long[] ids){
 		questionSubmitService.removeByIds(Arrays.asList(ids));
 
         return R.ok();
+    }
+
+    /**
+     * 查询执行结果
+     */
+    @GetMapping("/result/get")
+    public R getExecResult(@RequestParam("sumbitId") Long submitId) {
+        QuestionSubmit questionSubmit = questionSubmitService.getById(submitId);
+//        if (JudgeStatusEnum.SUCCESS.getValue().equals(questionSubmit.getStatus())
+//                || JudgeStatusEnum.FAILURE.getValue().equals(questionSubmit.getStatus())) {
+//        }
+        return R.ok().put("data", questionSubmit.getJudgeInfo());
     }
 
 }

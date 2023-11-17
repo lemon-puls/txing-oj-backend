@@ -1,4 +1,4 @@
-package com.bitdf.txing.oj.judge;
+package com.bitdf.txing.oj.judge.codesandbox;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -24,5 +24,5 @@ public class JudgeInfo {
     /**
      * 判题信息
      */
-    private String message;
+    private Long message;
 }

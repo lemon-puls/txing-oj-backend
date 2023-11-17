@@ -24,5 +24,5 @@ public class JudgeInfo {
     /**
      * 判题信息
      */
-    private Long message;
+    private String message;
 }

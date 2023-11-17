@@ -7,6 +7,7 @@ import com.bitdf.txing.txcodesandbox.util.R;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -14,7 +15,8 @@ import org.springframework.web.bind.annotation.RestController;
  * @date 2023/11/14 1:15:29
  * 注释：
  */
-@RestController("/codesandbox")
+@RestController
+@RequestMapping("/codesandbox")
 public class ExecCodeController {
     @Autowired
     JavaDockerCodeSandBox javaDockerCodeSandBox;
