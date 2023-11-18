@@ -2,6 +2,7 @@ package com.bitdf.txing.oj.model.vo;
 
 import java.io.Serializable;
 import java.util.Date;
+
 import lombok.Data;
 
 /**
@@ -48,6 +49,32 @@ public class LoginUserVO implements Serializable {
      * 更新时间
      */
     private Date updateTime;
+
+
+    /**
+     * 大学
+     */
+    private String school;
+    /**
+     * 专业
+     */
+    private String profession;
+    /**
+     * 工作经验
+     */
+    private Integer workExperience;
+    /**
+     * 刷题数
+     */
+    private Integer questionCount;
+    /**
+     * 通过率
+     */
+    private Float acceptedRate;
+    /**
+     * 个性签名
+     */
+    private String personSign;
 
     private static final long serialVersionUID = 1L;
 }

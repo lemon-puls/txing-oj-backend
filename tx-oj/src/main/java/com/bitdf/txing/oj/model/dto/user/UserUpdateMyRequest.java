@@ -1,6 +1,7 @@
 package com.bitdf.txing.oj.model.dto.user;
 
 import java.io.Serializable;
+
 import lombok.Data;
 
 /**
@@ -23,10 +24,24 @@ public class UserUpdateMyRequest implements Serializable {
      */
     private String userAvatar;
 
+
     /**
      * 简介
      */
     private String userProfile;
+
+    /**
+     * 大学
+     */
+    private String school;
+    /**
+     * 专业
+     */
+    private String profession;
+    /**
+     * 个性签名
+     */
+    private String personSign;
 
     private static final long serialVersionUID = 1L;
 }

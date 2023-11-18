@@ -18,6 +18,7 @@ import com.bitdf.txing.oj.model.entity.User;
 import com.bitdf.txing.oj.model.vo.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.UserVO;
 import com.bitdf.txing.oj.service.UserService;
+
 import java.util.List;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -198,7 +199,7 @@ public class UserController {
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public R updateUser(@RequestBody UserUpdateRequest userUpdateRequest,
-            HttpServletRequest request) {
+                        HttpServletRequest request) {
         if (userUpdateRequest == null || userUpdateRequest.getId() == null) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
@@ -242,6 +243,19 @@ public class UserController {
     }
 
     /**
+     * 获取当前用户VO
+     *
+     * @return
+     */
+    @AuthCheck(mustRole = "login")
+    @GetMapping("/current/get/vo")
+    public R getCurrentUserVOById() {
+        User user = AuthInterceptor.userThreadLocal.get();
+        user = userService.getById(user.getId());
+        return R.ok(userService.getUserVO(user));
+    }
+
+    /**
      * 分页获取用户列表（仅管理员）
      *
      * @param userQueryRequest
@@ -251,7 +265,7 @@ public class UserController {
     @PostMapping("/list/page")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
     public R listUserByPage(@RequestBody UserQueryRequest userQueryRequest,
-            HttpServletRequest request) {
+                            HttpServletRequest request) {
         long current = userQueryRequest.getCurrent();
         long size = userQueryRequest.getPageSize();
         Page<User> userPage = userService.page(new Page<>(current, size),
@@ -268,7 +282,7 @@ public class UserController {
      */
     @PostMapping("/list/page/vo")
     public R listUserVOByPage(@RequestBody UserQueryRequest userQueryRequest,
-            HttpServletRequest request) {
+                              HttpServletRequest request) {
         if (userQueryRequest == null) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
@@ -296,7 +310,7 @@ public class UserController {
     @PostMapping("/update/my")
     @AuthCheck(mustRole = "login")
     public R updateMyUser(@RequestBody UserUpdateMyRequest userUpdateMyRequest,
-            HttpServletRequest request) {
+                          HttpServletRequest request) {
         if (userUpdateMyRequest == null) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }

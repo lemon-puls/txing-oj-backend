@@ -44,5 +44,30 @@ public class UserVO implements Serializable {
      */
     private Date createTime;
 
+    /**
+     * 大学
+     */
+    private String school;
+    /**
+     * 专业
+     */
+    private String profession;
+    /**
+     * 工作经验
+     */
+    private Integer workExperience;
+    /**
+     * 刷题数
+     */
+    private Integer questionCount;
+    /**
+     * 通过率
+     */
+    private Float acceptedRate;
+    /**
+     * 个性签名
+     */
+    private String personSign;
+
     private static final long serialVersionUID = 1L;
 }
