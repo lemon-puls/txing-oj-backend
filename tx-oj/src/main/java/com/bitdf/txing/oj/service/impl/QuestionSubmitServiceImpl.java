@@ -1,10 +1,12 @@
 package com.bitdf.txing.oj.service.impl;
 
+import cn.hutool.json.JSONUtil;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.enume.LanguageEnum;
 import com.bitdf.txing.oj.enume.JudgeStatusEnum;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
+import com.bitdf.txing.oj.judge.JudgeInfo;
 import com.bitdf.txing.oj.judge.JudgeService;
 import com.bitdf.txing.oj.mapper.QuestionSubmitMapper;
 import com.bitdf.txing.oj.model.dto.submit.QuestionSubmitDoRequest;
@@ -25,8 +27,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.service.QuestionSubmitService;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 
 @Service("questionSubmitService")
@@ -50,6 +54,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
 
     /**
      * 提交代码
+     *
      * @param questionSubmit
      */
     @Override
@@ -87,18 +92,35 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
 
     /**
      * List<QuestionSubmit> ==> List<QuestionSubmitSimpleVO>
+     *
      * @param list
      * @return
      */
     @Override
     public List<QuestionSubmitSimpleVO> getQuestionSubmitSimpleVOs(List<?> list) {
-        list.stream().map((item) -> {
+        List<QuestionSubmitSimpleVO> collect = list.stream().map((item) -> {
             QuestionSubmit questionSubmit = (QuestionSubmit) item;
             QuestionSubmitSimpleVO questionSubmitSimpleVO = new QuestionSubmitSimpleVO();
             BeanUtils.copyProperties(questionSubmit, questionSubmitSimpleVO);
-            
-        })
-        return null;
+            //设置状态
+            questionSubmitSimpleVO.setStatus(JudgeStatusEnum.getByValue(questionSubmit.getStatus()).getText());
+            JudgeInfo judgeInfo = JSONUtil.toBean(questionSubmit.getJudgeInfo(), JudgeInfo.class);
+            questionSubmitSimpleVO.setMemory(judgeInfo.getMemory());
+            questionSubmitSimpleVO.setTimes(judgeInfo.getTime());
+            questionSubmitSimpleVO.setResult(judgeInfo.getMessage());
+            if (questionSubmit.getCreateTime() != null) {
+                SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
+                String format = simpleDateFormat.format(questionSubmit.getCreateTime());
+                questionSubmitSimpleVO.setCreateTime(format);
+            } else {
+                questionSubmitSimpleVO.setCreateTime("");
+            }
+            // 查询题目
+            Question question = questionService.getById(questionSubmit.getQuestionId());
+            questionSubmitSimpleVO.setTitle(question.getTitle());
+            return questionSubmitSimpleVO;
+        }).collect(Collectors.toList());
+        return collect;
     }
 
 }
