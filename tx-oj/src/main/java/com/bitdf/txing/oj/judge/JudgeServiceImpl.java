@@ -1,9 +1,12 @@
 package com.bitdf.txing.oj.judge;
 
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.bitdf.txing.oj.enume.JudgeMessageEnum;
 import com.bitdf.txing.oj.enume.JudgeStatusEnum;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
+import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.judge.codesandbox.CodeSandBox;
 import com.bitdf.txing.oj.judge.codesandbox.CodeSandBoxFactory;
 import com.bitdf.txing.oj.judge.codesandbox.CodeSandBoxProxy;
@@ -23,6 +26,9 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -43,6 +49,7 @@ public class JudgeServiceImpl implements JudgeService {
     QuestionSubmitService questionSubmitService;
     @Autowired
     QuestionService questionService;
+
     @Override
     @Transactional
     public void doJudge(Long questionSubmitId) {
@@ -93,14 +100,55 @@ public class JudgeServiceImpl implements JudgeService {
                 .questionSubmit(questionSubmit)
                 .question(question).build();
         JudgeInfo judgeInfo = JudgeManager.doJudge(judgeContext);
-        // 6）修改数据库中的判题结果
+        // 6) 计算超过百分之多少的人
+        if (JudgeMessageEnum.ACCEPTED.getValue().equals(judgeInfo.getMessage())) {
+            QueryWrapper<QuestionSubmit> wrapper = new QueryWrapper<>();
+            wrapper.lambda().eq(QuestionSubmit::getQuestionId, question.getId())
+                    .eq(QuestionSubmit::getStatus, 2);
+            List<QuestionSubmit> questionSubmitList = questionSubmitService.list(wrapper);
+            List<QuestionSubmit> collect = questionSubmitList.stream().filter((item) -> {
+                JudgeInfo judgeInfo1 = JSONUtil.toBean(item.getJudgeInfo(), JudgeInfo.class);
+                return judgeInfo1.getAcceptedRate() != null
+                        && judgeInfo1.getAcceptedRate().intValue() == 1
+                        && judgeInfo1.getMessage().equals(JudgeMessageEnum.ACCEPTED.getValue());
+            }).collect(Collectors.toList());
+            if (!collect.isEmpty()) {
+                List<Long> collect1 = collect.stream().map((item) -> {
+                    JudgeInfo judgeInfo1 = JSONUtil.toBean(item.getJudgeInfo(), JudgeInfo.class);
+                    return judgeInfo1.getTime() + judgeInfo1.getMemory();
+                }).sorted(Comparator.reverseOrder()).collect(Collectors.toList());
+                // 当次提交分数
+                Long curScore = judgeInfo.getTime() + judgeInfo.getMemory();
+                int rank = Collections.binarySearch(collect1, curScore, Comparator.reverseOrder());
+                if (rank < 0) {
+                    rank = -rank - 1;
+                }
+                Float exceedPercent = (float) rank / collect1.size();
+                BigDecimal roundedResult = new BigDecimal(exceedPercent).setScale(2, BigDecimal.ROUND_HALF_UP);
+                exceedPercent = roundedResult.floatValue();
+                questionSubmit.setExceedPercent(exceedPercent);
+                judgeInfo.setExceedPercent(exceedPercent);
+            } else {
+                questionSubmit.setExceedPercent(1f);
+                judgeInfo.setExceedPercent(1f);
+            }
+        }
+        // 7）修改数据库中的判题结果
         String jsonStr = JSONUtil.toJsonStr(judgeInfo);
         questionSubmit.setJudgeInfo(jsonStr);
         questionSubmit.setStatus(JudgeStatusEnum.SUCCESS.getValue());
-        log.info("{}",questionSubmit);
+        log.info("{}", questionSubmit);
         boolean b1 = questionSubmitService.updateById(questionSubmit);
         if (!b1) {
             throw new BusinessException(TxCodeEnume.JUDGE_SUMBIT_INFO_MODIFY_EXCEPTION);
         }
+        // 8) 修改题目的提交次数
+        // TODO 要把submitNum、AcceptedNum等字段的默认值改为0 以免为null进行计算出错
+        question.setSubmitNum(question.getSubmitNum() + 1);
+        if (JudgeMessageEnum.ACCEPTED.getValue().equals(judgeInfo.getMessage())) {
+            question.setAcceptedNum(question.getAcceptedNum() + 1);
+        }
+        boolean b2 = questionService.updateById(question);
+        ThrowUtils.throwIf(!b2, TxCodeEnume.COMMON_OPS_FAILURE_EXCEPTION);
     }
 }

@@ -25,4 +25,13 @@ public class JudgeInfo {
      * 判题信息
      */
     private String message;
+    /**
+     * 通过用例比例
+     */
+    private Float acceptedRate;
+    /**
+     * 超过用户比例
+     */
+    private Float exceedPercent;
+
 }
