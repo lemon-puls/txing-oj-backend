@@ -20,5 +20,7 @@ public interface QuestionCommentService extends IService<QuestionComment> {
     PageUtils queryPage(PageVO queryVO);
 
     List<QuestionCommentVO> getQuestionCommentVOs(List<?> list);
+
+    boolean thumbComment(Long commentId, int opsValue);
 }
 

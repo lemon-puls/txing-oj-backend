@@ -1,5 +1,8 @@
 package com.bitdf.txing.oj.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.bitdf.txing.oj.aop.AuthInterceptor;
+import com.bitdf.txing.oj.constant.RedisKeyConstant;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.mapper.QuestionCommentMapper;
@@ -8,16 +11,20 @@ import com.bitdf.txing.oj.model.entity.QuestionComment;
 import com.bitdf.txing.oj.model.entity.User;
 import com.bitdf.txing.oj.model.vo.question.QuestionCommentVO;
 import com.bitdf.txing.oj.service.UserService;
+import com.bitdf.txing.oj.utils.RedisUtils;
 import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.bitdf.txing.oj.utils.page.PageVO;
 import com.bitdf.txing.oj.utils.page.Query;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.BoundSetOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.service.QuestionCommentService;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,6 +35,8 @@ public class QuestionCommentServiceImpl extends ServiceImpl<QuestionCommentMappe
 
     @Autowired
     UserService userService;
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
 
     @Override
     public PageUtils queryPage(PageVO queryVO) {
@@ -59,11 +68,34 @@ public class QuestionCommentServiceImpl extends ServiceImpl<QuestionCommentMappe
             questionCommentVO.setUserName(user.getUserName());
             // 设置头像
             questionCommentVO.setUserAvatar(user.getUserAvatar());
-            // TODO 判断是否点赞
-            questionCommentVO.setIsFavour(true);
+            // 判断是否点赞
+            User loginUser = AuthInterceptor.userThreadLocal.get();
+            BoundSetOperations<String, String> boundSetOps = stringRedisTemplate
+                    .boundSetOps(RedisUtils.getQuestionCommentThumbKey(questionComment.getQuestionId(), questionComment.getId()));
+            Boolean isMember = boundSetOps.isMember(loginUser.getId().toString());
+            questionCommentVO.setIsFavour(isMember);
             return questionCommentVO;
         }).collect(Collectors.toList());
         return collect;
+    }
+
+    /**
+     * 更新问题评论点赞数
+     *
+     * @param commentId
+     * @param opsValue
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean thumbComment(Long commentId, int opsValue) {
+        UpdateWrapper<QuestionComment> wrapper = new UpdateWrapper<>();
+        wrapper.lambda().eq(QuestionComment::getId, commentId)
+                .gt(opsValue == -1, QuestionComment::getFavourNum, 0)
+                .setSql(opsValue == -1, "favour_num = favour_num - 1")
+                .setSql(opsValue == 1, "favour_num = favour_num + 1");
+        boolean update = this.update(wrapper);
+        return update;
     }
 
 }
