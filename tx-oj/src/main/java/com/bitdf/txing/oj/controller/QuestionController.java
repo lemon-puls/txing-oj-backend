@@ -3,23 +3,22 @@ package com.bitdf.txing.oj.controller;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 
-import cn.hutool.core.collection.ListUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.constant.UserConstant;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
-import com.bitdf.txing.oj.enume.UserRoleEnum;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.model.dto.question.*;
 import com.bitdf.txing.oj.model.entity.Question;
-import com.bitdf.txing.oj.model.entity.QuestionComment;
 import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.vo.question.QuestionManageVO;
+import com.bitdf.txing.oj.model.vo.question.QuestionVO;
 import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.utils.R;
 import com.bitdf.txing.oj.utils.page.PageUtils;
@@ -30,14 +29,10 @@ import org.springframework.web.bind.annotation.*;
 
 import com.bitdf.txing.oj.service.QuestionService;
 
-import javax.servlet.http.HttpServletRequest;
-
 
 /**
- * 
- *
  * @author lizhiwei
- * @email 
+ * @email
  * @date 2023-11-13 21:54:02
  */
 @RestController
@@ -52,10 +47,12 @@ public class QuestionController {
      * 分页查询(题目浏览页)
      */
     @PostMapping("/list")
-    public R list(@RequestBody PageVO queryVO){
+    public R list(@RequestBody PageVO queryVO) {
         PageUtils page = questionService.queryPage(queryVO);
-        List<QuestionVO> questionVOList = questionService.getQuestionVOsByQuestions(page.getList());
-        page.setList(questionVOList);
+        if (!page.getList().isEmpty()) {
+            List<QuestionVO> questionVOList = questionService.getQuestionVOsByQuestions(page.getList());
+            page.setList(questionVOList);
+        }
         return R.ok().put("data", page);
     }
 
@@ -63,18 +60,23 @@ public class QuestionController {
      * 分页查询（题目管理页）
      */
     @PostMapping("/manager/list")
-    public R listForManager(@RequestBody PageVO queryVO){
+    public R listForManager(@RequestBody PageVO queryVO) {
         PageUtils page = questionService.queryPage(queryVO);
+        List<QuestionManageVO> collect = page.getList().stream().map((item) -> {
+            QuestionManageVO manageVO = QuestionManageVO.objToVo((Question) item);
+            return manageVO;
+        }).collect(Collectors.toList());
+        page.setList(collect);
         return R.ok().put("data", page);
     }
 
 
     /**
-     *  根据 id 获取
+     * 根据 id 获取
      */
     @GetMapping("/info/{id}")
     @AuthCheck(mustRole = "login")
-    public R info(@PathVariable("id") Long id){
+    public R info(@PathVariable("id") Long id) {
         if (id <= 0) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
@@ -92,6 +94,7 @@ public class QuestionController {
 
     /**
      * 通过id获取QuestionVO
+     *
      * @return
      */
     @GetMapping("/vo/get/id")
@@ -185,7 +188,7 @@ public class QuestionController {
      */
     @PostMapping("/delete")
     @AuthCheck(mustRole = "login")
-    public R deleteQuestionByIds(@RequestBody Long[] ids){
+    public R deleteQuestionByIds(@RequestBody Long[] ids) {
         if (ids == null || ids.length == 0) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
@@ -197,7 +200,7 @@ public class QuestionController {
             QueryWrapper<Question> wrapper = new QueryWrapper<>();
             wrapper.lambda().in(Question::getId, Arrays.asList(ids))
                     .eq(Question::getUserId, user.getId());
-            b  = questionService.remove(wrapper);
+            b = questionService.remove(wrapper);
         }
         return R.ok(b);
     }
@@ -206,7 +209,7 @@ public class QuestionController {
      * temp
      */
     @PostMapping("/temp1")
-    public R save(@RequestBody Question question){
+    public R save(@RequestBody Question question) {
         questionService.save(question);
 
         return R.ok();
@@ -216,8 +219,20 @@ public class QuestionController {
      * temp
      */
     @PostMapping("/temp2")
-    public R save1(@RequestBody QuestionVO questionVO){
+    public R save1(@RequestBody QuestionVO questionVO) {
 
+        return R.ok();
+    }
+
+    /**
+     * 题目收藏与取消
+     *
+     * @param questionId
+     * @return
+     */
+    @GetMapping("/favour")
+    @AuthCheck(mustRole = "login")
+    public R favourQuestion(@RequestParam("questionId") Long questionId) {
         return R.ok();
     }
 }

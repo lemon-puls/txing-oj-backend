@@ -55,9 +55,10 @@ public class Query<T> {
 
     /**
      * 并且分页查询条件，并且构造IPage对象
+     *
      * @param wrapper
      * @param pageVO
-     * @param excludeFields
+     * @param excludeFields 添加排除字段时 记得要写下划线形式（和数据库字段对应）
      * @return
      */
     public IPage<T> buildWrapperAndPage(QueryWrapper wrapper, PageVO pageVO, Set<String> excludeFields) {
@@ -69,6 +70,7 @@ public class Query<T> {
 
     /**
      * 构建QueryWrapper
+     *
      * @param wrapper
      * @param list
      * @return
@@ -90,6 +92,7 @@ public class Query<T> {
 
     /**
      * 添加查询条件
+     *
      * @param wrapper
      * @param fieldName
      * @param value
@@ -108,7 +111,9 @@ public class Query<T> {
                 wrapper.le(fieldName, value);
                 break;
             case FilterVO.like:
-                wrapper.like(fieldName, value);
+                if (StringUtils.isNotBlank(value)) {
+                    wrapper.like(fieldName, value);
+                }
                 break;
             case FilterVO.between:
                 String[] s = value.split("_");
@@ -122,7 +127,9 @@ public class Query<T> {
                 break;
             case FilterVO.in:
                 String[] split = value.split("_");
-                wrapper.in(fieldName, split);
+                if (split != null && split.length != 0) {
+                    wrapper.in(fieldName, split);
+                }
                 break;
             case FilterVO.ne:
                 wrapper.ne(fieldName, value);

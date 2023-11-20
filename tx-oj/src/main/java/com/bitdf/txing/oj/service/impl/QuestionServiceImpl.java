@@ -4,10 +4,11 @@ import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.mapper.QuestionMapper;
-import com.bitdf.txing.oj.model.dto.question.QuestionVO;
+import com.bitdf.txing.oj.model.vo.question.QuestionVO;
 import com.bitdf.txing.oj.model.entity.Question;
 import com.bitdf.txing.oj.model.entity.User;
 import com.bitdf.txing.oj.service.UserService;
+import com.bitdf.txing.oj.utils.page.FilterVO;
 import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.bitdf.txing.oj.utils.page.PageVO;
 import com.bitdf.txing.oj.utils.page.Query;
@@ -15,6 +16,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,15 +38,50 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
     public PageUtils queryPage(PageVO queryVO) {
 
         QueryWrapper<Question> wrapper = new QueryWrapper<>();
-
-        IPage<Question> iPage = new Query<Question>().buildWrapperAndPage(wrapper, queryVO, null);
-
+        if (queryVO.getFilter() != null) {
+            // 处理tags
+            addTagsCondition(wrapper, queryVO, "tags");
+            // 处理fixedTags
+            addTagsCondition(wrapper, queryVO, "fixedTags");
+        }
+        System.out.println(wrapper.getSqlSegment());
+        // tags、fixedTags需要特殊处理 排除自动拼接条件
+        Set<String> excludeFields = new HashSet<>();
+        excludeFields.add("tags");
+        excludeFields.add("fixed_tags");
+        IPage<Question> iPage = new Query<Question>().buildWrapperAndPage(wrapper, queryVO, excludeFields);
         IPage<Question> page = this.page(iPage, wrapper);
         return new PageUtils(page);
     }
 
     /**
+     * 拼接题目标签查询条件
+     * @param wrapper
+     * @param queryVO
+     * @param targetField
+     */
+    public void addTagsCondition(QueryWrapper<Question> wrapper, PageVO queryVO, String targetField) {
+        List<FilterVO> collect1 = queryVO.getFilter().stream().filter((item) -> {
+            return targetField.equals(item.getFieldName());
+        }).collect(Collectors.toList());
+        if (!collect1.isEmpty()) {
+            FilterVO filterVO = collect1.get(0);
+            String[] split = filterVO.getValue().split("_");
+            if (split != null && split.length != 0 && !"".equals(split[0])) {
+                wrapper.lambda().and((wrapper1) -> {
+                    for (String tag : split) {
+                        wrapper1.or((wrapper2) -> {
+                            wrapper2.like(Question::getTags, tag);
+                        });
+                    }
+                });
+            }
+        }
+    }
+
+    /**
      * 校验题目是否合法
+     *
      * @param question
      * @param add
      */
@@ -83,6 +120,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
 
     /**
      * 获取到QuestionVO（集合）
+     *
      * @param questionList
      * @return
      */
