@@ -2,6 +2,8 @@ package com.bitdf.txing.oj.judge;
 
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.enume.JudgeMessageEnum;
 import com.bitdf.txing.oj.enume.JudgeStatusEnum;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
@@ -17,8 +19,10 @@ import com.bitdf.txing.oj.judge.judge.JudgeManager;
 import com.bitdf.txing.oj.model.dto.question.JudgeCase;
 import com.bitdf.txing.oj.model.entity.Question;
 import com.bitdf.txing.oj.model.entity.QuestionSubmit;
+import com.bitdf.txing.oj.model.entity.User;
 import com.bitdf.txing.oj.service.QuestionService;
 import com.bitdf.txing.oj.service.QuestionSubmitService;
+import com.bitdf.txing.oj.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,6 +53,8 @@ public class JudgeServiceImpl implements JudgeService {
     QuestionSubmitService questionSubmitService;
     @Autowired
     QuestionService questionService;
+    @Autowired
+    UserService userService;
 
     @Override
     @Transactional
@@ -144,10 +150,31 @@ public class JudgeServiceImpl implements JudgeService {
         }
         // 8) 修改题目的提交次数
         // TODO 要把submitNum、AcceptedNum等字段的默认值改为0 以免为null进行计算出错
+        boolean isAccepted = JudgeMessageEnum.ACCEPTED.getValue().equals(judgeInfo.getMessage());
         question.setSubmitNum(question.getSubmitNum() + 1);
-        if (JudgeMessageEnum.ACCEPTED.getValue().equals(judgeInfo.getMessage())) {
+        if (isAccepted) {
             question.setAcceptedNum(question.getAcceptedNum() + 1);
         }
+        // 9) 修改用户个人提交次数等信息
+        // 计算该用户刷题数
+        User loginUser = AuthInterceptor.userThreadLocal.get();
+
+//        long count1 = questionSubmitService.count(new QueryWrapper<QuestionSubmit>().lambda()
+//                .eq(QuestionSubmit::getUserId, loginUser.getId()));
+        QueryWrapper<QuestionSubmit> wrapper = new QueryWrapper<>();
+        wrapper.lambda().eq(QuestionSubmit::getUserId, loginUser.getId())
+                .eq(QuestionSubmit::getQuestionId, question.getId())
+                .ge(QuestionSubmit::getExceedPercent, 0);
+//                .groupBy(QuestionSubmit::getQuestionId).having("question = max(qustionId)").select(QuestionSubmit::getQuestionId);
+        long count = questionSubmitService.count(wrapper);
+        UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+        updateWrapper.lambda().eq(User::getId, loginUser.getId())
+                .setSql("submit_count = submit_count + 1")
+                .setSql(isAccepted, "accepted_count = accepted_count + 1")
+                .setSql(count == 1 && isAccepted, "question_count = question_count + 1");
+        boolean update = userService.update(updateWrapper);
+        ThrowUtils.throwIf(!update, TxCodeEnume.COMMON_OPS_FAILURE_EXCEPTION);
+
         boolean b2 = questionService.updateById(question);
         ThrowUtils.throwIf(!b2, TxCodeEnume.COMMON_OPS_FAILURE_EXCEPTION);
     }

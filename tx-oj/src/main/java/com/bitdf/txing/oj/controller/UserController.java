@@ -1,5 +1,6 @@
 package com.bitdf.txing.oj.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
@@ -8,15 +9,12 @@ import com.bitdf.txing.oj.constant.UserConstant;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
-import com.bitdf.txing.oj.model.dto.user.UserAddRequest;
-import com.bitdf.txing.oj.model.dto.user.UserLoginRequest;
-import com.bitdf.txing.oj.model.dto.user.UserQueryRequest;
-import com.bitdf.txing.oj.model.dto.user.UserRegisterRequest;
-import com.bitdf.txing.oj.model.dto.user.UserUpdateMyRequest;
-import com.bitdf.txing.oj.model.dto.user.UserUpdateRequest;
+import com.bitdf.txing.oj.model.dto.user.*;
+import com.bitdf.txing.oj.model.entity.QuestionSubmit;
 import com.bitdf.txing.oj.model.entity.User;
 import com.bitdf.txing.oj.model.vo.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.UserVO;
+import com.bitdf.txing.oj.service.QuestionSubmitService;
 import com.bitdf.txing.oj.service.UserService;
 
 import java.util.List;
@@ -31,6 +29,7 @@ import me.chanjar.weixin.common.bean.oauth2.WxOAuth2AccessToken;
 import me.chanjar.weixin.mp.api.WxMpService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -52,6 +51,8 @@ public class UserController {
 
     @Resource
     private UserService userService;
+    @Autowired
+    QuestionSubmitService questionSubmitService;
 
 
     // region 登录相关
@@ -96,6 +97,18 @@ public class UserController {
         }
         LoginUserVO loginUserVO = userService.userLogin(userAccount, userPassword, request);
         return R.ok(loginUserVO);
+    }
+
+    /**
+     * 更新密码
+     * @param userModifyPwdRequest
+     * @return
+     */
+    @PostMapping("/pwd/modify")
+    public R modifyPwd(@RequestBody UserModifyPwdRequest userModifyPwdRequest) {
+        // 修改密码
+        boolean modifyResult =  userService.modifyPwd(userModifyPwdRequest);
+        // 退出登录
     }
 
 

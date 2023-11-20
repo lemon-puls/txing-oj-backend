@@ -113,4 +113,13 @@ public class User implements Serializable {
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
+    /**
+     * 提交数
+     */
+    private Integer submitCount;
+    /**
+     * 通过数
+     */
+    private Integer acceptedCount;
 }

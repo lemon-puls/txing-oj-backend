@@ -1,12 +1,15 @@
 package com.bitdf.txing.oj.service.impl;
 
+import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.mapper.QuestionMapper;
+import com.bitdf.txing.oj.model.entity.QuestionFavour;
 import com.bitdf.txing.oj.model.vo.question.QuestionVO;
 import com.bitdf.txing.oj.model.entity.Question;
 import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.service.QuestionFavourService;
 import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.utils.page.FilterVO;
 import com.bitdf.txing.oj.utils.page.PageUtils;
@@ -14,6 +17,7 @@ import com.bitdf.txing.oj.utils.page.PageVO;
 import com.bitdf.txing.oj.utils.page.Query;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -33,6 +37,9 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
 
     @Autowired
     UserService userService;
+    @Autowired
+    @Lazy
+    QuestionFavourService questionFavourService;
 
     @Override
     public PageUtils queryPage(PageVO queryVO) {
@@ -56,6 +63,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
 
     /**
      * 拼接题目标签查询条件
+     *
      * @param wrapper
      * @param queryVO
      * @param targetField
@@ -122,10 +130,11 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
      * 获取到QuestionVO（集合）
      *
      * @param questionList
+     * @param b
      * @return
      */
     @Override
-    public List<QuestionVO> getQuestionVOsByQuestions(List<?> questionList) {
+    public List<QuestionVO> getQuestionVOsByQuestions(List<?> questionList, boolean b) {
         // 1. 关联查询用户信息
         Set<Long> userIdSet = questionList.stream().map((item -> {
             Question question = (Question) item;
@@ -143,6 +152,14 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
                 user = userIdUserListMap.get(userId).get(0);
             }
             questionVO.setUserVO(userService.getUserVO(user));
+            if (b) {
+                // 设置该用户是否已收藏该题目
+                User loginUser = AuthInterceptor.userThreadLocal.get();
+                QuestionFavour questionFavour = questionFavourService.getOne(new QueryWrapper<QuestionFavour>().lambda()
+                        .eq(QuestionFavour::getQuestionId, question.getId())
+                        .eq(QuestionFavour::getUserId, loginUser.getId()));
+                questionVO.setIsFavour(questionFavour != null);
+            }
             return questionVO;
         }).collect(Collectors.toList());
         return questionVOList;

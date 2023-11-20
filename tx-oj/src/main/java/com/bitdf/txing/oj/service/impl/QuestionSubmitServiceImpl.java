@@ -85,6 +85,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         this.save(questionSubmit);
         // 执行判题服务
         CompletableFuture.runAsync(() -> {
+            AuthInterceptor.userThreadLocal.set(loginUser);
             judgeService.doJudge(questionSubmit.getId());
         });
         return questionSubmit.getId();

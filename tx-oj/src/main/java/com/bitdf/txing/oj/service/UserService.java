@@ -2,6 +2,7 @@ package com.bitdf.txing.oj.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.bitdf.txing.oj.model.dto.user.UserModifyPwdRequest;
 import com.bitdf.txing.oj.model.dto.user.UserQueryRequest;
 import com.bitdf.txing.oj.model.entity.User;
 import com.bitdf.txing.oj.model.vo.LoginUserVO;
@@ -119,4 +120,5 @@ public interface UserService extends IService<User> {
      */
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
+    boolean modifyPwd(UserModifyPwdRequest userModifyPwdRequest);
 }

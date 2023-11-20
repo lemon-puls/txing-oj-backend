@@ -9,6 +9,7 @@ import com.bitdf.txing.oj.constant.CommonConstant;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.mapper.UserMapper;
+import com.bitdf.txing.oj.model.dto.user.UserModifyPwdRequest;
 import com.bitdf.txing.oj.model.dto.user.UserQueryRequest;
 import com.bitdf.txing.oj.model.entity.User;
 import com.bitdf.txing.oj.enume.UserRoleEnum;
@@ -271,5 +272,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         queryWrapper.orderBy(SQLFilter.validSortField(sortField), sortOrder.equals(CommonConstant.SORT_ORDER_ASC),
                 sortField);
         return queryWrapper;
+    }
+
+    /**
+     * 修改密码
+     *
+     * @param userModifyPwdRequest
+     * @return
+     */
+    @Override
+    public boolean modifyPwd(UserModifyPwdRequest userModifyPwdRequest) {
+        // 1、判断密码是否相等
+
+        // 2、判断密码是否正确
+
+        // 3、修改
+        return false;
     }
 }

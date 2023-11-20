@@ -2,6 +2,7 @@ package com.bitdf.txing.oj.model.vo;
 
 import java.io.Serializable;
 import java.util.Date;
+
 import lombok.Data;
 
 /**
@@ -64,6 +65,14 @@ public class UserVO implements Serializable {
      * 通过率
      */
     private Float acceptedRate;
+    /**
+     * 提交数
+     */
+    private Integer submitCount;
+    /**
+     * 通过数
+     */
+    private Integer acceptedCount;
     /**
      * 个性签名
      */

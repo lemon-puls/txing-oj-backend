@@ -21,6 +21,6 @@ public interface QuestionService extends IService<Question> {
 
     void validQuestion(Question question, boolean b);
 
-    List<QuestionVO> getQuestionVOsByQuestions(List<?> list);
+    List<QuestionVO> getQuestionVOsByQuestions(List<?> list, boolean b);
 }
 

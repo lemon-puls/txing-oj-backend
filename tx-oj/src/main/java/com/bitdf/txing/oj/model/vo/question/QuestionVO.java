@@ -86,6 +86,10 @@ public class QuestionVO implements Serializable {
      * 创建题目人的信息
      */
     private UserVO userVO;
+    /**
+     * 当前用户是否有收藏该题目
+     */
+    private Boolean isFavour;
 
     /**
      * 包装类转对象

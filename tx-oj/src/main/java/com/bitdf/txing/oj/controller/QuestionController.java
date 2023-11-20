@@ -50,7 +50,7 @@ public class QuestionController {
     public R list(@RequestBody PageVO queryVO) {
         PageUtils page = questionService.queryPage(queryVO);
         if (!page.getList().isEmpty()) {
-            List<QuestionVO> questionVOList = questionService.getQuestionVOsByQuestions(page.getList());
+            List<QuestionVO> questionVOList = questionService.getQuestionVOsByQuestions(page.getList(), false);
             page.setList(questionVOList);
         }
         return R.ok().put("data", page);
@@ -98,13 +98,14 @@ public class QuestionController {
      * @return
      */
     @GetMapping("/vo/get/id")
+    @AuthCheck(mustRole = "login")
     public R getQuestionVoById(@RequestParam("id") Long id) {
         Question question = questionService.getById(id);
         // 不存在
         ThrowUtils.throwIf(question == null, TxCodeEnume.COMMON_TARGET_NOT_EXIST_EXCEPTION);
         List<Question> questions = new ArrayList<>();
         questions.add(question);
-        List<QuestionVO> questionVOS = questionService.getQuestionVOsByQuestions(questions);
+        List<QuestionVO> questionVOS = questionService.getQuestionVOsByQuestions(questions, true);
         return R.ok(questionVOS.get(0));
     }
 
@@ -221,18 +222,6 @@ public class QuestionController {
     @PostMapping("/temp2")
     public R save1(@RequestBody QuestionVO questionVO) {
 
-        return R.ok();
-    }
-
-    /**
-     * 题目收藏与取消
-     *
-     * @param questionId
-     * @return
-     */
-    @GetMapping("/favour")
-    @AuthCheck(mustRole = "login")
-    public R favourQuestion(@RequestParam("questionId") Long questionId) {
         return R.ok();
     }
 }
