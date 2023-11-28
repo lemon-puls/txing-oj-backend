@@ -46,9 +46,11 @@ public class QuestionFavourServiceImpl extends ServiceImpl<QuestionFavourMapper,
         wrapper.lambda().eq(QuestionFavour::getUserId, loginUser.getId());
         IPage<QuestionFavour> iPage = new Query<QuestionFavour>().buildWrapperAndPage(wrapper, pageVO, null);
         IPage<QuestionFavour> page = this.page(iPage, wrapper);
-        List<QuestionVO> questionVOList = getQuestionVOsByFavours(page.getRecords());
         PageUtils pageUtils = new PageUtils(page);
-        pageUtils.setList(questionVOList);
+        if (!page.getRecords().isEmpty()) {
+            List<QuestionVO> questionVOList = getQuestionVOsByFavours(page.getRecords());
+            pageUtils.setList(questionVOList);
+        }
         return pageUtils;
     }
 

@@ -5,9 +5,11 @@ import static com.bitdf.txing.oj.constant.UserConstant.USER_LOGIN_STATE;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.constant.CommonConstant;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
+import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.mapper.UserMapper;
 import com.bitdf.txing.oj.model.dto.user.UserModifyPwdRequest;
 import com.bitdf.txing.oj.model.dto.user.UserQueryRequest;
@@ -44,7 +46,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     /**
      * 盐值，混淆密码
      */
-    private static final String SALT = "yupi";
+    private static final String SALT = "lizhiwei";
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -76,6 +78,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             User user = new User();
             user.setUserAccount(userAccount);
             user.setUserPassword(encryptPassword);
+            // 默认头像
+            user.setUserAvatar("https://txing-oj-1311424669.cos.ap-guangzhou.myqcloud.com/user_avatar/1/DLYv6zO6-42f3f796a326707a796ec644af28e1a1.jpg");
+            // 默认昵称
+            user.setUserName(userAccount);
+            // 默认权限
+            user.setUserRole("user");
+            user.setQuestionCount(0);
+            user.setSubmitCount(0);
+            user.setAcceptedCount(0);
+            user.setAcceptedRate(0f);
+            user.setSchool("未完善");
+            user.setProfession("未完善");
+            user.setPersonSign("此用户很懒 什么也没有留下！");
+
             boolean saveResult = this.save(user);
             if (!saveResult) {
                 throw new BusinessException(TxCodeEnume.COMMON_SYSTEM_UNKNOWN_EXCEPTION, "注册失败，数据库错误");
@@ -283,10 +299,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public boolean modifyPwd(UserModifyPwdRequest userModifyPwdRequest) {
         // 1、判断密码是否相等
-
+        if (!userModifyPwdRequest.getUserPassword().equals(userModifyPwdRequest.getCheckPassword())) {
+            throw new BusinessException(TxCodeEnume.USER_PWD_INCONSISTENT_EXCEPTION);
+        }
         // 2、判断密码是否正确
-
+        User loginUser = AuthInterceptor.userThreadLocal.get();
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userModifyPwdRequest.getOldPassword()).getBytes());
+        User user = this.getOne(new QueryWrapper<User>().lambda().eq(User::getId, loginUser.getId()).eq(User::getUserPassword, encryptPassword));
+        ThrowUtils.throwIf(user == null, TxCodeEnume.USER_PWD_ERROR_EXCEPTION);
         // 3、修改
-        return false;
+        String digestAsHex = DigestUtils.md5DigestAsHex((SALT + userModifyPwdRequest.getUserPassword()).getBytes());
+        user.setUserPassword(digestAsHex);
+        boolean b = this.updateById(user);
+        return b;
     }
 }

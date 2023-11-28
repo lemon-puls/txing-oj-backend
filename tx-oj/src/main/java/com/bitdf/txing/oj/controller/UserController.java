@@ -18,6 +18,8 @@ import com.bitdf.txing.oj.service.QuestionSubmitService;
 import com.bitdf.txing.oj.service.UserService;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,8 +30,12 @@ import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import me.chanjar.weixin.common.bean.oauth2.WxOAuth2AccessToken;
 import me.chanjar.weixin.mp.api.WxMpService;
 import org.apache.commons.lang3.StringUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -72,7 +78,7 @@ public class UserController {
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
-            return null;
+            return R.error(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         long result = userService.userRegister(userAccount, userPassword, checkPassword);
         return R.ok(result);
@@ -101,16 +107,25 @@ public class UserController {
 
     /**
      * 更新密码
+     *
      * @param userModifyPwdRequest
      * @return
      */
     @PostMapping("/pwd/modify")
-    public R modifyPwd(@RequestBody UserModifyPwdRequest userModifyPwdRequest) {
+    @AuthCheck(mustRole = "login")
+    public R modifyPwd(@Validated @RequestBody UserModifyPwdRequest userModifyPwdRequest, BindingResult result, HttpServletRequest request) {
+        // 判断校验是否成功
+        if (result.hasErrors()) {
+            Map<String, String> errors = result.getFieldErrors().stream().collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+            return R.error(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION).put("data", errors);
+        }
         // 修改密码
-        boolean modifyResult =  userService.modifyPwd(userModifyPwdRequest);
+        boolean modifyResult = userService.modifyPwd(userModifyPwdRequest);
+        ThrowUtils.throwIf(!modifyResult, TxCodeEnume.COMMON_OPS_FAILURE_EXCEPTION);
         // 退出登录
+        boolean b = userService.userLogout(request);
+        return R.ok("修改密码成功 请重新登录！");
     }
-
 
 
     /**
@@ -324,8 +339,12 @@ public class UserController {
      */
     @PostMapping("/update/my")
     @AuthCheck(mustRole = "login")
-    public R updateMyUser(@RequestBody UserUpdateMyRequest userUpdateMyRequest,
-                          HttpServletRequest request) {
+    public R updateMyUser(@Validated @RequestBody UserUpdateMyRequest userUpdateMyRequest,
+                          BindingResult bindingResult, HttpServletRequest request) {
+        if (bindingResult.hasErrors()) {
+            Map<String, String> errors = bindingResult.getFieldErrors().stream().collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+            return R.error(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION).put("data", errors);
+        }
         if (userUpdateMyRequest == null) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }

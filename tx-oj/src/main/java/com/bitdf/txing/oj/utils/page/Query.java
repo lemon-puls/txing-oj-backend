@@ -64,8 +64,8 @@ public class Query<T> {
     public IPage<T> buildWrapperAndPage(QueryWrapper wrapper, PageVO pageVO, Set<String> excludeFields) {
         // 构建QueryWrapper
         buildWrapper(wrapper, pageVO.getFilter(), excludeFields);
-        // 构建IPage
-        return getPage(pageVO);
+        // 构建IPage 默认排序 ： 按时间倒序
+        return getPage(pageVO, "create_time", false);
     }
 
     /**
