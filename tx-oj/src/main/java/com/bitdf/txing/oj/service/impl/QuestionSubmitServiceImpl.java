@@ -109,13 +109,13 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
             questionSubmitSimpleVO.setMemory(judgeInfo.getMemory());
             questionSubmitSimpleVO.setTimes(judgeInfo.getTime());
             questionSubmitSimpleVO.setResult(judgeInfo.getMessage());
-            if (questionSubmit.getCreateTime() != null) {
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
-                String format = simpleDateFormat.format(questionSubmit.getCreateTime());
-                questionSubmitSimpleVO.setCreateTime(format);
-            } else {
-                questionSubmitSimpleVO.setCreateTime("");
-            }
+//            if (questionSubmit.getCreateTime() != null) {
+//                SimpleDateFormat simpleDateFormat = new SimpleDateFormat();
+//                String format = simpleDateFormat.format(questionSubmit.getCreateTime());
+//                questionSubmitSimpleVO.setCreateTime(format);
+//            } else {
+//                questionSubmitSimpleVO.setCreateTime("");
+//            }
             // 查询题目
             Question question = questionService.getById(questionSubmit.getQuestionId());
             questionSubmitSimpleVO.setTitle(question.getTitle());

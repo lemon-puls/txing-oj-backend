@@ -1,8 +1,11 @@
 package com.bitdf.txing.oj.model.vo.question;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.util.Date;
 
 /**
  * @author Lizhiwei
@@ -26,5 +29,6 @@ public class QuestionSubmitSimpleVO {
     private String status;
 
     private String title;
-    private String createTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date createTime;
 }
