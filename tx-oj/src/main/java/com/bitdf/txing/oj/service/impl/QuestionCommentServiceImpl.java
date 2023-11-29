@@ -2,11 +2,9 @@ package com.bitdf.txing.oj.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
-import com.bitdf.txing.oj.constant.RedisKeyConstant;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.mapper.QuestionCommentMapper;
-import com.bitdf.txing.oj.model.entity.Question;
 import com.bitdf.txing.oj.model.entity.QuestionComment;
 import com.bitdf.txing.oj.model.entity.User;
 import com.bitdf.txing.oj.model.vo.question.QuestionCommentVO;
@@ -26,6 +24,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.service.QuestionCommentService;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,10 +52,11 @@ public class QuestionCommentServiceImpl extends ServiceImpl<QuestionCommentMappe
      * 把QuestionComment集合转换为QuestionCommentVO集合
      *
      * @param list
+     * @param loginUser
      * @return
      */
     @Override
-    public List<QuestionCommentVO> getQuestionCommentVOs(List<?> list) {
+    public List<QuestionCommentVO> getQuestionCommentVOs(List<?> list, User loginUser) {
         List<QuestionCommentVO> collect = list.stream().map((item) -> {
             QuestionComment questionComment = (QuestionComment) item;
             QuestionCommentVO questionCommentVO = new QuestionCommentVO();
@@ -69,11 +69,18 @@ public class QuestionCommentServiceImpl extends ServiceImpl<QuestionCommentMappe
             // 设置头像
             questionCommentVO.setUserAvatar(user.getUserAvatar());
             // 判断是否点赞
-            User loginUser = AuthInterceptor.userThreadLocal.get();
-            BoundSetOperations<String, String> boundSetOps = stringRedisTemplate
-                    .boundSetOps(RedisUtils.getQuestionCommentThumbKey(questionComment.getQuestionId(), questionComment.getId()));
-            Boolean isMember = boundSetOps.isMember(loginUser.getId().toString());
-            questionCommentVO.setIsFavour(isMember);
+            if (loginUser != null) {
+                BoundSetOperations<String, String> boundSetOps = stringRedisTemplate
+                        .boundSetOps(RedisUtils.getQuestionCommentThumbKey(questionComment.getQuestionId(), questionComment.getId()));
+                Boolean isMember = boundSetOps.isMember(loginUser.getId().toString());
+                questionCommentVO.setIsFavour(isMember);
+            } else {
+                questionCommentVO.setIsFavour(false);
+            }
+//            // TODO 转换时间 直接返回会丢失秒数 暂时未找到解决方案 有时间了需解决一下
+//            SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//            String format = simpleDateFormat.format(questionComment.getCreateTime());
+//            questionCommentVO.setCreateTime(format);
             return questionCommentVO;
         }).collect(Collectors.toList());
         return collect;

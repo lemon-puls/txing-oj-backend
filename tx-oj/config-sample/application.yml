@@ -1,6 +1,4 @@
 # 公共配置文件
-# @author <a href="https://github.com/liyupi">程序员鱼皮</a>
-# @from <a href="https://yupi.icu">编程导航知识星球</a>
 spring:
   application:
     name: txing-oj
@@ -11,6 +9,7 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
+#    date-format: yyyy-MM-dd HH:mm:ss
   # session 配置
   session:
     # todo 取消注释开启分布式 session（须先配置 Redis）
@@ -22,6 +21,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/txing_oj
+#    ?useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=Asia/Shanghai
     username: root
     password: 123456
   # Redis 配置
@@ -34,15 +34,18 @@ spring:
     password: 123456
   # Elasticsearch 配置
   # todo 需替换配置，然后取消注释
-#  elasticsearch:
-#    uris: http://localhost:9200
-#    username: root
-#    password: 123456
+  #  elasticsearch:
+  #    uris: http://localhost:9200
+  #    username: root
+  #    password: 123456
   # 文件上传
   servlet:
     multipart:
       # 大小限制
       max-file-size: 10MB
+#  jackson:
+#    date-format: yyyy-MM-dd HH:mm:ss
+#    time-zone: GMT+8
 server:
   address: 0.0.0.0
   port: 8121

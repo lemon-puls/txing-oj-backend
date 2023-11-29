@@ -121,4 +121,6 @@ public interface UserService extends IService<User> {
     QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest);
 
     boolean modifyPwd(UserModifyPwdRequest userModifyPwdRequest);
+
+    User getLoginUserNoThrow(HttpServletRequest request);
 }

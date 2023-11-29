@@ -313,4 +313,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         boolean b = this.updateById(user);
         return b;
     }
+
+    /**
+     * 获取当前登录用户（不会抛异常）
+     *
+     * @param request
+     * @return
+     */
+    @Override
+    public User getLoginUserNoThrow(HttpServletRequest request) {
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User currentUser = (User) userObj;
+        return currentUser;
+    }
 }
