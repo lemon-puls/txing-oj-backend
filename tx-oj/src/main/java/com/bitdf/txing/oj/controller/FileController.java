@@ -3,6 +3,7 @@ package com.bitdf.txing.oj.controller;
 import cn.hutool.core.io.FileUtil;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.constant.FileConstant;
+import com.bitdf.txing.oj.constant.RedisKeyConstant;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.manager.CosManager;
@@ -20,6 +21,9 @@ import com.bitdf.txing.oj.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.BoundHashOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -43,6 +47,8 @@ public class FileController {
 
     @Resource
     private CosManager cosManager;
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
 
     /**
      * 文件上传
@@ -58,6 +64,7 @@ public class FileController {
                         UploadFileRequest uploadFileRequest, HttpServletRequest request) {
         String biz = uploadFileRequest.getBiz();
         String oldImg = uploadFileRequest.getOldImg();
+        Long postId = uploadFileRequest.getPostId();
         if (StringUtils.isNotBlank(oldImg)) {
             // 先删除原图片
             String prefix = "myqcloud.com";
@@ -74,15 +81,21 @@ public class FileController {
         String uuid = RandomStringUtils.randomAlphanumeric(8);
         String filename = uuid + "-" + multipartFile.getOriginalFilename();
         String filepath = String.format("/%s/%s/%s", fileUploadBizEnum.getValue(), loginUser.getId(), filename);
-//        String filepath = String.format("/%s/%s/%s", fileUploadBizEnum.getValue(), 1, filename);
         File file = null;
         try {
             // 上传文件
             file = File.createTempFile(filepath, null);
             multipartFile.transferTo(file);
             cosManager.putObject(filepath, file);
+            String url = FileConstant.COS_HOST + filepath;
+            if (FileUploadBizEnum.POST_CONTENT_IMG.getValue().equals(biz)) {
+                // 记录该图片地址到Redis
+                String key = postId != null && postId != -1 ? RedisKeyConstant.POST_CONTENT_IMGS_UPDATE + postId : RedisKeyConstant.POST_CONTENT_IMGS_ADD;
+                BoundHashOperations<String, Object, Object> imgsHashOps = stringRedisTemplate.boundHashOps(key);
+                imgsHashOps.put(url, System.currentTimeMillis() + "");
+            }
             // 返回可访问地址
-            return R.ok().put("data", FileConstant.COS_HOST + filepath);
+            return R.ok().put("data", url);
         } catch (Exception e) {
             log.error("file upload error, filepath = " + filepath, e);
             throw new BusinessException(TxCodeEnume.COMMON_SYSTEM_UNKNOWN_EXCEPTION, "上传失败");

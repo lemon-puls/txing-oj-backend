@@ -9,17 +9,23 @@ import com.lemon.util.service.TableGenerator;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.Cursor;
+import org.springframework.data.redis.core.RedisCallback;
+import org.springframework.data.redis.core.ScanOptions;
+import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @SpringBootTest
 public class CommonTest {
     @Autowired
     TableGenerator tableGenerator;
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
 
     @Test
     void createTable() throws SQLException {
@@ -63,5 +69,25 @@ public class CommonTest {
             String link = matcher.group();
             links.add(link);
         }
+    }
+
+    @Test
+    void redisTest() {
+        Set<String> keys = new HashSet<>();
+
+        stringRedisTemplate.execute((RedisCallback) connection -> {
+            try (Cursor<byte[]> cursor = connection.scan(ScanOptions.scanOptions()
+                    .match("oj:*")
+                    .count(10000).build())) {
+                while (cursor.hasNext()) {
+                    String s = new String(cursor.next(), "Utf-8");
+                    String substring = s.substring(s.lastIndexOf(":"));
+                    keys.add(s);
+                }
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+            return null;
+        });
     }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author Lizhiwei
@@ -37,5 +38,21 @@ public class CustomStringUtils {
             ans.add(link);
         }
         return ans;
+    }
+
+    /**
+     * 从md文章内容中获取图片地址
+     *
+     * @param text      文章内容
+     * @param indexKey  截取定位词
+     * @param isInclude 最终结果是否保留定位词
+     * @return
+     */
+    public static List<String> getImgUrlsFromMd(String text, String indexKey, Boolean isInclude) {
+        List<String> matchStrList = CustomStringUtils.getMatchStrList("!\\[[^\\]]*\\]\\((.*?)(?=\\s)", text, null);
+        List<String> collect = matchStrList.stream().map((str) -> {
+            return str.substring(str.indexOf(indexKey) + (isInclude ? 0 : indexKey.length()));
+        }).collect(Collectors.toList());
+        return collect;
     }
 }

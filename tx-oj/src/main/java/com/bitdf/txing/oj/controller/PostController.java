@@ -2,6 +2,7 @@ package com.bitdf.txing.oj.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
+import com.bitdf.txing.oj.constant.RedisKeyConstant;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.esdao.PostEsDao;
 import com.bitdf.txing.oj.job.cycle.IncSyncPostToEs;
@@ -24,6 +25,7 @@ import com.bitdf.txing.oj.service.UserService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
@@ -35,6 +37,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.data.redis.core.BoundHashOperations;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -64,6 +68,8 @@ public class PostController {
     PostEsDao postEsDao;
     @Autowired
     CosManager cosManager;
+    @Autowired
+    StringRedisTemplate stringRedisTemplate;
 
     // region 增删改查
 
@@ -93,13 +99,25 @@ public class PostController {
         post.setThumbNum(0);
         post.setCommentNum(0);
         post.setIsDelete(0);
+        // 保存到mysql
         boolean result = postService.save(post);
         ThrowUtils.throwIf(!result, TxCodeEnume.COMMON_OPS_FAILURE_EXCEPTION);
         List<Post> list = new ArrayList<>();
         list.add(post);
         List<PostEsDTO> postEsDTOByPosts = postService.getPostEsDTOByPosts(list);
+        // 保存到es
         postEsDao.save(postEsDTOByPosts.get(0));
         long newPostId = post.getId();
+        // 从Redis中移除文章中实际用到了的图片url
+        List<String> collect = CustomStringUtils.getImgUrlsFromMd(post.getContent(), "https", true);
+        BoundHashOperations<String, String, String> imgsHashOps = stringRedisTemplate.boundHashOps(RedisKeyConstant.POST_CONTENT_IMGS_ADD);
+        if (!collect.isEmpty()) {
+            Long delete = imgsHashOps.delete(collect.toArray());
+        }
+        Map<String, String> entries = imgsHashOps.entries();
+        BoundHashOperations<String, String, String> updateImgsHashOps =
+                stringRedisTemplate.boundHashOps(RedisKeyConstant.POST_CONTENT_IMGS_UPDATE + post.getId());
+        updateImgsHashOps.putAll(entries);
         return R.ok(newPostId);
     }
 
@@ -131,15 +149,10 @@ public class PostController {
 //                String delete = elasticsearchRestTemplate.delete(String.valueOf(id), PostEsDTO.class);
 //            });
             String delete = elasticsearchRestTemplate.delete(String.valueOf(id), PostEsDTO.class);
-//            cosManager.deleteOject(oldPost.get);
             // 获取所有要删除的图片
             String prefix = "myqcloud.com/";
-            List<String> deleteImgs = new ArrayList<>();
-            deleteImgs.add(oldPost.getCoverImg());
-            CustomStringUtils.getMatchStrList("!\\[[^\\]]*\\]\\((.*?)(?=\\s)", oldPost.getContent(), deleteImgs);
-            List<String> collect = deleteImgs.stream().map((str) -> {
-                return str.substring(str.indexOf(prefix) + prefix.length());
-            }).collect(Collectors.toList());
+            List<String> collect = CustomStringUtils.getImgUrlsFromMd(oldPost.getContent(), prefix, false);
+            collect.add(oldPost.getCoverImg().substring(oldPost.getCoverImg().indexOf(prefix) + prefix.length()));
             // 创建 DeleteObjectsRequest 对象
             cosManager.deleteOjects(collect);
         }
@@ -148,12 +161,11 @@ public class PostController {
 
     /**
      * 更新（仅管理员）
-     *
      * @param postUpdateRequest
      * @return
      */
     @PostMapping("/update")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @AuthCheck(mustRole = "login")
     public R updatePost(@RequestBody PostUpdateRequest postUpdateRequest) {
         if (postUpdateRequest == null || postUpdateRequest.getId() <= 0) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
@@ -170,7 +182,12 @@ public class PostController {
         // 判断是否存在
         Post oldPost = postService.getById(id);
         ThrowUtils.throwIf(oldPost == null, TxCodeEnume.COMMON_TARGET_NOT_EXIST_EXCEPTION);
+        // 判断是否本人操作
+        User loginUser = AuthInterceptor.userThreadLocal.get();
+        ThrowUtils.throwIf(!loginUser.getId().equals(oldPost.getUserId()), TxCodeEnume.COMMON_NOT_PERM_EXCEPTION);
+        // 更新mysql
         boolean result = postService.updateById(post);
+        // 更新es
         incSyncPostToEs.run();
         return R.ok(result);
     }
@@ -299,6 +316,13 @@ public class PostController {
         ThrowUtils.throwIf(post == null, TxCodeEnume.COMMON_TARGET_NOT_EXIST_EXCEPTION);
         PostUpdateVO postUpdateVO = new PostUpdateVO();
         BeanUtils.copyProperties(post, postUpdateVO);
+        // 把文章中的图片地址存到Redis(为了后续方便删除多余的图片)
+        BoundHashOperations<String, String, String> imgsHashOps =
+                stringRedisTemplate.boundHashOps(RedisKeyConstant.POST_CONTENT_IMGS_UPDATE + post.getId());
+        // 从文章中获取图片url集合
+        List<String> collect = CustomStringUtils.getImgUrlsFromMd(post.getContent(), "https", true);
+        Map<String, String> map = collect.stream().collect(Collectors.toMap(k -> k, v -> System.currentTimeMillis() + ""));
+        imgsHashOps.putAll(map);
         return R.ok(postUpdateVO);
     }
 

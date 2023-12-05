@@ -22,6 +22,10 @@ public class UploadFileRequest implements Serializable {
      * 原图片地址（可为空） 如果不为空 就会删除与之对应的图片
      */
     private String oldImg;
+    /**
+     * 文章id
+     */
+    private Long postId;
 
     private static final long serialVersionUID = 1L;
 }
