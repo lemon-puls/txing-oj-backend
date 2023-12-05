@@ -4,6 +4,10 @@ import javax.annotation.Resource;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
+import java.sql.Array;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Cos 操作测试
  *
@@ -24,7 +28,10 @@ class CosManagerTest {
 
     @Test
     void deleteObject() {
-        cosManager.deleteOject("/post_cover/1/fhKvUpJY-42f3f796a326707a796ec644af28e1a1.jpg");
+//        cosManager.deleteOject("/post_content_img/1726766580186198017/SOtmNwGH-42f3f796a326707a796ec644af28e1a1.jpg");
+        List<String> strings = new ArrayList<>();
+        strings.add("post_content_img/1726766580186198017/BxuEFbY2-cb1cd260f70f3e7f479c07775047905.png");
+        cosManager.deleteOjects(strings);
     }
 
 }

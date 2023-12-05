@@ -1,11 +1,17 @@
 package com.bitdf.txing.oj.manager;
 
 import com.qcloud.cos.COSClient;
+import com.qcloud.cos.model.DeleteObjectsRequest;
+import com.qcloud.cos.model.DeleteObjectsResult;
 import com.qcloud.cos.model.PutObjectRequest;
 import com.qcloud.cos.model.PutObjectResult;
 import com.bitdf.txing.oj.config.CosClientConfig;
+
 import java.io.File;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.annotation.Resource;
+
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,7 +33,7 @@ public class CosManager {
     /**
      * 上传对象
      *
-     * @param key 唯一键
+     * @param key           唯一键
      * @param localFilePath 本地文件路径
      * @return
      */
@@ -40,7 +46,7 @@ public class CosManager {
     /**
      * 上传对象
      *
-     * @param key 唯一键
+     * @param key  唯一键
      * @param file 文件
      * @return
      */
@@ -52,5 +58,19 @@ public class CosManager {
 
     public void deleteOject(String key) {
         cosClient.deleteObject(cosClientConfig.getBucket(), key);
+    }
+
+    /**
+     * 批量删除文件
+     *
+     * @param keys
+     */
+    public void deleteOjects(List<String> keys) {
+        DeleteObjectsRequest deleteRequest = new DeleteObjectsRequest(cosClientConfig.getBucket());
+        List<DeleteObjectsRequest.KeyVersion> collect = keys.stream().map((str) -> {
+            return new DeleteObjectsRequest.KeyVersion(str);
+        }).collect(Collectors.toList());
+        deleteRequest.setKeys(collect);
+        DeleteObjectsResult deleteObjectsResult = cosClient.deleteObjects(deleteRequest);
     }
 }

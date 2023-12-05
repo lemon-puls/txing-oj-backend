@@ -11,6 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @SpringBootTest
 public class CommonTest {
@@ -34,5 +38,30 @@ public class CommonTest {
         System.out.println(s1);
         String s2 = JSON.toJSONString(judgeConfig);
         System.out.println(s2);
+    }
+
+    @Test
+    void findImgsTest() {
+        String text = "<替换为文章内容进行测试>";
+
+        // 定义正则表达式
+//        String regex = "!\\[[^\\]]*\\]\\((.*?)\"";
+        String regex = "!\\[[^\\]]*\\]\\((.*?)(?=\\s)";
+
+        // 编译正则表达式
+        Pattern pattern = Pattern.compile(regex);
+
+        // 创建 Matcher 对象，用于匹配文本中的内容
+        Matcher matcher = pattern.matcher(text);
+
+        // 创建列表，用于存储匹配到的链接
+        List<String> links = new ArrayList<>();
+
+        // 遍历匹配结果
+        while (matcher.find()) {
+            // 获取匹配到的链接
+            String link = matcher.group();
+            links.add(link);
+        }
     }
 }

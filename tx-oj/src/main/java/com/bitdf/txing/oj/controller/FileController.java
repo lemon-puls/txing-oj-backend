@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.bitdf.txing.oj.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
@@ -56,6 +57,13 @@ public class FileController {
     public R uploadFile(@RequestPart("file") MultipartFile multipartFile,
                         UploadFileRequest uploadFileRequest, HttpServletRequest request) {
         String biz = uploadFileRequest.getBiz();
+        String oldImg = uploadFileRequest.getOldImg();
+        if (StringUtils.isNotBlank(oldImg)) {
+            // 先删除原图片
+            String prefix = "myqcloud.com";
+            cosManager.deleteOject(oldImg.substring(oldImg.indexOf(prefix) + prefix.length()));
+        }
+
         FileUploadBizEnum fileUploadBizEnum = FileUploadBizEnum.getEnumByValue(biz);
         if (fileUploadBizEnum == null) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);

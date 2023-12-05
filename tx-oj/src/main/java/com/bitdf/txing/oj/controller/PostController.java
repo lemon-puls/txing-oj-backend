@@ -5,8 +5,10 @@ import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.esdao.PostEsDao;
 import com.bitdf.txing.oj.job.cycle.IncSyncPostToEs;
+import com.bitdf.txing.oj.manager.CosManager;
 import com.bitdf.txing.oj.model.dto.post.*;
 import com.bitdf.txing.oj.model.vo.post.PostUpdateVO;
+import com.bitdf.txing.oj.utils.CustomStringUtils;
 import com.bitdf.txing.oj.utils.R;
 import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.google.gson.Gson;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
+import com.qcloud.cos.model.DeleteObjectsRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,6 +62,8 @@ public class PostController {
     ElasticsearchRestTemplate elasticsearchRestTemplate;
     @Autowired
     PostEsDao postEsDao;
+    @Autowired
+    CosManager cosManager;
 
     // region 增删改查
 
@@ -122,9 +127,21 @@ public class PostController {
         }
         boolean b = postService.removeById(id);
         if (b) {
-            CompletableFuture.runAsync(() -> {
-                String delete = elasticsearchRestTemplate.delete(String.valueOf(id), PostEsDTO.class);
-            });
+//            CompletableFuture.runAsync(() -> {
+//                String delete = elasticsearchRestTemplate.delete(String.valueOf(id), PostEsDTO.class);
+//            });
+            String delete = elasticsearchRestTemplate.delete(String.valueOf(id), PostEsDTO.class);
+//            cosManager.deleteOject(oldPost.get);
+            // 获取所有要删除的图片
+            String prefix = "myqcloud.com/";
+            List<String> deleteImgs = new ArrayList<>();
+            deleteImgs.add(oldPost.getCoverImg());
+            CustomStringUtils.getMatchStrList("!\\[[^\\]]*\\]\\((.*?)(?=\\s)", oldPost.getContent(), deleteImgs);
+            List<String> collect = deleteImgs.stream().map((str) -> {
+                return str.substring(str.indexOf(prefix) + prefix.length());
+            }).collect(Collectors.toList());
+            // 创建 DeleteObjectsRequest 对象
+            cosManager.deleteOjects(collect);
         }
         return R.ok(b);
     }
