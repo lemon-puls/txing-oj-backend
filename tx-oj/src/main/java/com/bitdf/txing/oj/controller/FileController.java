@@ -1,6 +1,7 @@
 package com.bitdf.txing.oj.controller;
 
 import cn.hutool.core.io.FileUtil;
+import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.constant.FileConstant;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
@@ -51,6 +52,7 @@ public class FileController {
      * @return
      */
     @PostMapping("/upload")
+    @AuthCheck(mustRole = "login")
     public R uploadFile(@RequestPart("file") MultipartFile multipartFile,
                         UploadFileRequest uploadFileRequest, HttpServletRequest request) {
         String biz = uploadFileRequest.getBiz();
@@ -59,12 +61,12 @@ public class FileController {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         validFile(multipartFile, fileUploadBizEnum);
-//        User loginUser = userService.getLoginUser(request);
+        User loginUser = userService.getLoginUser(request);
         // 文件目录：根据业务、用户来划分
         String uuid = RandomStringUtils.randomAlphanumeric(8);
         String filename = uuid + "-" + multipartFile.getOriginalFilename();
-//        String filepath = String.format("/%s/%s/%s", fileUploadBizEnum.getValue(), loginUser.getId(), filename);
-        String filepath = String.format("/%s/%s/%s", fileUploadBizEnum.getValue(), 1, filename);
+        String filepath = String.format("/%s/%s/%s", fileUploadBizEnum.getValue(), loginUser.getId(), filename);
+//        String filepath = String.format("/%s/%s/%s", fileUploadBizEnum.getValue(), 1, filename);
         File file = null;
         try {
             // 上传文件

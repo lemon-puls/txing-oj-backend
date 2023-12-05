@@ -1,84 +1,59 @@
 package com.bitdf.txing.oj.model.entity;
 
+
 import com.baomidou.mybatisplus.annotation.*;
-
-import java.io.Serializable;
-import java.util.Date;
-
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
 /**
- * 帖子
- *
  * @author Lizhiwei
- * @date 2023/1/24 3:44:13
+ * @date 2023/12/2 20:06:49
  * 注释：
  */
-@TableName(value = "tx_oj_post")
-@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Post implements Serializable {
-
+@Data
+@TableName("tx_oj_post_comment")
+public class PostComment {
     /**
      * id
      */
     @TableId(type = IdType.ASSIGN_ID)
     private Long id;
-
     /**
-     * 标题
-     */
-    private String title;
-    /**
-     * 摘要
-     */
-    private String intro;
-    /**
-     * 内容
+     * 评论内容
      */
     private String content;
     /**
-     * 封面图
+     * 评论用户
      */
-    private String coverImg;
-
+    private Long userId;
     /**
-     * 标签列表 json
+     * 文章Id
      */
-    private String tags;
-
+    private Long postId;
     /**
      * 点赞数
      */
-    private Integer thumbNum;
-
-    /**
-     * 收藏数
-     */
     private Integer favourNum;
-    /**
-     * 评论数
-     */
-    private Integer commentNum;
-    /**
-     * 创建用户 id
-     */
-    private Long userId;
+
 
     /**
      * 创建时间
      */
     @TableField(value = "create_time", fill = FieldFill.INSERT)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
 
     /**
      * 更新时间
      */
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date updateTime;
 
     /**
@@ -88,7 +63,5 @@ public class Post implements Serializable {
     @TableField("is_delete")
     @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
-
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
 }
+

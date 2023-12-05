@@ -28,6 +28,14 @@ public class PostUpdateRequest implements Serializable {
      * 内容
      */
     private String content;
+    /**
+     * 摘要
+     */
+    private String intro;
+    /**
+     * 封面图
+     */
+    private String coverImg;
 
     /**
      * 标签列表

@@ -3,10 +3,12 @@ package com.bitdf.txing.oj.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.bitdf.txing.oj.model.dto.post.PostEsDTO;
 import com.bitdf.txing.oj.model.dto.post.PostQueryRequest;
 import com.bitdf.txing.oj.model.entity.Post;
-import com.bitdf.txing.oj.model.vo.PostVO;
+import com.bitdf.txing.oj.model.vo.post.PostVO;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 帖子服务
@@ -39,7 +41,7 @@ public interface PostService extends IService<Post> {
      * @param postQueryRequest
      * @return
      */
-    Page<Post> searchFromEs(PostQueryRequest postQueryRequest);
+    Page<PostEsDTO> searchFromEs(PostQueryRequest postQueryRequest);
 
     /**
      * 获取帖子封装
@@ -57,5 +59,7 @@ public interface PostService extends IService<Post> {
      * @param request
      * @return
      */
-    Page<PostVO> getPostVOPage(Page<Post> postPage, HttpServletRequest request);
+    Page<PostEsDTO> getPostVOPage(Page<Post> postPage, HttpServletRequest request);
+
+    List<PostEsDTO> getPostEsDTOByPosts(List<Post> postList);
 }

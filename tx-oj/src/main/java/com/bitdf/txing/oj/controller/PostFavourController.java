@@ -1,9 +1,11 @@
 package com.bitdf.txing.oj.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
+import com.bitdf.txing.oj.model.dto.post.PostEsDTO;
 import com.bitdf.txing.oj.model.dto.post.PostQueryRequest;
 import com.bitdf.txing.oj.model.dto.postfavour.PostFavourAddRequest;
 import com.bitdf.txing.oj.model.dto.postfavour.PostFavourQueryRequest;
@@ -12,10 +14,12 @@ import com.bitdf.txing.oj.model.entity.User;
 import com.bitdf.txing.oj.service.PostFavourService;
 import com.bitdf.txing.oj.service.PostService;
 import com.bitdf.txing.oj.service.UserService;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import com.bitdf.txing.oj.utils.R;
+import com.bitdf.txing.oj.utils.page.PageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -51,8 +55,9 @@ public class PostFavourController {
      * @return resultNum 收藏变化数
      */
     @PostMapping("/")
+    @AuthCheck(mustRole = "login")
     public R doPostFavour(@RequestBody PostFavourAddRequest postFavourAddRequest,
-            HttpServletRequest request) {
+                          HttpServletRequest request) {
         if (postFavourAddRequest == null || postFavourAddRequest.getPostId() <= 0) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
@@ -70,8 +75,9 @@ public class PostFavourController {
      * @param request
      */
     @PostMapping("/my/list/page")
+    @AuthCheck(mustRole = "login")
     public R listMyFavourPostByPage(@RequestBody PostQueryRequest postQueryRequest,
-            HttpServletRequest request) {
+                                    HttpServletRequest request) {
         if (postQueryRequest == null) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
@@ -82,7 +88,9 @@ public class PostFavourController {
         ThrowUtils.throwIf(size > 20, TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         Page<Post> postPage = postFavourService.listFavourPostByPage(new Page<>(current, size),
                 postService.getQueryWrapper(postQueryRequest), loginUser.getId());
-        return R.ok(postService.getPostVOPage(postPage, request));
+        Page<PostEsDTO> postVOPage = postService.getPostVOPage(postPage, request);
+        PageUtils pageUtils = new PageUtils(postVOPage);
+        return R.ok(pageUtils);
     }
 
     /**
@@ -93,7 +101,7 @@ public class PostFavourController {
      */
     @PostMapping("/list/page")
     public R listFavourPostByPage(@RequestBody PostFavourQueryRequest postFavourQueryRequest,
-            HttpServletRequest request) {
+                                  HttpServletRequest request) {
         if (postFavourQueryRequest == null) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
@@ -104,6 +112,8 @@ public class PostFavourController {
         ThrowUtils.throwIf(size > 20 || userId == null, TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         Page<Post> postPage = postFavourService.listFavourPostByPage(new Page<>(current, size),
                 postService.getQueryWrapper(postFavourQueryRequest.getPostQueryRequest()), userId);
-        return R.ok(postService.getPostVOPage(postPage, request));
+        Page<PostEsDTO> postVOPage = postService.getPostVOPage(postPage, request);
+        PageUtils pageUtils = new PageUtils(postVOPage);
+        return R.ok(pageUtils);
     }
 }

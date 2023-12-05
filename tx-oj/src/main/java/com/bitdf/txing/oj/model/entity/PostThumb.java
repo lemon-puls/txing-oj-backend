@@ -4,7 +4,10 @@ import com.baomidou.mybatisplus.annotation.*;
 
 import java.io.Serializable;
 import java.util.Date;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 帖子点赞
@@ -15,12 +18,14 @@ import lombok.Data;
  */
 @TableName(value = "tx_oj_post_thumb")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class PostThumb implements Serializable {
 
     /**
      * id
      */
-    @TableId(type = IdType.AUTO)
+    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     /**

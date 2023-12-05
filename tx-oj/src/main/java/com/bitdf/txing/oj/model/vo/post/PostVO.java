@@ -1,7 +1,8 @@
-package com.bitdf.txing.oj.model.vo;
+package com.bitdf.txing.oj.model.vo.post;
 
+import com.bitdf.txing.oj.model.vo.UserVO;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.bitdf.txing.oj.model.entity.Post;
 import java.io.Serializable;
 import java.util.Date;
@@ -54,6 +55,7 @@ public class PostVO implements Serializable {
     /**
      * 创建时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date createTime;
 
     /**
@@ -71,11 +73,20 @@ public class PostVO implements Serializable {
      */
     private UserVO user;
 
+
+    /**
+     * 评论数
+     */
+    private Integer commentNum;
+    /**
+     * 封面图
+     */
+    private String coverImg;
+
     /**
      * 是否已点赞
      */
     private Boolean hasThumb;
-
     /**
      * 是否已收藏
      */
@@ -112,8 +123,8 @@ public class PostVO implements Serializable {
         }
         PostVO postVO = new PostVO();
         BeanUtils.copyProperties(post, postVO);
-        postVO.setTagList(GSON.fromJson(post.getTags(), new TypeToken<List<String>>() {
-        }.getType()));
+//        postVO.setTagList(GSON.fromJson(post.getTags(), new TypeToken<List<String>>() {
+//        }.getType()));
         return postVO;
     }
 }

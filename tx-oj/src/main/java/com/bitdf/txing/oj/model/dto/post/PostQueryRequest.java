@@ -1,8 +1,10 @@
 package com.bitdf.txing.oj.model.dto.post;
 
 import com.bitdf.txing.oj.common.PageRequest;
+
 import java.io.Serializable;
 import java.util.List;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -36,7 +38,10 @@ public class PostQueryRequest extends PageRequest implements Serializable {
      * 标题
      */
     private String title;
-
+    /**
+     * 摘要
+     */
+    private String intro;
     /**
      * 内容
      */

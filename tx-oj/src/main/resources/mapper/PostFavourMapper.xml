@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- @author <a href="https://github.com/liyupi">程序员鱼皮</a> -->
-<!-- @from <a href="https://yupi.icu">编程导航知识星球</a> -->
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
@@ -22,8 +20,8 @@
     <select id="listFavourPostByPage"
             resultType="com.bitdf.txing.oj.model.entity.Post">
         select p.*
-        from post p
-                 join (select postId from post_favour where userId = #{favourUserId}) pf
-                      on p.id = pf.postId ${ew.customSqlSegment}
+        from tx_oj_post p
+                 join (select post_id from tx_oj_post_favour where user_id = #{favourUserId}) pf
+                      on p.id = pf.post_id ${ew.customSqlSegment}
     </select>
 </mapper>

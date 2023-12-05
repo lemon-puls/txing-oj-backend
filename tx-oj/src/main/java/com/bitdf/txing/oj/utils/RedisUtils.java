@@ -20,4 +20,15 @@ public class RedisUtils {
         String key = RedisKeyConstant.QUESTION_COMMENT_THUMB + questionId + "-" + commentId;
         return key;
     }
+    /**
+     * 获取到 文章评论点赞 Redis key
+     *
+     * @param postId
+     * @param commentId
+     * @return
+     */
+    public static String getPostCommentThumbKey(Long postId, Long commentId) {
+        String key = RedisKeyConstant.POST_COMMENT_THUMB + postId + "-" + commentId;
+        return key;
+    }
 }

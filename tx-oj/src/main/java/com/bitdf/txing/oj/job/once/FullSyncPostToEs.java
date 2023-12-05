@@ -10,6 +10,7 @@ import javax.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
 
 /**
  * 全量同步帖子到 es
@@ -19,7 +20,7 @@ import org.springframework.boot.CommandLineRunner;
  * 注释：
  */
 // todo 取消注释开启任务
-//@Component
+@Component
 @Slf4j
 public class FullSyncPostToEs implements CommandLineRunner {
 
@@ -35,7 +36,8 @@ public class FullSyncPostToEs implements CommandLineRunner {
         if (CollectionUtils.isEmpty(postList)) {
             return;
         }
-        List<PostEsDTO> postEsDTOList = postList.stream().map(PostEsDTO::objToDto).collect(Collectors.toList());
+//        List<PostEsDTO> postEsDTOList = postList.stream().map(PostEsDTO::objToDto).collect(Collectors.toList());
+        List<PostEsDTO> postEsDTOList = postService.getPostEsDTOByPosts(postList);
         final int pageSize = 500;
         int total = postEsDTOList.size();
         log.info("FullSyncPostToEs start, total {}", total);

@@ -11,4 +11,8 @@ public class RedisKeyConstant {
      * 问题评论点赞
      */
     public static final String QUESTION_COMMENT_THUMB = "oj:question:comment:thumb:";
+    /**
+     * 文章评论点赞
+     */
+    public static final String POST_COMMENT_THUMB = "oj:post:comment:thumb:";
 }

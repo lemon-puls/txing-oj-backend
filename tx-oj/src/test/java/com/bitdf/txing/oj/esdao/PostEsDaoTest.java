@@ -33,10 +33,10 @@ public class PostEsDaoTest {
 
     @Test
     void test() {
-        PostQueryRequest postQueryRequest = new PostQueryRequest();
-        com.baomidou.mybatisplus.extension.plugins.pagination.Page<Post> page =
-                postService.searchFromEs(postQueryRequest);
-        System.out.println(page);
+//        PostQueryRequest postQueryRequest = new PostQueryRequest();
+//        com.baomidou.mybatisplus.extension.plugins.pagination.Page<Post> page =
+//                postService.searchFromEs(postQueryRequest);
+//        System.out.println(page);
     }
 
     @Test
@@ -78,7 +78,7 @@ public class PostEsDaoTest {
 
     @Test
     void testFindByCategory() {
-        List<PostEsDTO> postEsDaoTestList = postEsDao.findByUserId(1L);
+        List<PostEsDTO> postEsDaoTestList = postEsDao.findByUserId(1726766580186198017L);
         System.out.println(postEsDaoTestList);
     }
 }

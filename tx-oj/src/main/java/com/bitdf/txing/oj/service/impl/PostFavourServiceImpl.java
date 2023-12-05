@@ -2,19 +2,24 @@ package com.bitdf.txing.oj.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
+import com.bitdf.txing.oj.job.cycle.IncSyncPostToEs;
 import com.bitdf.txing.oj.mapper.PostFavourMapper;
 import com.bitdf.txing.oj.model.entity.Post;
 import com.bitdf.txing.oj.model.entity.PostFavour;
 import com.bitdf.txing.oj.model.entity.User;
 import com.bitdf.txing.oj.service.PostFavourService;
 import com.bitdf.txing.oj.service.PostService;
+
 import javax.annotation.Resource;
+
 import org.springframework.aop.framework.AopContext;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +36,8 @@ public class PostFavourServiceImpl extends ServiceImpl<PostFavourMapper, PostFav
 
     @Resource
     private PostService postService;
+    @Autowired
+    IncSyncPostToEs incSyncPostToEs;
 
     /**
      * 帖子收藏
@@ -85,11 +92,19 @@ public class PostFavourServiceImpl extends ServiceImpl<PostFavourMapper, PostFav
             result = this.remove(postFavourQueryWrapper);
             if (result) {
                 // 帖子收藏数 - 1
-                result = postService.update()
-                        .eq("id", postId)
-                        .gt("favourNum", 0)
-                        .setSql("favourNum = favourNum - 1")
-                        .update();
+//                result = postService.update()
+//                        .eq("id", postId)
+//                        .gt("favour_num", 0)
+//                        .setSql("favour_num = favour_num - 1")
+//                        .update();
+                result = postService.update(new UpdateWrapper<Post>().lambda()
+                        .eq(Post::getId, postId)
+                        .gt(Post::getFavourNum, 0)
+                        .setSql("favour_num = favour_num - 1, update_time = NOW()"));
+//                Post post = postService.getById(postId);
+//                post.setFavourNum(post.getFavourNum() - 1);
+//                postService.updateById(post);
+                incSyncPostToEs.run();
                 return result ? -1 : 0;
             } else {
                 throw new BusinessException(TxCodeEnume.COMMON_SYSTEM_UNKNOWN_EXCEPTION);
@@ -101,8 +116,9 @@ public class PostFavourServiceImpl extends ServiceImpl<PostFavourMapper, PostFav
                 // 帖子收藏数 + 1
                 result = postService.update()
                         .eq("id", postId)
-                        .setSql("favourNum = favourNum + 1")
+                        .setSql("favour_num = favour_num + 1, update_time = NOW()")
                         .update();
+                incSyncPostToEs.run();
                 return result ? 1 : 0;
             } else {
                 throw new BusinessException(TxCodeEnume.COMMON_SYSTEM_UNKNOWN_EXCEPTION);

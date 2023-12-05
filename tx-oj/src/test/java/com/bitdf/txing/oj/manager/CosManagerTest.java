@@ -21,4 +21,10 @@ class CosManagerTest {
     void putObject() {
         cosManager.putObject("test", "test.json");
     }
+
+    @Test
+    void deleteObject() {
+        cosManager.deleteOject("/post_cover/1/fhKvUpJY-42f3f796a326707a796ec644af28e1a1.jpg");
+    }
+
 }

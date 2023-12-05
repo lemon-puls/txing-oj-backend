@@ -49,4 +49,8 @@ public class CosManager {
                 file);
         return cosClient.putObject(putObjectRequest);
     }
+
+    public void deleteOject(String key) {
+        cosClient.deleteObject(cosClientConfig.getBucket(), key);
+    }
 }

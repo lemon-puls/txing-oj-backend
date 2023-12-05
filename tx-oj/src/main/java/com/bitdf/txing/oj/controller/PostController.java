@@ -1,32 +1,38 @@
 package com.bitdf.txing.oj.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.esdao.PostEsDao;
+import com.bitdf.txing.oj.job.cycle.IncSyncPostToEs;
+import com.bitdf.txing.oj.model.dto.post.*;
+import com.bitdf.txing.oj.model.vo.post.PostUpdateVO;
 import com.bitdf.txing.oj.utils.R;
+import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.google.gson.Gson;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.common.DeleteRequest;
 import com.bitdf.txing.oj.constant.UserConstant;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
-import com.bitdf.txing.oj.model.dto.post.PostAddRequest;
-import com.bitdf.txing.oj.model.dto.post.PostEditRequest;
-import com.bitdf.txing.oj.model.dto.post.PostQueryRequest;
-import com.bitdf.txing.oj.model.dto.post.PostUpdateRequest;
 import com.bitdf.txing.oj.model.entity.Post;
 import com.bitdf.txing.oj.model.entity.User;
 import com.bitdf.txing.oj.service.PostService;
 import com.bitdf.txing.oj.service.UserService;
+
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.elasticsearch.client.elc.ElasticsearchTemplate;
+import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 帖子接口
@@ -47,6 +53,12 @@ public class PostController {
     private UserService userService;
 
     private final static Gson GSON = new Gson();
+    @Autowired
+    IncSyncPostToEs incSyncPostToEs;
+    @Autowired
+    ElasticsearchRestTemplate elasticsearchRestTemplate;
+    @Autowired
+    PostEsDao postEsDao;
 
     // region 增删改查
 
@@ -58,23 +70,30 @@ public class PostController {
      * @return
      */
     @PostMapping("/add")
+    @AuthCheck(mustRole = "login")
     public R addPost(@RequestBody PostAddRequest postAddRequest, HttpServletRequest request) {
         if (postAddRequest == null) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         Post post = new Post();
         BeanUtils.copyProperties(postAddRequest, post);
-        List<String> tags = postAddRequest.getTags();
-        if (tags != null) {
-            post.setTags(GSON.toJson(tags));
-        }
+//        List<String> tags = postAddRequest.getTags();
+//        if (tags != null) {
+//            post.setTags(GSON.toJson(tags));
+//        }
         postService.validPost(post, true);
         User loginUser = userService.getLoginUser(request);
         post.setUserId(loginUser.getId());
         post.setFavourNum(0);
         post.setThumbNum(0);
+        post.setCommentNum(0);
+        post.setIsDelete(0);
         boolean result = postService.save(post);
         ThrowUtils.throwIf(!result, TxCodeEnume.COMMON_OPS_FAILURE_EXCEPTION);
+        List<Post> list = new ArrayList<>();
+        list.add(post);
+        List<PostEsDTO> postEsDTOByPosts = postService.getPostEsDTOByPosts(list);
+        postEsDao.save(postEsDTOByPosts.get(0));
         long newPostId = post.getId();
         return R.ok(newPostId);
     }
@@ -87,6 +106,7 @@ public class PostController {
      * @return
      */
     @PostMapping("/delete")
+    @AuthCheck(mustRole = "login")
     public R deletePost(@RequestBody DeleteRequest deleteRequest, HttpServletRequest request) {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
@@ -101,6 +121,11 @@ public class PostController {
             throw new BusinessException(TxCodeEnume.COMMON_NOT_PERM_EXCEPTION);
         }
         boolean b = postService.removeById(id);
+        if (b) {
+            CompletableFuture.runAsync(() -> {
+                String delete = elasticsearchRestTemplate.delete(String.valueOf(id), PostEsDTO.class);
+            });
+        }
         return R.ok(b);
     }
 
@@ -118,10 +143,10 @@ public class PostController {
         }
         Post post = new Post();
         BeanUtils.copyProperties(postUpdateRequest, post);
-        List<String> tags = postUpdateRequest.getTags();
-        if (tags != null) {
-            post.setTags(GSON.toJson(tags));
-        }
+//        List<String> tags = postUpdateRequest.getTags();
+//        if (tags != null) {
+//            post.setTags(GSON.toJson(tags));
+//        }
         // 参数校验
         postService.validPost(post, false);
         long id = postUpdateRequest.getId();
@@ -129,6 +154,7 @@ public class PostController {
         Post oldPost = postService.getById(id);
         ThrowUtils.throwIf(oldPost == null, TxCodeEnume.COMMON_TARGET_NOT_EXIST_EXCEPTION);
         boolean result = postService.updateById(post);
+        incSyncPostToEs.run();
         return R.ok(result);
     }
 
@@ -159,7 +185,7 @@ public class PostController {
      */
     @PostMapping("/list/page/vo")
     public R listPostVOByPage(@RequestBody PostQueryRequest postQueryRequest,
-            HttpServletRequest request) {
+                              HttpServletRequest request) {
         long current = postQueryRequest.getCurrent();
         long size = postQueryRequest.getPageSize();
         // 限制爬虫
@@ -178,7 +204,7 @@ public class PostController {
      */
     @PostMapping("/my/list/page/vo")
     public R listMyPostVOByPage(@RequestBody PostQueryRequest postQueryRequest,
-            HttpServletRequest request) {
+                                HttpServletRequest request) {
         if (postQueryRequest == null) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
@@ -204,12 +230,14 @@ public class PostController {
      */
     @PostMapping("/search/page/vo")
     public R searchPostVOByPage(@RequestBody PostQueryRequest postQueryRequest,
-            HttpServletRequest request) {
+                                HttpServletRequest request) {
         long size = postQueryRequest.getPageSize();
         // 限制爬虫
         ThrowUtils.throwIf(size > 20, TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
-        Page<Post> postPage = postService.searchFromEs(postQueryRequest);
-        return R.ok(postService.getPostVOPage(postPage, request));
+        Page<PostEsDTO> postPage = postService.searchFromEs(postQueryRequest);
+        PageUtils pageUtils = new PageUtils(postPage);
+//        return R.ok(postService.getPostVOPage(postPage, request));
+        return R.ok(pageUtils);
     }
 
     /**
@@ -243,6 +271,18 @@ public class PostController {
         }
         boolean result = postService.updateById(post);
         return R.ok(result);
+    }
+
+    /**
+     * 更新时获取文章原数据
+     */
+    @GetMapping("/update/vo/get")
+    public R getPostUpdateVO(@RequestParam("id") Long id) {
+        Post post = postService.getById(id);
+        ThrowUtils.throwIf(post == null, TxCodeEnume.COMMON_TARGET_NOT_EXIST_EXCEPTION);
+        PostUpdateVO postUpdateVO = new PostUpdateVO();
+        BeanUtils.copyProperties(post, postUpdateVO);
+        return R.ok(postUpdateVO);
     }
 
 }
