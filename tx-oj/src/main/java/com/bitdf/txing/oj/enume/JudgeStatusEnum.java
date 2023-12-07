@@ -14,18 +14,20 @@ public enum JudgeStatusEnum {
     WAITTING("等待中", 0),
     JUDGEING("判题中", 1),
     SUCCESS("成功", 2),
-    FAILURE("失败", 3);
+    FAILURE("失败", 3),
+    EMIT_MQ_FAILURE("系统异常", 4);
 
     String text;
     Integer value;
 
     /**
      * 根据value获取枚举
+     *
      * @param value
      * @return
      */
     public static JudgeStatusEnum getByValue(Integer value) {
-        if(ObjectUtils.isEmpty(value)) {
+        if (ObjectUtils.isEmpty(value)) {
             return null;
         }
         for (JudgeStatusEnum anEnum : JudgeStatusEnum.values()) {
@@ -43,4 +45,4 @@ public enum JudgeStatusEnum {
     public Integer getValue() {
         return value;
     }
-}
+    }

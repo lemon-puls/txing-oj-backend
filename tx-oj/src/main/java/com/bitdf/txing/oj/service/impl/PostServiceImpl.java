@@ -190,7 +190,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
             boolQueryBuilder.should(QueryBuilders.matchQuery("title", searchText));
 //            boolQueryBuilder.should(QueryBuilders.matchQuery("description", searchText));
             boolQueryBuilder.should(QueryBuilders.matchQuery("intro", searchText));
-            boolQueryBuilder.should(QueryBuilders.matchQuery("content", searchText));
+//            boolQueryBuilder.should(QueryBuilders.matchQuery("content", searchText));
             boolQueryBuilder.minimumShouldMatch(1);
         }
         // 按标题检索
@@ -262,7 +262,8 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
                             }
                         }
                         resourceList.add(esDTO);
-                    } else {
+                    }
+                    else {
                         // 从 es 清空 db 已物理删除的数据
                         String delete = elasticsearchRestTemplate.delete(String.valueOf(searchHit.getContent().getId()), PostEsDTO.class);
                         log.info("delete post {}", delete);

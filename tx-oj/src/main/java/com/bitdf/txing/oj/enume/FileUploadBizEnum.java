@@ -3,6 +3,7 @@ package com.bitdf.txing.oj.enume;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.apache.commons.lang3.ObjectUtils;
 
 /**
@@ -16,7 +17,8 @@ public enum FileUploadBizEnum {
 
     USER_AVATAR("用户头像", "user_avatar"),
     POST_COVER_IMG("文章封面图", "post_cover"),
-    POST_CONTENT_IMG("文章内容图", "post_content_img");
+    POST_CONTENT_IMG("文章内容图", "post_content_img"),
+    COMMON_IMG("普通图片", "common");
 
     private final String text;
 

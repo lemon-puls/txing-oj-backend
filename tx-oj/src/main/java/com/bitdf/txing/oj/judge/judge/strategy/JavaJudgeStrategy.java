@@ -38,7 +38,7 @@ public class JavaJudgeStrategy implements JudgeStrategy {
 
         // 依次判断每一项输出和预期输出是否相等
         for (int i = 0; i < outputs.size(); i++) {
-            if (!outputs.get(i).equals(judgeCaseList.get(i).getOutput())) {
+            if (!outputs.get(i).trim().equals(judgeCaseList.get(i).getOutput())) {
                 judgeInfo.setMessage(JudgeMessageEnum.WRONG_ANSWER.getValue());
                 // 计算通过用例比例
                 Float acceptedRate = (float) i / inputs.size();

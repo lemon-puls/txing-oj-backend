@@ -38,8 +38,8 @@ public class DeleteImgFromOss {
     /**
      * 每天凌晨两点执行 删除废弃的图片
      */
-    @Scheduled(fixedRate = 60 * 1000)
-//    @Scheduled(cron = "0 0 2 * * ?")
+//    @Scheduled(fixedRate = 60 * 1000)
+    @Scheduled(cron = "0 0 2 * * ?")
     public void run() {
 
         // 删除oj:post:content:imgs:add中所有过期图片
@@ -87,6 +87,10 @@ public class DeleteImgFromOss {
                     String s = new String(cursor.next(), "Utf-8");
                     String postId = s.substring(s.lastIndexOf(":") + 1);
                     Post post = postService.getById(postId);
+                    if (post == null) {
+                        Boolean delete = stringRedisTemplate.delete(s);
+                        continue;
+                    }
                     List<String> collect = CustomStringUtils.getImgUrlsFromMd(post.getContent(), "https", true);
                     BoundHashOperations<String, String, String> imgsHashOps =
                             stringRedisTemplate.boundHashOps(RedisKeyConstant.POST_CONTENT_IMGS_UPDATE + postId);
@@ -115,7 +119,7 @@ public class DeleteImgFromOss {
                         // 删除oss中图片
                         cosManager.deleteOjects(needDeleteImgKeys);
                     }
-                    if(!needDeleteImgUrls.isEmpty()) {
+                    if (!needDeleteImgUrls.isEmpty()) {
                         // 删除Redis中记录
                         Long delete = imgsHashOps.delete(needDeleteImgUrls.toArray());
                     }

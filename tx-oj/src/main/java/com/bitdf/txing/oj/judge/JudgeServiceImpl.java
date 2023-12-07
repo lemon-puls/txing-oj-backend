@@ -157,18 +157,18 @@ public class JudgeServiceImpl implements JudgeService {
         }
         // 9) 修改用户个人提交次数等信息
         // 计算该用户刷题数
-        User loginUser = AuthInterceptor.userThreadLocal.get();
+//        User loginUser = AuthInterceptor.userThreadLocal.get();
 
 //        long count1 = questionSubmitService.count(new QueryWrapper<QuestionSubmit>().lambda()
 //                .eq(QuestionSubmit::getUserId, loginUser.getId()));
         QueryWrapper<QuestionSubmit> wrapper = new QueryWrapper<>();
-        wrapper.lambda().eq(QuestionSubmit::getUserId, loginUser.getId())
+        wrapper.lambda().eq(QuestionSubmit::getUserId, questionSubmit.getUserId())
                 .eq(QuestionSubmit::getQuestionId, question.getId())
                 .ge(QuestionSubmit::getExceedPercent, 0);
 //                .groupBy(QuestionSubmit::getQuestionId).having("question = max(qustionId)").select(QuestionSubmit::getQuestionId);
         long count = questionSubmitService.count(wrapper);
         UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
-        updateWrapper.lambda().eq(User::getId, loginUser.getId())
+        updateWrapper.lambda().eq(User::getId, questionSubmit.getUserId())
                 .setSql("submit_count = submit_count + 1")
                 .setSql(isAccepted, "accepted_count = accepted_count + 1")
                 .setSql(count == 1 && isAccepted, "question_count = question_count + 1");

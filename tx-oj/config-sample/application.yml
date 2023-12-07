@@ -46,6 +46,25 @@ spring:
 #  jackson:
 #    date-format: yyyy-MM-dd HH:mm:ss
 #    time-zone: GMT+8
+  rabbitmq:
+    virtual-host: /
+    host: 127.0.0.1
+    port: 5672
+    username: root
+    password: 123456
+    #确认消息已发送到交换机(Exchange)
+    publisher-confirm-type: correlated
+    #确认消息已发送到队列(Queue)
+    publisher-returns: true
+    #    开启强制消息投递（mandatory为设置为true），但消息未被路由至任何一个queue，则回退一条消息到RabbitTemplate:
+    #      ReturnCallback中的returnedMessage方法
+    template:
+      mandatory: true
+    # 手动确认
+    listener:
+      simple:
+        acknowledge-mode: manual
+#        prefetch: 10 #每次从队列中取一个,轮询分发，默认是公平分发
 server:
   address: 0.0.0.0
   port: 8121

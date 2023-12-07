@@ -18,6 +18,7 @@ import com.bitdf.txing.oj.service.QuestionService;
 import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.bitdf.txing.oj.utils.page.PageVO;
 import com.bitdf.txing.oj.utils.page.Query;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +27,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.service.QuestionSubmitService;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -40,6 +42,8 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
     QuestionService questionService;
     @Autowired
     JudgeService judgeService;
+    @Autowired
+    RabbitTemplate rabbitTemplate;
 
     @Override
     public PageUtils queryPage(PageVO pageVO) {
@@ -83,11 +87,13 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         questionSubmit.setStatus(JudgeStatusEnum.WAITTING.getValue());
         questionSubmit.setJudgeInfo("{}");
         this.save(questionSubmit);
-        // 执行判题服务
-        CompletableFuture.runAsync(() -> {
-            AuthInterceptor.userThreadLocal.set(loginUser);
-            judgeService.doJudge(questionSubmit.getId());
-        });
+//        // 执行判题服务
+//        CompletableFuture.runAsync(() -> {
+//            AuthInterceptor.userThreadLocal.set(loginUser);
+//            judgeService.doJudge(questionSubmit.getId());
+//        });
+        rabbitTemplate.convertAndSend("judge.exchange", "submit.and.judge",
+                questionSubmit.getId(), new CorrelationData(questionSubmit.getId().toString()));
         return questionSubmit.getId();
     }
 

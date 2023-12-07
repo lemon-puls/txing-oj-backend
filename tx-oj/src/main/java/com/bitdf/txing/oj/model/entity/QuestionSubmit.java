@@ -35,7 +35,7 @@ public class QuestionSubmit {
      */
     private String judgeInfo;
     /**
-     * 判题状态 0：待判题 1： 判题中 2：成功 3：失败
+     * 判题状态 0：待判题 1： 判题中 2：成功 3：失败 4: 发送到mq失败
      */
     private Integer status;
     /**

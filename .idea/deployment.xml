@@ -6,6 +6,7 @@
         <serverdata>
           <mappings>
             <mapping deploy="/root/javaProject" local="$PROJECT_DIR$/tx-code-sandbox" web="/" />
+            <mapping deploy="/root/txing-oj" local="$PROJECT_DIR$/tx-oj" web="/" />
           </mappings>
         </serverdata>
       </paths>

@@ -51,7 +51,6 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
             // 处理fixedTags
             addTagsCondition(wrapper, queryVO, "fixedTags");
         }
-        System.out.println(wrapper.getSqlSegment());
         // tags、fixedTags需要特殊处理 排除自动拼接条件
         Set<String> excludeFields = new HashSet<>();
         excludeFields.add("tags");
