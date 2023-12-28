@@ -118,7 +118,7 @@ public class JavaDockerCodeSandBox extends CodeSandBoxTemplate {
                 public void onNext(Statistics statistics) {
                     Long usage = statistics.getMemoryStats().getUsage();
                     maxMemorry[0] = usage != null ? Math.max(usage, maxMemorry[0]) : maxMemorry[0];
-                    log.info("内存占用：{}", maxMemorry[0]);
+                    log.error("内存占用：{}", maxMemorry[0]);
                 }
 
                 @Override

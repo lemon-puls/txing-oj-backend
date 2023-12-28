@@ -26,12 +26,12 @@ public class CommonTest {
     @Autowired
     StringRedisTemplate stringRedisTemplate;
 
-//    @Autowired
-//    TableGenerator tableGenerator;
-//    @Test
-//    void createTable() throws SQLException {
-//        tableGenerator.generateTable();
-//    }
+    @Autowired
+    TableGenerator tableGenerator;
+    @Test
+    void createTable() throws SQLException {
+        tableGenerator.generateTable();
+    }
 
     @Test
     void toJSON() {
