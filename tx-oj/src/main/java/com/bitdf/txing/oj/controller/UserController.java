@@ -1,17 +1,15 @@
 package com.bitdf.txing.oj.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.common.DeleteRequest;
 import com.bitdf.txing.oj.constant.UserConstant;
-import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.model.dto.user.*;
-import com.bitdf.txing.oj.model.entity.QuestionSubmit;
-import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.UserVO;
 import com.bitdf.txing.oj.service.QuestionSubmitService;
@@ -22,15 +20,10 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import com.bitdf.txing.oj.utils.R;
 import lombok.extern.slf4j.Slf4j;
-import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
-import me.chanjar.weixin.common.bean.oauth2.WxOAuth2AccessToken;
-import me.chanjar.weixin.mp.api.WxMpService;
 import org.apache.commons.lang3.StringUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
@@ -40,7 +33,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**

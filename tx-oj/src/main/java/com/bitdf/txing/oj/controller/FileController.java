@@ -4,12 +4,12 @@ import cn.hutool.core.io.FileUtil;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.constant.FileConstant;
 import com.bitdf.txing.oj.constant.RedisKeyConstant;
-import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.manager.CosManager;
 import com.bitdf.txing.oj.model.dto.file.UploadFileRequest;
-import com.bitdf.txing.oj.model.entity.User;
-import com.bitdf.txing.oj.enume.FileUploadBizEnum;
+import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.FileUploadBizEnum;
 import com.bitdf.txing.oj.service.UserService;
 
 import java.io.File;

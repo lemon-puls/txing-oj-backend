@@ -1,6 +1,6 @@
 package com.bitdf.txing.oj.exception;
 
-import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 
 /**
  * 自定义异常类

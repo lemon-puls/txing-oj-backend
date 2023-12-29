@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.bitdf.txing.oj.model.entity.Post;
 import com.bitdf.txing.oj.model.entity.PostFavour;
-import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.entity.user.User;
 
 /**
  * 帖子收藏服务

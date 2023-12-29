@@ -1,12 +1,11 @@
 package com.bitdf.txing.oj.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
-import com.bitdf.txing.oj.aop.AuthInterceptor;
-import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.mapper.QuestionCommentMapper;
 import com.bitdf.txing.oj.model.entity.QuestionComment;
-import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.question.QuestionCommentVO;
 import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.utils.RedisUtils;
@@ -24,7 +23,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.service.QuestionCommentService;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.stream.Collectors;
 

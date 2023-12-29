@@ -1,17 +1,15 @@
 package com.bitdf.txing.oj.judge.codesandbox;
 
 import cn.hutool.http.HttpUtil;
-import cn.hutool.json.JSON;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
-import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.judge.codesandbox.dto.ExecCodeRequest;
 import com.bitdf.txing.oj.judge.codesandbox.dto.ExecCodeResponse;
 import com.bitdf.txing.oj.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
 /**

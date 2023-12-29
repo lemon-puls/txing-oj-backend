@@ -1,9 +1,9 @@
 package com.bitdf.txing.oj.controller;
 
-import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
-import com.bitdf.txing.oj.model.dto.postthumb.PostThumbAddRequest;
-import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.dto.question.postthumb.PostThumbAddRequest;
+import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.service.PostThumbService;
 import com.bitdf.txing.oj.service.UserService;
 import javax.annotation.Resource;

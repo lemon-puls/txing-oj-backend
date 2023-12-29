@@ -1,7 +1,7 @@
 package com.bitdf.txing.oj.model.vo.question;
 
 import cn.hutool.json.JSONUtil;
-import com.bitdf.txing.oj.enume.JudgeStatusEnum;
+import com.bitdf.txing.oj.model.enume.JudgeStatusEnum;
 import com.bitdf.txing.oj.judge.JudgeInfo;
 import com.bitdf.txing.oj.model.entity.Question;
 import com.bitdf.txing.oj.model.entity.QuestionSubmit;

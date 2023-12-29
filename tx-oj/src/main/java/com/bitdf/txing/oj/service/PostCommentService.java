@@ -2,8 +2,7 @@ package com.bitdf.txing.oj.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.bitdf.txing.oj.model.entity.PostComment;
-import com.bitdf.txing.oj.model.entity.PostFavour;
-import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.post.PostCommentVO;
 import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.bitdf.txing.oj.utils.page.PageVO;

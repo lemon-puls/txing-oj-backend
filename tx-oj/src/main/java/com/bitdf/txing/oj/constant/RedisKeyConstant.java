@@ -7,6 +7,8 @@ package com.bitdf.txing.oj.constant;
  */
 public class RedisKeyConstant {
 
+    public static final String BASE_KEY = "oj:";
+
     /**
      * 问题评论点赞
      */
@@ -20,4 +22,13 @@ public class RedisKeyConstant {
      */
     public static final String POST_CONTENT_IMGS_ADD = "oj:post:content:imgs:add";
     public static final String POST_CONTENT_IMGS_UPDATE = "oj:post:content:imgs:update:";
+    /**
+     * 房间详情
+     */
+    public static final String ROOM_INFO = "roomInfo:roomId_%d";
+
+
+    public static String getKey(String key, Object... objects) {
+        return BASE_KEY + String.format(key, objects);
+    }
 }

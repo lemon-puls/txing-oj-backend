@@ -1,6 +1,6 @@
 package com.bitdf.txing.oj.service;
 
-import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.entity.user.User;
 import javax.annotation.Resource;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;

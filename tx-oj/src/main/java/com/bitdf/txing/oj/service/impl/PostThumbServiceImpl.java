@@ -2,12 +2,12 @@ package com.bitdf.txing.oj.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.mapper.PostThumbMapper;
 import com.bitdf.txing.oj.model.entity.Post;
 import com.bitdf.txing.oj.model.entity.PostThumb;
-import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.service.PostService;
 import com.bitdf.txing.oj.service.PostThumbService;
 import javax.annotation.Resource;

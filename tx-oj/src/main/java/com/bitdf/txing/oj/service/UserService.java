@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.bitdf.txing.oj.model.dto.user.UserModifyPwdRequest;
 import com.bitdf.txing.oj.model.dto.user.UserQueryRequest;
-import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.UserVO;
 import java.util.List;

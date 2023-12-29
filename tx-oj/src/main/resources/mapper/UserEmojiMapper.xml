@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bitdf.txing.oj.mapper.UserEmojiMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.bitdf.txing.oj.model.entity.user.UserEmoji" id="userEmojiMap">
+        <result property="id" column="id"/>
+        <result property="userId" column="user_id"/>
+        <result property="emojiUrl" column="emoji_url"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="isDelete" column="is_delete"/>
+    </resultMap>
+
+
+</mapper>

@@ -2,13 +2,13 @@ package com.bitdf.txing.oj.service.impl;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
-import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.mapper.QuestionFavourMapper;
 import com.bitdf.txing.oj.model.entity.Question;
 import com.bitdf.txing.oj.model.entity.QuestionFavour;
-import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.question.QuestionVO;
 import com.bitdf.txing.oj.service.QuestionService;
 import com.bitdf.txing.oj.utils.page.PageUtils;

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.bitdf.txing.oj.model.entity.chat.msg.MessageExtra;
 import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -18,6 +19,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @TableName(value = "tx_oj_message")
 public class Message {
     /**

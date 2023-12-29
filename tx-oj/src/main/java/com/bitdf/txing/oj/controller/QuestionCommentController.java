@@ -1,26 +1,22 @@
 package com.bitdf.txing.oj.controller;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.alibaba.fastjson.JSON;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.constant.RedisKeyConstant;
-import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.model.dto.question.QuestionCommentAddRequest;
 import com.bitdf.txing.oj.model.entity.QuestionComment;
-import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.question.QuestionCommentVO;
 import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.utils.R;
 import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.bitdf.txing.oj.utils.page.PageVO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundSetOperations;

@@ -1,7 +1,7 @@
 package com.bitdf.txing.oj.judge.judge.strategy;
 
 import cn.hutool.json.JSONUtil;
-import com.bitdf.txing.oj.enume.JudgeMessageEnum;
+import com.bitdf.txing.oj.model.enume.JudgeMessageEnum;
 import com.bitdf.txing.oj.judge.JudgeInfo;
 import com.bitdf.txing.oj.judge.judge.JudgeContext;
 import com.bitdf.txing.oj.model.dto.question.JudgeCase;

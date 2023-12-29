@@ -2,9 +2,9 @@ package com.bitdf.txing.oj.service.impl;
 
 import cn.hutool.json.JSONUtil;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
-import com.bitdf.txing.oj.enume.LanguageEnum;
-import com.bitdf.txing.oj.enume.JudgeStatusEnum;
-import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.enume.LanguageEnum;
+import com.bitdf.txing.oj.model.enume.JudgeStatusEnum;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.judge.JudgeInfo;
 import com.bitdf.txing.oj.judge.JudgeService;
@@ -12,7 +12,7 @@ import com.bitdf.txing.oj.mapper.QuestionSubmitMapper;
 import com.bitdf.txing.oj.model.dto.submit.QuestionSubmitDoRequest;
 import com.bitdf.txing.oj.model.entity.Question;
 import com.bitdf.txing.oj.model.entity.QuestionSubmit;
-import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.question.QuestionSubmitSimpleVO;
 import com.bitdf.txing.oj.service.QuestionService;
 import com.bitdf.txing.oj.utils.page.PageUtils;
@@ -21,7 +21,6 @@ import com.bitdf.txing.oj.utils.page.Query;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -29,9 +28,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.service.QuestionSubmitService;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 

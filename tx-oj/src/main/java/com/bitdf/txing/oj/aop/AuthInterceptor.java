@@ -1,10 +1,10 @@
 package com.bitdf.txing.oj.aop;
 
 import com.bitdf.txing.oj.annotation.AuthCheck;
-import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
-import com.bitdf.txing.oj.model.entity.User;
-import com.bitdf.txing.oj.enume.UserRoleEnum;
+import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.UserRoleEnum;
 import com.bitdf.txing.oj.service.UserService;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;

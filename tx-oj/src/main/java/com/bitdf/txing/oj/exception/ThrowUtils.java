@@ -1,6 +1,6 @@
 package com.bitdf.txing.oj.exception;
 
-import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 
 /**
  * 抛异常工具类
@@ -42,5 +42,15 @@ public class ThrowUtils {
      */
     public static void throwIf(boolean condition, TxCodeEnume errorCode, String message) {
         throwIf(condition, new BusinessException(errorCode, message));
+    }
+
+    /**
+     * 条件成立则抛异常
+     *
+     * @param condition
+     * @param message
+     */
+    public static void throwIf(boolean condition, String message) {
+        throwIf(condition, new BusinessException(TxCodeEnume.COMMON_CUSTOM_EXCEPTION.getCode(), message));
     }
 }

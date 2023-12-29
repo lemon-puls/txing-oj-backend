@@ -2,7 +2,7 @@ package com.bitdf.txing.oj.service;
 
 import com.bitdf.txing.oj.model.entity.PostThumb;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.entity.user.User;
 
 /**
  * 帖子点赞服务

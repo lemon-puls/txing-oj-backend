@@ -1,37 +1,28 @@
 package com.bitdf.txing.oj.controller;
 
-import co.elastic.clients.elasticsearch.core.UpdateRequest;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
-import com.bitdf.txing.oj.constant.RedisKeyConstant;
-import com.bitdf.txing.oj.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.esdao.PostEsDao;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.model.dto.post.PostCommentAddRequest;
-import com.bitdf.txing.oj.model.dto.question.QuestionCommentAddRequest;
 import com.bitdf.txing.oj.model.entity.Post;
 import com.bitdf.txing.oj.model.entity.PostComment;
-import com.bitdf.txing.oj.model.entity.QuestionComment;
-import com.bitdf.txing.oj.model.entity.User;
+import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.post.PostCommentVO;
-import com.bitdf.txing.oj.model.vo.question.QuestionCommentVO;
 import com.bitdf.txing.oj.service.PostCommentService;
 import com.bitdf.txing.oj.service.PostService;
-import com.bitdf.txing.oj.service.QuestionCommentService;
 import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.utils.R;
 import com.bitdf.txing.oj.utils.RedisUtils;
 import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.bitdf.txing.oj.utils.page.PageVO;
 import lombok.extern.slf4j.Slf4j;
-import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
-import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
-import org.springframework.data.elasticsearch.core.query.UpdateQuery;
 import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,7 +30,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**

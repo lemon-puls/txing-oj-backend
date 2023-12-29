@@ -1,8 +1,7 @@
 package com.bitdf.txing.oj.judge.judge;
 
-import com.bitdf.txing.oj.enume.LanguageEnum;
+import com.bitdf.txing.oj.model.enume.LanguageEnum;
 import com.bitdf.txing.oj.judge.JudgeInfo;
-import com.bitdf.txing.oj.judge.judge.strategy.DefaultJudgeStrategy;
 import com.bitdf.txing.oj.judge.judge.strategy.JudgeStrategy;
 import com.bitdf.txing.oj.utils.SpringContextUtils;
 
