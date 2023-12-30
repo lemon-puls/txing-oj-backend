@@ -3,6 +3,7 @@ package com.bitdf.txing.oj;
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
 import com.bitdf.txing.oj.annotation.AuthCheck;
+import com.bitdf.txing.oj.chat.service.cache.GroupMemberCache;
 import com.bitdf.txing.oj.model.dto.question.JudgeConfig;
 import com.google.gson.Gson;
 import com.lemon.util.service.TableGenerator;
@@ -28,9 +29,20 @@ public class CommonTest {
 
     @Autowired
     TableGenerator tableGenerator;
+
     @Test
     void createTable() throws SQLException {
         tableGenerator.generateTable();
+    }
+
+    @Autowired
+    GroupMemberCache groupMemberCache;
+
+    @Test
+    void testCache() {
+        for (int i = 0; i < 5; i++) {
+            System.out.println(groupMemberCache.getRoomMemberCount(2L));
+        }
     }
 
     @Test

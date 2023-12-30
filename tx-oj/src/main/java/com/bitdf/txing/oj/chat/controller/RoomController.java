@@ -74,7 +74,6 @@ public class RoomController {
     @RequestMapping("/delete")
     public R delete(@RequestBody Long[] ids) {
         roomService.removeByIds(Arrays.asList(ids));
-
         return R.ok();
     }
 

@@ -89,7 +89,7 @@ public class UserApplyServiceImpl extends ServiceImpl<UserApplyMapper, UserApply
         lambdaUpdate().set(UserApply::getStatus, UserApplyStatusEnum.AGREE.getCode())
                 .eq(UserApply::getId, applyId).update();
         // 创建双方好友关系
-        userFriendService.createFriendRelate(userId, userApply.getTargetId());
+        userFriendService.createFriendRelate(userId, userApply.getUserId());
         // 创建聊天房间
         RoomFriend roomFriend = roomService.createRoomAndRoomFriend(Arrays.asList(userId, userApply.getTargetId()));
         // 同意后发送一条招呼语 我们已经是好友啦，开始聊天吧！

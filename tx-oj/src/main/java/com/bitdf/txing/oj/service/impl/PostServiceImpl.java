@@ -19,7 +19,7 @@ import com.bitdf.txing.oj.model.entity.PostFavour;
 import com.bitdf.txing.oj.model.entity.PostThumb;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.post.PostVO;
-import com.bitdf.txing.oj.model.vo.UserVO;
+import com.bitdf.txing.oj.model.vo.user.UserVO;
 import com.bitdf.txing.oj.service.PostService;
 import com.bitdf.txing.oj.service.UserService;
 

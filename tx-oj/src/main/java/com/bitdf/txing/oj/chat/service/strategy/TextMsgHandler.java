@@ -50,7 +50,7 @@ public class TextMsgHandler extends AbstractMsghandler<TextMessageRequest> {
      * @return
      */
     @Override
-    Object showMsg(Message message) {
+    public Object showMsg(Message message) {
         TextMessageResponse response = new TextMessageResponse();
         response.setContent(message.getContent());
         response.setAtUserIds(Optional.ofNullable(message.getExtra()).map(MessageExtra::getAtUserIds).orElse(null));

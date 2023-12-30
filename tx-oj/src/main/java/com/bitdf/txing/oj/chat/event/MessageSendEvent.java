@@ -1,4 +1,4 @@
-package com.bitdf.txing.oj.event;
+package com.bitdf.txing.oj.chat.event;
 
 import lombok.Getter;
 import org.springframework.context.ApplicationEvent;

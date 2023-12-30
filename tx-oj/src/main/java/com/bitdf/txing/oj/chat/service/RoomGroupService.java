@@ -11,6 +11,7 @@ import com.bitdf.txing.oj.model.entity.chat.RoomGroup;
  * @date 2023-12-28 10:48:15
  */
 public interface RoomGroupService extends IService<RoomGroup> {
+    RoomGroup getByRoomId(Long roomId);
 
 //    PageUtils queryPage(Map<String, Object> params);
 }

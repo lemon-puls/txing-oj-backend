@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Date;
 import java.util.List;
 
 
@@ -60,5 +61,16 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
         Room insert = ChatAdapter.buildRoom(friend);
         this.save(insert);
         return insert;
+    }
+
+    /**
+     * 更新房间的最新消息及时间
+     */
+    @Override
+    public void refreshActiveMsgAndTime(Long roomId, Long msgId, Date createTime) {
+        lambdaUpdate().eq(Room::getId, roomId)
+                .set(Room::getMsgId, msgId)
+                .set(Room::getActiveTime, createTime)
+                .update();
     }
 }

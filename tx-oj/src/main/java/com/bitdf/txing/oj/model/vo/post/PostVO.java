@@ -1,6 +1,6 @@
 package com.bitdf.txing.oj.model.vo.post;
 
-import com.bitdf.txing.oj.model.vo.UserVO;
+import com.bitdf.txing.oj.model.vo.user.UserVO;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.google.gson.Gson;
 import com.bitdf.txing.oj.model.entity.Post;

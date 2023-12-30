@@ -26,6 +26,10 @@ public class RedisKeyConstant {
      * 房间详情
      */
     public static final String ROOM_INFO = "roomInfo:roomId_%d";
+    /**
+     * 热门房间
+     */
+    public static final String HOT_ROOM_ZET = "hotRoom";
 
 
     public static String getKey(String key, Object... objects) {

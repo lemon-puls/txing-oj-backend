@@ -76,5 +76,5 @@ public abstract class AbstractMsghandler<request> {
      * @param message
      * @return
      */
-    abstract Object showMsg(Message message);
+    public abstract Object showMsg(Message message);
 }

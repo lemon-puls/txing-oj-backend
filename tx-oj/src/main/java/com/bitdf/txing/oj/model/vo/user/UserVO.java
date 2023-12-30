@@ -1,4 +1,4 @@
-package com.bitdf.txing.oj.model.vo;
+package com.bitdf.txing.oj.model.vo.user;
 
 import java.io.Serializable;
 import java.util.Date;

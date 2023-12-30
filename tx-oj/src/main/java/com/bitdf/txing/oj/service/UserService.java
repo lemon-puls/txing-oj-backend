@@ -5,8 +5,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.bitdf.txing.oj.model.dto.user.UserModifyPwdRequest;
 import com.bitdf.txing.oj.model.dto.user.UserQueryRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
-import com.bitdf.txing.oj.model.vo.LoginUserVO;
-import com.bitdf.txing.oj.model.vo.UserVO;
+import com.bitdf.txing.oj.model.vo.user.LoginUserVO;
+import com.bitdf.txing.oj.model.vo.user.UserVO;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
@@ -123,4 +123,6 @@ public interface UserService extends IService<User> {
     boolean modifyPwd(UserModifyPwdRequest userModifyPwdRequest);
 
     User getLoginUserNoThrow(HttpServletRequest request);
+
+    List<User> getFriendsByIds(List<Long> friendIds);
 }

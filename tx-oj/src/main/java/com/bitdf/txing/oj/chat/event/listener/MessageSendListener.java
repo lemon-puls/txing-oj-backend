@@ -1,7 +1,10 @@
-package com.bitdf.txing.oj.event.listener;
+package com.bitdf.txing.oj.chat.event.listener;
 
-import com.bitdf.txing.oj.event.MessageSendEvent;
+import com.bitdf.txing.oj.chat.constant.ChatMqConstant;
+import com.bitdf.txing.oj.chat.event.MessageSendEvent;
+import com.bitdf.txing.oj.utils.MqProducer;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
@@ -15,10 +18,14 @@ import org.springframework.transaction.event.TransactionalEventListener;
 @Component
 public class MessageSendListener {
 
+    @Autowired
+    MqProducer mqProducer;
+
 
     @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT, classes = MessageSendEvent.class, fallbackExecution = true)
     public void messageRoute(MessageSendEvent event) {
         Long msgId = event.getMsgId();
         log.info("[处理消息发送事件]：msgId: {}", msgId);
+        mqProducer.sendMsg(ChatMqConstant.CHAT_EXCHANGE, ChatMqConstant.MESSAGE_SEND_ROUTING_KEY, msgId, msgId.toString());
     }
 }

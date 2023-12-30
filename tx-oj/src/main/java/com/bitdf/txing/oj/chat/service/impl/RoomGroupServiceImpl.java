@@ -10,6 +10,11 @@ import com.bitdf.txing.oj.chat.service.RoomGroupService;
 @Service("groupService")
 public class RoomGroupServiceImpl extends ServiceImpl<RoomGroupMapper, RoomGroup> implements RoomGroupService {
 
+    @Override
+    public RoomGroup getByRoomId(Long roomId) {
+        return lambdaQuery().eq(RoomGroup::getRoomId, roomId).one();
+    }
+
 //    @Override
 //    public PageUtils queryPage(Map<String, Object> params) {
 //        IPage<GroupEntity> page = this.page(

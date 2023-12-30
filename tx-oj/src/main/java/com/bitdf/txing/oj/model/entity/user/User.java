@@ -90,6 +90,12 @@ public class User implements Serializable {
      */
     private String personSign;
 
+    /**
+     * 在线状态 0:在线 1: 下线
+     */
+    @MysqlColumn(defaultValue = "0")
+    private Integer activeStatus;
+
 
     /**
      * 创建时间

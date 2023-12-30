@@ -10,8 +10,8 @@ import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.model.dto.user.*;
 import com.bitdf.txing.oj.model.entity.user.User;
-import com.bitdf.txing.oj.model.vo.LoginUserVO;
-import com.bitdf.txing.oj.model.vo.UserVO;
+import com.bitdf.txing.oj.model.vo.user.LoginUserVO;
+import com.bitdf.txing.oj.model.vo.user.UserVO;
 import com.bitdf.txing.oj.service.QuestionSubmitService;
 import com.bitdf.txing.oj.service.UserService;
 

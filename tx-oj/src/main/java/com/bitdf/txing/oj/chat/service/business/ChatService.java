@@ -1,6 +1,7 @@
 package com.bitdf.txing.oj.chat.service.business;
 
 import com.bitdf.txing.oj.chat.domain.vo.request.ChatMessageRequest;
+import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
 
 /**
  * @author Lizhiwei
@@ -9,4 +10,6 @@ import com.bitdf.txing.oj.chat.domain.vo.request.ChatMessageRequest;
  */
 public interface ChatService {
     Long sendMsg(ChatMessageRequest buildAgreeMessage, Long userId);
+
+    ChatMessageVO getMessageVO(Long msgId, Long userId);
 }

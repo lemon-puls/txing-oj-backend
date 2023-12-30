@@ -3,7 +3,7 @@ package com.bitdf.txing.oj.model.vo.question;
 import cn.hutool.json.JSONUtil;
 import com.bitdf.txing.oj.model.dto.question.JudgeConfig;
 import com.bitdf.txing.oj.model.entity.Question;
-import com.bitdf.txing.oj.model.vo.UserVO;
+import com.bitdf.txing.oj.model.vo.user.UserVO;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 

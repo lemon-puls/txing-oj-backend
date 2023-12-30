@@ -15,8 +15,8 @@ import com.bitdf.txing.oj.model.dto.user.UserModifyPwdRequest;
 import com.bitdf.txing.oj.model.dto.user.UserQueryRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.enume.UserRoleEnum;
-import com.bitdf.txing.oj.model.vo.LoginUserVO;
-import com.bitdf.txing.oj.model.vo.UserVO;
+import com.bitdf.txing.oj.model.vo.user.LoginUserVO;
+import com.bitdf.txing.oj.model.vo.user.UserVO;
 import com.bitdf.txing.oj.service.UserService;
 
 import java.util.ArrayList;
@@ -325,5 +325,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         User currentUser = (User) userObj;
         return currentUser;
+    }
+
+    /**
+     * @param friendIds
+     * @return
+     */
+    @Override
+    public List<User> getFriendsByIds(List<Long> friendIds) {
+        return lambdaQuery().in(User::getId, friendIds)
+                .select(User::getId, User::getActiveStatus, User::getUserAvatar)
+                .list();
     }
 }
