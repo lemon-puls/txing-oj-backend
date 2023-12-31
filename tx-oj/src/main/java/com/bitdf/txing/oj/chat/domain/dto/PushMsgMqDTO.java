@@ -1,5 +1,6 @@
 package com.bitdf.txing.oj.chat.domain.dto;
 
+import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.WsBaseVO;
 import com.bitdf.txing.oj.chat.enume.WsPushTypeEnum;
 import lombok.AllArgsConstructor;
@@ -33,5 +34,11 @@ public class PushMsgMqDTO {
     public PushMsgMqDTO(WsBaseVO<?> wsBaseVO) {
         this.wsBaseVO = wsBaseVO;
         this.type = WsPushTypeEnum.ALL.getType();
+    }
+
+    public PushMsgMqDTO(WsBaseVO<ChatMessageVO> wsBaseVO, List<Long> targetUserIds) {
+        this.wsBaseVO = wsBaseVO;
+        this.userIds = targetUserIds;
+        this.type = WsPushTypeEnum.USER.getType();
     }
 }

@@ -16,5 +16,16 @@
         <result property="isDelete" column="is_delete"/>
     </resultMap>
 
+    <update id="updateOrCreateActiveTime">
+        insert into tx_oj_contact(`id`, `room_id`, `user_id`, `active_time`, `msg_id`)
+        values
+            <foreach collection="targetUserIds" item="userId" separator=",">
+                (null, #{roomId}, #{userId}, #{createTime}, #{msgId})
+            </foreach>
+        on DUPLICATE KEY UPDATE
+        `active_time` = values(active_time),
+        `msg_id` = values(msg_id)
+    </update>
+
 
 </mapper>

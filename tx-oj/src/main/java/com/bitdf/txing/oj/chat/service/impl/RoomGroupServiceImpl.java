@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.chat.service.RoomGroupService;
 
+import java.util.List;
+
 
 @Service("groupService")
 public class RoomGroupServiceImpl extends ServiceImpl<RoomGroupMapper, RoomGroup> implements RoomGroupService {
@@ -25,4 +27,9 @@ public class RoomGroupServiceImpl extends ServiceImpl<RoomGroupMapper, RoomGroup
 //        return new PageUtils(page);
 //    }
 
+
+    @Override
+    public List<RoomGroup> listByRoomIds(List<Long> roomIds) {
+        return lambdaQuery().in(RoomGroup::getRoomId, roomIds).list();
+    }
 }

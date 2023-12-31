@@ -31,6 +31,15 @@ public class RedisKeyConstant {
      */
     public static final String HOT_ROOM_ZET = "hotRoom";
 
+    /**
+     * RoomFriend and RoomGroup
+     * @param key
+     * @param objects
+     * @return
+     */
+    public static final String GROUP_INFO_STRING = "groupInfo:roomId_%d";
+    public static final String USER_STRING = "user:userid_%d";
+
 
     public static String getKey(String key, Object... objects) {
         return BASE_KEY + String.format(key, objects);

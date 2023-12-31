@@ -91,7 +91,7 @@ public class UserApplyServiceImpl extends ServiceImpl<UserApplyMapper, UserApply
         // 创建双方好友关系
         userFriendService.createFriendRelate(userId, userApply.getUserId());
         // 创建聊天房间
-        RoomFriend roomFriend = roomService.createRoomAndRoomFriend(Arrays.asList(userId, userApply.getTargetId()));
+        RoomFriend roomFriend = roomService.createRoomAndRoomFriend(Arrays.asList(userId, userApply.getUserId()));
         // 同意后发送一条招呼语 我们已经是好友啦，开始聊天吧！
         chatService.sendMsg(MessageAdapter.buildAgreeMessage(roomFriend.getRoomId()), userId);
     }

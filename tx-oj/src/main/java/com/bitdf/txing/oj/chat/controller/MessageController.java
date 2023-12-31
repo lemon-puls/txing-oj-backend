@@ -6,10 +6,13 @@ import java.util.Map;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.chat.domain.vo.request.ChatMessageRequest;
+import com.bitdf.txing.oj.chat.domain.vo.request.MessagePageRequest;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
 import com.bitdf.txing.oj.chat.service.business.ChatService;
 import com.bitdf.txing.oj.model.entity.chat.Message;
+import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.utils.R;
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -27,6 +30,7 @@ import com.bitdf.txing.oj.chat.service.MessageService;
  */
 @RestController
 @RequestMapping("chat/message")
+@Api(tags = "聊天-消息相关接口")
 public class MessageController {
     @Autowired
     private MessageService messageService;
@@ -44,15 +48,16 @@ public class MessageController {
     }
 
     /**
-     * 列表
+     * 分页查询（游标翻页）
      */
-//    @RequestMapping("/list")
-//    public R list(@RequestParam Map<String, Object> params){
-////        PageUtils page = messageService.queryPage(params);
-////
-////        return R.ok().put("page", page);
-//        return R.ok();
-//    }
+    @PostMapping("/list")
+    @ApiOperation("查询（游标翻页）")
+    @AuthCheck(mustRole = "login")
+    public R list(@RequestBody MessagePageRequest pageRequest){
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        CursorPageBaseVO<ChatMessageVO> cursorPageBaseVO = chatService.getMsgPageByCursor(pageRequest, userId);
+        return R.ok(cursorPageBaseVO);
+    }
 
 
     /**

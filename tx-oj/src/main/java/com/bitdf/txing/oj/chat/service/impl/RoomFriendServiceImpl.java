@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.chat.mapper.RoomFriendMapper;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 
 @Service("friendService")
 public class RoomFriendServiceImpl extends ServiceImpl<RoomFriendMapper, RoomFriend> implements RoomFriendService {
@@ -43,5 +45,17 @@ public class RoomFriendServiceImpl extends ServiceImpl<RoomFriendMapper, RoomFri
         RoomFriend roomFriend = ChatAdapter.buildRoomFriend(roomId, userId1, userId2);
         this.save(roomFriend);
         return roomFriend;
+    }
+
+    @Override
+    public RoomFriend getByRoomId(Long roomId) {
+        return lambdaQuery()
+                .eq(RoomFriend::getRoomId, roomId)
+                .one();
+    }
+
+    @Override
+    public List<RoomFriend> listByRoomIds(List<Long> roomIds) {
+        return lambdaQuery().in(RoomFriend::getRoomId, roomIds).list();
     }
 }

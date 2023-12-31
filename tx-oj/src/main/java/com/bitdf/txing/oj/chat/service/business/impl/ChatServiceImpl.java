@@ -2,20 +2,24 @@ package com.bitdf.txing.oj.chat.service.business.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.bitdf.txing.oj.chat.domain.vo.request.ChatMessageRequest;
+import com.bitdf.txing.oj.chat.domain.vo.request.MessagePageRequest;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
 import com.bitdf.txing.oj.chat.event.MessageSendEvent;
+import com.bitdf.txing.oj.chat.service.ContactService;
 import com.bitdf.txing.oj.chat.service.MessageService;
 import com.bitdf.txing.oj.chat.service.adapter.MessageAdapter;
 import com.bitdf.txing.oj.chat.service.business.ChatService;
 import com.bitdf.txing.oj.chat.service.strategy.AbstractMsghandler;
 import com.bitdf.txing.oj.chat.service.strategy.MsgHandlerFactory;
 import com.bitdf.txing.oj.model.entity.chat.Message;
+import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -30,6 +34,8 @@ public class ChatServiceImpl implements ChatService {
     ApplicationEventPublisher applicationEventPublisher;
     @Autowired
     MessageService messageService;
+    @Autowired
+    ContactService contactService;
 
     /**
      * 发送消息
@@ -69,6 +75,19 @@ public class ChatServiceImpl implements ChatService {
         return MessageAdapter.buildMessageVOBatch(messages, userId);
     }
 
-
-
+    /**
+     * 消息-游标翻页
+     * @param pageRequest
+     * @param userId
+     * @return
+     */
+    @Override
+    public CursorPageBaseVO<ChatMessageVO> getMsgPageByCursor(MessagePageRequest pageRequest, Long userId) {
+        Date lastMsgTime =  contactService.getUserContactLastMsgTime(pageRequest.getRoomId(), userId);
+        CursorPageBaseVO<Message> cursorPageBaseVO = messageService.getPageByCursor(pageRequest.getRoomId(), pageRequest, lastMsgTime);
+        if (cursorPageBaseVO.isEmpty()) {
+            return CursorPageBaseVO.empty();
+        }
+        return CursorPageBaseVO.init(cursorPageBaseVO, MessageAdapter.buildMessageVOBatch(cursorPageBaseVO.getList(), userId));
+    }
 }

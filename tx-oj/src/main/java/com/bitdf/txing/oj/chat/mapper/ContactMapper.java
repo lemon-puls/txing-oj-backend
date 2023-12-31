@@ -3,6 +3,10 @@ package com.bitdf.txing.oj.chat.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.bitdf.txing.oj.model.entity.chat.Contact;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.Date;
+import java.util.List;
 
 /**
  *
@@ -14,4 +18,6 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface ContactMapper extends BaseMapper<Contact> {
 
+    void updateOrCreateActiveTime(@Param("roomId") Long roomId, @Param("targetUserIds") List<Long> targetUserIds,
+                                  @Param("msgId") Long msgId, @Param("createTime") Date createTime);
 }

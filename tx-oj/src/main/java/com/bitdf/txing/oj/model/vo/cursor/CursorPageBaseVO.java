@@ -1,7 +1,9 @@
 package com.bitdf.txing.oj.model.vo.cursor;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.bitdf.txing.oj.model.entity.user.UserFriend;
 import com.bitdf.txing.oj.model.vo.user.FriendVO;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
@@ -41,5 +43,10 @@ public class CursorPageBaseVO<T> {
         cursorPageBaseVO.setIsLast(baseVO.getIsLast());
         cursorPageBaseVO.setList(list);
         return cursorPageBaseVO;
+    }
+
+    @JsonIgnore
+    public Boolean isEmpty() {
+        return CollectionUtil.isEmpty(list);
     }
 }

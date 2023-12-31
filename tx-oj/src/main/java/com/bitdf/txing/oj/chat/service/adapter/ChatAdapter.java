@@ -5,7 +5,9 @@ import com.bitdf.txing.oj.chat.domain.enume.RoomTypeEnum;
 import com.bitdf.txing.oj.model.entity.chat.Room;
 import com.bitdf.txing.oj.model.entity.chat.RoomFriend;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -45,5 +47,23 @@ public class ChatAdapter {
         roomFriend.setUserId2(userId2);
         roomFriend.setStatus(RoomFriendStatusEnum.ACTIVE.getCode());
         return roomFriend;
+    }
+
+    /**
+     *
+     * @param values
+     * @param userId
+     * @return
+     */
+    public static Set<Long> getFriendIdSet(Collection<RoomFriend> values, Long userId) {
+        Set<Long> collect = values.stream().map((roomFriend) -> {
+            return  getFriendId(roomFriend, userId);
+        }).collect(Collectors.toSet());
+        return collect;
+    }
+
+    public static Long getFriendId(RoomFriend roomFriend, Long userId) {
+        return roomFriend.getUserId1().equals(userId)
+                ? roomFriend.getUserId2() : roomFriend.getUserId1();
     }
 }
