@@ -7,13 +7,16 @@ import com.bitdf.txing.oj.chat.domain.vo.RoomBaseInfo;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatRoomVO;
 import com.bitdf.txing.oj.chat.service.ContactService;
 import com.bitdf.txing.oj.chat.service.MessageService;
-import com.bitdf.txing.oj.chat.service.RoomGroupService;
+import com.bitdf.txing.oj.chat.service.RoomFriendService;
+import com.bitdf.txing.oj.chat.service.RoomService;
 import com.bitdf.txing.oj.chat.service.adapter.ChatAdapter;
 import com.bitdf.txing.oj.chat.service.business.RoomAppService;
 import com.bitdf.txing.oj.chat.service.cache.HotRoomCache;
 import com.bitdf.txing.oj.chat.service.cache.RoomCache;
 import com.bitdf.txing.oj.chat.service.cache.RoomFriendCache;
 import com.bitdf.txing.oj.chat.service.cache.RoomGroupCache;
+import com.bitdf.txing.oj.chat.service.strategy.AbstractMsghandler;
+import com.bitdf.txing.oj.chat.service.strategy.MsgHandlerFactory;
 import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
 import com.bitdf.txing.oj.model.entity.chat.*;
 import com.bitdf.txing.oj.model.entity.user.User;
@@ -49,6 +52,10 @@ public class RoomAppServiceImpl implements RoomAppService {
     UserCache userCache;
     @Autowired
     MessageService messageService;
+    @Autowired
+    RoomService roomService;
+    @Autowired
+    RoomFriendService roomFriendService;
 
     @Override
     public CursorPageBaseVO<ChatRoomVO> getContactPageByCursor(CursorPageBaseRequest cursorPageBaseRequest, Long userId) {
@@ -75,7 +82,8 @@ public class RoomAppServiceImpl implements RoomAppService {
      * @param roomIds
      * @return
      */
-    private List<ChatRoomVO> buildContactResp(Long userId, List<Long> roomIds) {
+    @Override
+    public List<ChatRoomVO> buildContactResp(Long userId, List<Long> roomIds) {
         // 获取room基本信息
         Map<Long, RoomBaseInfo> roomBaseInfoMap = getRoomBaseInfoMap(roomIds, userId);
         // 获取最后一条消息
@@ -89,18 +97,35 @@ public class RoomAppServiceImpl implements RoomAppService {
         Map<Long, User> userMap = userCache.getBatch(fromUserIds);
         // 获取room未读消息数
         Map<Long, Integer> unReadCountMap = getUnReadCountMap(userId, roomIds);
-
-
+        return roomBaseInfoMap.values().stream().map(roomBaseInfo -> {
+                    ChatRoomVO chatRoomVO = new ChatRoomVO();
+                    chatRoomVO.setAvatar(roomBaseInfo.getAvatar());
+                    chatRoomVO.setRoomId(roomBaseInfo.getRoomId());
+                    chatRoomVO.setActiveTime(roomBaseInfo.getActiveTime());
+                    chatRoomVO.setHotFlag(roomBaseInfo.getHotFlag());
+                    chatRoomVO.setType(roomBaseInfo.getType());
+                    chatRoomVO.setName(roomBaseInfo.getName());
+                    Message message = messageMap.get(roomBaseInfo.getLastMsgId());
+                    if (Objects.nonNull(message)) {
+                        AbstractMsghandler msghandler = MsgHandlerFactory.getStrategyNoNull(message.getType());
+                        String text = msghandler.showContactMsg(message);
+                        chatRoomVO.setText(userMap.get(message.getFromUserId()).getUserName() + ":" + text);
+                    }
+                    chatRoomVO.setUnreadCount(unReadCountMap.getOrDefault(roomBaseInfo.getRoomId(), 0));
+                    return chatRoomVO;
+                }).sorted(Comparator.comparing(ChatRoomVO::getActiveTime).reversed())
+                .collect(Collectors.toList());
     }
 
     /**
      * 获取room未读数
+     *
      * @param userId
      * @param roomIds
      * @return
      */
     private Map<Long, Integer> getUnReadCountMap(Long userId, List<Long> roomIds) {
-        List<Contact> contacts =  contactService.getByRoomIds(roomIds, userId);
+        List<Contact> contacts = contactService.getByRoomIds(roomIds, userId);
         return contacts.parallelStream().map(contact -> {
             Integer unReadCount = messageService.getUnReadCount(contact.getRoomId(), contact.getReadTime());
             return Pair.of(contact.getRoomId(), unReadCount);
@@ -162,5 +187,33 @@ public class RoomAppServiceImpl implements RoomAppService {
     private Double getCursorOrNull(String cursor) {
         Double aDouble = Optional.ofNullable(cursor).map(Double::parseDouble).orElse(null);
         return aDouble;
+    }
+
+    /**
+     * 获取会话详情（By roomId）
+     *
+     * @param roomId
+     * @param userId
+     * @return
+     */
+    @Override
+    public ChatRoomVO getContactDetailByRoomId(Long roomId, Long userId) {
+        List<ChatRoomVO> chatRoomVOS = buildContactResp(userId, Collections.singletonList(roomId));
+        return chatRoomVOS.get(0);
+    }
+
+    /**
+     * 获取会话详情（By FriendId）
+     *
+     * @param userId
+     * @param friendId
+     * @return
+     */
+    @Override
+    public ChatRoomVO getContactDetailByFriendId(Long userId, Long friendId) {
+        List<Long> lists = ChatAdapter.sortUserIdList(Arrays.asList(userId, friendId));
+        RoomFriend roomFriend = roomFriendService.getByUserIds(lists.get(0), lists.get(1));
+        List<ChatRoomVO> chatRoomVOS = buildContactResp(userId, Collections.singletonList(roomFriend.getRoomId()));
+        return chatRoomVOS.get(0);
     }
 }

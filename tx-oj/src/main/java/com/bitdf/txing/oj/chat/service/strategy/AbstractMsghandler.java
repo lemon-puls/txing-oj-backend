@@ -77,4 +77,6 @@ public abstract class AbstractMsghandler<request> {
      * @return
      */
     public abstract Object showMsg(Message message);
+
+    public abstract String showContactMsg(Message message);
 }

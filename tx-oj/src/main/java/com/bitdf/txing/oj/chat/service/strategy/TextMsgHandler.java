@@ -56,4 +56,9 @@ public class TextMsgHandler extends AbstractMsghandler<TextMessageRequest> {
         response.setAtUserIds(Optional.ofNullable(message.getExtra()).map(MessageExtra::getAtUserIds).orElse(null));
         return response;
     }
+
+    @Override
+    public String showContactMsg(Message message) {
+        return message.getContent();
+    }
 }

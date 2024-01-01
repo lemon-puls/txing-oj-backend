@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 import java.util.Map;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -32,6 +33,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
 
     /**
      * 游标翻页
+     *
      * @param roomId
      * @param pageRequest
      * @param lastMsgTime
@@ -48,6 +50,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
 
     /**
      * 获取未读消息数目
+     *
      * @param roomId
      * @param readTime
      * @return
@@ -55,7 +58,7 @@ public class MessageServiceImpl extends ServiceImpl<MessageMapper, Message> impl
     @Override
     public Integer getUnReadCount(Long roomId, Date readTime) {
         return lambdaQuery().eq(Message::getRoomId, roomId)
-                .gt(Message::getCreateTime, readTime)
+                .gt(readTime != null, Message::getCreateTime, readTime)
                 .count();
     }
 }

@@ -11,6 +11,7 @@ import com.bitdf.txing.oj.chat.service.adapter.MessageAdapter;
 import com.bitdf.txing.oj.chat.service.business.ChatService;
 import com.bitdf.txing.oj.chat.service.strategy.AbstractMsghandler;
 import com.bitdf.txing.oj.chat.service.strategy.MsgHandlerFactory;
+import com.bitdf.txing.oj.model.entity.chat.Contact;
 import com.bitdf.txing.oj.model.entity.chat.Message;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Lizhiwei
@@ -89,5 +91,28 @@ public class ChatServiceImpl implements ChatService {
             return CursorPageBaseVO.empty();
         }
         return CursorPageBaseVO.init(cursorPageBaseVO, MessageAdapter.buildMessageVOBatch(cursorPageBaseVO.getList(), userId));
+    }
+
+    /**
+     * 消息阅读上报
+     * @param userId
+     * @param roomId
+     */
+    @Override
+    // TODO 上锁
+    public void msgRead(Long userId, Long roomId) {
+        Contact contact = contactService.getByUserIdAndRoomId(userId, roomId);
+        if (Objects.nonNull(contact)) {
+            Contact update = new Contact();
+            update.setId(contact.getId());
+            update.setReadTime(new Date());
+            contactService.updateById(update);
+        } else {
+            Contact insert = new Contact();
+            insert.setRoomId(roomId);
+            insert.setUserId(userId);
+            insert.setReadTime(new Date());
+            contactService.save(insert);
+        }
     }
 }

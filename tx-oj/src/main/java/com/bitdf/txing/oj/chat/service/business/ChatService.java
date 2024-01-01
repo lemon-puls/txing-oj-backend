@@ -16,4 +16,6 @@ public interface ChatService {
     ChatMessageVO getMessageVO(Long msgId, Long userId);
 
     CursorPageBaseVO<ChatMessageVO> getMsgPageByCursor(MessagePageRequest pageRequest, Long userId);
+
+    void msgRead(Long userId, Long roomId);
 }

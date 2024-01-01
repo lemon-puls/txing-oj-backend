@@ -25,6 +25,8 @@ public interface ContactService extends IService<Contact> {
 
     List<Contact> getByRoomIds(List<Long> roomIds, Long userId);
 
+    Contact getByUserIdAndRoomId(Long userId, Long roomId);
+
 //    PageUtils queryPage(Map<String, Object> params);
 }
 

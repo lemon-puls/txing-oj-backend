@@ -76,4 +76,17 @@ public class ContactServiceImpl extends ServiceImpl<ContactMapper, Contact> impl
                 .eq(Contact::getUserId, userId)
                 .list();
     }
+
+    /**
+     *
+     * @param userId
+     * @param roomId
+     * @return
+     */
+    @Override
+    public Contact getByUserIdAndRoomId(Long userId, Long roomId) {
+        return lambdaQuery().eq(Contact::getUserId, userId)
+                .eq(Contact::getRoomId, roomId)
+                .one();
+    }
 }
