@@ -13,5 +13,5 @@ import java.util.List;
 public interface PushService {
     void sendPushMsg(WsBaseVO<?> wsBaseVO, Long id);
 
-    void sendPushMsg(WsBaseVO<ChatMessageVO> buildMsgSend, List<Long> targetUserIds, Long id);
+    void sendPushMsg(WsBaseVO<?> buildMsgSend, List<Long> targetUserIds, Long id);
 }

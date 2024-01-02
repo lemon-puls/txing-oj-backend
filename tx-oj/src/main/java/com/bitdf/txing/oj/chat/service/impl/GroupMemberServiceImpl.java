@@ -2,7 +2,10 @@ package com.bitdf.txing.oj.chat.service.impl;
 
 import com.bitdf.txing.oj.chat.mapper.GroupMemberMapper;
 import com.bitdf.txing.oj.chat.service.GroupMemberService;
+import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
 import com.bitdf.txing.oj.model.entity.chat.GroupMember;
+import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
+import com.bitdf.txing.oj.utils.CursorUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,4 +37,25 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
 //        return new PageUtils(page);
 //    }
 
+
+    @Override
+    public GroupMember getMember(Long userId, Long groupId) {
+        return lambdaQuery().eq(GroupMember::getGroupId, groupId)
+                .eq(GroupMember::getUserId, userId)
+                .one();
+    }
+
+    /**
+     * 获取普通群聊的成员（游标分页）
+     * @param request
+     * @param groupId
+     * @return
+     */
+    @Override
+    public CursorPageBaseVO<GroupMember> getMembersPageByCursor(CursorPageBaseRequest request, Long groupId) {
+        CursorPageBaseVO<GroupMember> cursorPageBaseVO = CursorUtils.getCursorPageByMysql(this, request, wrapper -> {
+            wrapper.eq(GroupMember::getGroupId, groupId);
+        }, GroupMember::getCreateTime);
+        return cursorPageBaseVO;
+    }
 }

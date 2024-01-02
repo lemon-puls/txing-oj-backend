@@ -4,6 +4,7 @@ import com.bitdf.txing.oj.chat.service.GroupMemberService;
 import com.bitdf.txing.oj.chat.service.RoomGroupService;
 import com.bitdf.txing.oj.model.entity.chat.RoomGroup;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Component;
 
@@ -30,5 +31,10 @@ public class GroupMemberCache {
             return null;
         }
         return groupMemberService.getMemberListByGroupId(roomGroup.getId());
+    }
+
+    @CacheEvict(cacheNames = "oj:chat:group", key = "'groupMember'+#roomId")
+    public List<Long> evictMemberIdList(Long roomId) {
+        return null;
     }
 }

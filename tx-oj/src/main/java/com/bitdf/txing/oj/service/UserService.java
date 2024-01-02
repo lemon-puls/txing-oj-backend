@@ -2,9 +2,12 @@ package com.bitdf.txing.oj.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRequest;
+import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
 import com.bitdf.txing.oj.model.dto.user.UserModifyPwdRequest;
 import com.bitdf.txing.oj.model.dto.user.UserQueryRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.model.vo.user.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.user.UserVO;
 import java.util.List;
@@ -125,4 +128,8 @@ public interface UserService extends IService<User> {
     User getLoginUserNoThrow(HttpServletRequest request);
 
     List<User> getFriendsByIds(List<Long> friendIds);
+
+    Integer getGroupOnlineCount(List<Long> memberIdList);
+
+    CursorPageBaseVO<User> getMemberPageByCursor(List<Long> memberIdList, CursorPageBaseRequest cursorPageBaseRequest);
 }

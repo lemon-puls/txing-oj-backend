@@ -1,6 +1,7 @@
 package com.bitdf.txing.oj.chat.domain.vo.response;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class WsBaseVO<T> {
     /**
      * 类型

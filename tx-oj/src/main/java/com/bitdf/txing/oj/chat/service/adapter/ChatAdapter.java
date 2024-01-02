@@ -2,11 +2,15 @@ package com.bitdf.txing.oj.chat.service.adapter;
 
 import com.bitdf.txing.oj.chat.domain.enume.RoomFriendStatusEnum;
 import com.bitdf.txing.oj.chat.domain.enume.RoomTypeEnum;
+import com.bitdf.txing.oj.chat.domain.vo.request.GroupAddRequest;
 import com.bitdf.txing.oj.model.entity.chat.Room;
 import com.bitdf.txing.oj.model.entity.chat.RoomFriend;
+import com.bitdf.txing.oj.model.entity.chat.RoomGroup;
+import com.bitdf.txing.oj.model.entity.user.User;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -50,14 +54,13 @@ public class ChatAdapter {
     }
 
     /**
-     *
      * @param values
      * @param userId
      * @return
      */
     public static Set<Long> getFriendIdSet(Collection<RoomFriend> values, Long userId) {
         Set<Long> collect = values.stream().map((roomFriend) -> {
-            return  getFriendId(roomFriend, userId);
+            return getFriendId(roomFriend, userId);
         }).collect(Collectors.toSet());
         return collect;
     }
@@ -65,5 +68,13 @@ public class ChatAdapter {
     public static Long getFriendId(RoomFriend roomFriend, Long userId) {
         return roomFriend.getUserId1().equals(userId)
                 ? roomFriend.getUserId2() : roomFriend.getUserId1();
+    }
+
+    public static RoomGroup buildRoomGroup(User user, Long roomId, GroupAddRequest groupAddRequest) {
+        return RoomGroup.builder()
+                .roomId(roomId)
+                .name(groupAddRequest.getName())
+                .avatar(Objects.nonNull(groupAddRequest.getGroupAvatar()) ? groupAddRequest.getGroupAvatar() : user.getUserAvatar())
+                .build();
     }
 }

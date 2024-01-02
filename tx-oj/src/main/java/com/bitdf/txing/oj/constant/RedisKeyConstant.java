@@ -22,6 +22,9 @@ public class RedisKeyConstant {
      */
     public static final String POST_CONTENT_IMGS_ADD = "oj:post:content:imgs:add";
     public static final String POST_CONTENT_IMGS_UPDATE = "oj:post:content:imgs:update:";
+
+    //  ====================================================聊天相关==========================================================
+
     /**
      * 房间详情
      */
@@ -39,6 +42,8 @@ public class RedisKeyConstant {
      */
     public static final String GROUP_INFO_STRING = "groupInfo:roomId_%d";
     public static final String USER_STRING = "user:userid_%d";
+
+    public static final String ONLINE_USERID_ZET = "online";
 
 
     public static String getKey(String key, Object... objects) {

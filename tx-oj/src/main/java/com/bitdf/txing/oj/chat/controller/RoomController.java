@@ -3,9 +3,19 @@ package com.bitdf.txing.oj.chat.controller;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.bitdf.txing.oj.annotation.AuthCheck;
+import com.bitdf.txing.oj.aop.AuthInterceptor;
+import com.bitdf.txing.oj.chat.domain.vo.request.GroupAddRequest;
+import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRequest;
+import com.bitdf.txing.oj.chat.domain.vo.response.ChatMemberVO;
+import com.bitdf.txing.oj.chat.domain.vo.response.GroupDetailVO;
+import com.bitdf.txing.oj.chat.service.business.RoomAppService;
 import com.bitdf.txing.oj.model.entity.chat.Room;
+import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.utils.R;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +33,34 @@ import com.bitdf.txing.oj.chat.service.RoomService;
 public class RoomController {
     @Autowired
     private RoomService roomService;
+    @Autowired
+    private RoomAppService roomAppService;
 
+    @GetMapping("/group/detail/get")
+    @ApiOperation("群组详情")
+    @AuthCheck(mustRole = "login")
+    public R groupDetail(@RequestParam("roomId") Long roomId) {
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        GroupDetailVO groupDetailVO = roomAppService.getGroupDetail(userId, roomId);
+        return R.ok(groupDetailVO);
+    }
+
+    @PostMapping("/group/member/page")
+    @ApiOperation("查询群组成员（游标）")
+    @AuthCheck(mustRole = "login")
+    public R getMembersByCursor(@RequestBody GroupMemberRequest groupMemberRequest) {
+        CursorPageBaseVO<ChatMemberVO> cursorPageBaseVO = roomAppService.getGroupMembersByCursor(groupMemberRequest);
+        return R.ok(cursorPageBaseVO);
+    }
+
+    @PostMapping("/group/add")
+    @ApiOperation("创建群聊")
+    @AuthCheck(mustRole = "login")
+    public R addGroup(@RequestBody GroupAddRequest groupAddRequest) {
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        Long roomId = roomAppService.addGroup(groupAddRequest, userId);
+        return R.ok(roomId);
+    }
 
 
     /**

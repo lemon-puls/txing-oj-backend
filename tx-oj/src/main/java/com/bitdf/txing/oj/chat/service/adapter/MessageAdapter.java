@@ -8,9 +8,12 @@ import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
 import com.bitdf.txing.oj.chat.service.strategy.AbstractMsghandler;
 import com.bitdf.txing.oj.chat.service.strategy.MsgHandlerFactory;
 import com.bitdf.txing.oj.model.entity.chat.Message;
+import com.bitdf.txing.oj.model.entity.chat.RoomGroup;
+import com.bitdf.txing.oj.model.entity.user.User;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -66,5 +69,29 @@ public class MessageAdapter {
 
     private static ChatMessageVO.UserInfo buildFromUser(Long fromUserId) {
         return ChatMessageVO.UserInfo.builder().userId(fromUserId).build();
+    }
+
+    /**
+     * 构建 群聊成员添加的通知消息
+     * @param roomGroup
+     * @param inviteUser
+     * @param newMemberMap
+     * @return
+     */
+    public static ChatMessageRequest buildGroupMemberAddMessage(RoomGroup roomGroup, User inviteUser, Map<Long, User> newMemberMap) {
+        ChatMessageRequest chatMessageRequest = new ChatMessageRequest();
+        chatMessageRequest.setRoomId(chatMessageRequest.getRoomId());
+        chatMessageRequest.setMsgType(MessageTypeEnum.SYSTEM.getCode());
+        StringBuffer sb = new StringBuffer();
+        sb.append("\"")
+                .append(inviteUser.getUserName())
+                .append("\"")
+                .append("邀请")
+                .append(newMemberMap.values().stream().map(user -> {
+                    return "\"" + user.getUserName() + "\"";
+                }).collect(Collectors.joining(",")))
+                .append("加入群聊");
+        chatMessageRequest.setBody(sb.toString());
+        return chatMessageRequest;
     }
 }

@@ -5,9 +5,12 @@ import com.alibaba.fastjson.JSON;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.chat.service.cache.GroupMemberCache;
 import com.bitdf.txing.oj.model.dto.question.JudgeConfig;
+import com.bitdf.txing.oj.model.entity.user.User;
 import com.google.gson.Gson;
 import com.lemon.util.service.TableGenerator;
 import org.junit.jupiter.api.Test;
+import org.springframework.amqp.rabbit.connection.CorrelationData;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.Cursor;
@@ -38,11 +41,21 @@ public class CommonTest {
     @Autowired
     GroupMemberCache groupMemberCache;
 
+    @Autowired
+    RabbitTemplate rabbitTemplate;
+
+    @Test
+    void testRabbitMq() {
+        User user = new User();
+        user.setUserName("nice明天会更好");
+        rabbitTemplate.convertAndSend("no.exist", "hehe", user, new CorrelationData(UUID.randomUUID().toString()));
+    }
+
     @Test
     void testCache() {
-        for (int i = 0; i < 5; i++) {
-            System.out.println(groupMemberCache.getRoomMemberCount(2L));
-        }
+//        for (int i = 0; i < 5; i++) {
+//            System.out.println(groupMemberCache.getRoomMemberCount(2L));
+//        }
     }
 
     @Test

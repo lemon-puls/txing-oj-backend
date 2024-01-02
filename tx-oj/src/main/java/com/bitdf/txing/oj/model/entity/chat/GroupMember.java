@@ -3,6 +3,7 @@ package com.bitdf.txing.oj.model.entity.chat;
 import com.baomidou.mybatisplus.annotation.*;
 import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +17,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @TableName(value = "tx_oj_group_member")
 public class GroupMember {
     /**

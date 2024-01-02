@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * @author Lizhiwei
@@ -30,18 +31,20 @@ public class PushServiceImpl implements PushService {
      */
     @Override
     public void sendPushMsg(WsBaseVO<?> wsBaseVO, Long id) {
-        mqProducer.sendMsg(ChatMqConstant.CHAT_EXCHANGE, ChatMqConstant.WEBSOCKET_PUSH_ROUTING_KEY, new PushMsgMqDTO(wsBaseVO), id.toString());
+        mqProducer.sendMsg(ChatMqConstant.CHAT_EXCHANGE, ChatMqConstant.WEBSOCKET_PUSH_ROUTING_KEY, new PushMsgMqDTO(wsBaseVO),
+                id != null ? id.toString() : UUID.randomUUID().toString());
     }
 
     /**
      * 推送指定用户
+     *
      * @param wsBaseVO
      * @param targetUserIds
      * @param id
      */
     @Override
-    public void sendPushMsg(WsBaseVO<ChatMessageVO> wsBaseVO, List<Long> targetUserIds, Long id) {
+    public void sendPushMsg(WsBaseVO<?> wsBaseVO, List<Long> targetUserIds, Long id) {
         mqProducer.sendMsg(ChatMqConstant.CHAT_EXCHANGE, ChatMqConstant.WEBSOCKET_PUSH_ROUTING_KEY,
-                new PushMsgMqDTO(wsBaseVO, targetUserIds), id.toString());
+                new PushMsgMqDTO(wsBaseVO, targetUserIds), id != null ? id.toString() : UUID.randomUUID().toString());
     }
 }

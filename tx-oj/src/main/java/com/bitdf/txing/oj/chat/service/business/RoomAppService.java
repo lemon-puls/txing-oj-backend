@@ -1,6 +1,10 @@
 package com.bitdf.txing.oj.chat.service.business;
 
+import com.bitdf.txing.oj.chat.domain.vo.request.GroupAddRequest;
+import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRequest;
+import com.bitdf.txing.oj.chat.domain.vo.response.ChatMemberVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatRoomVO;
+import com.bitdf.txing.oj.chat.domain.vo.response.GroupDetailVO;
 import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 
@@ -19,4 +23,10 @@ public interface RoomAppService {
     ChatRoomVO getContactDetailByRoomId(Long roomId, Long userId);
 
     ChatRoomVO getContactDetailByFriendId(Long userId, Long friendId);
+
+    GroupDetailVO getGroupDetail(Long userId, Long roomId);
+
+    CursorPageBaseVO<ChatMemberVO> getGroupMembersByCursor(GroupMemberRequest groupMemberRequest);
+
+    Long addGroup(GroupAddRequest groupAddRequest, Long userId);
 }

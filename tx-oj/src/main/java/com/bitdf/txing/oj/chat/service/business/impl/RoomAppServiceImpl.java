@@ -4,12 +4,16 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Pair;
 import com.bitdf.txing.oj.chat.domain.enume.RoomTypeEnum;
 import com.bitdf.txing.oj.chat.domain.vo.RoomBaseInfo;
+import com.bitdf.txing.oj.chat.domain.vo.request.GroupAddRequest;
+import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRequest;
+import com.bitdf.txing.oj.chat.domain.vo.response.ChatMemberVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatRoomVO;
-import com.bitdf.txing.oj.chat.service.ContactService;
-import com.bitdf.txing.oj.chat.service.MessageService;
-import com.bitdf.txing.oj.chat.service.RoomFriendService;
-import com.bitdf.txing.oj.chat.service.RoomService;
+import com.bitdf.txing.oj.chat.domain.vo.response.GroupDetailVO;
+import com.bitdf.txing.oj.chat.enume.GroupRoleEnum;
+import com.bitdf.txing.oj.chat.event.GroupMemberAddEvent;
+import com.bitdf.txing.oj.chat.service.*;
 import com.bitdf.txing.oj.chat.service.adapter.ChatAdapter;
+import com.bitdf.txing.oj.chat.service.adapter.MemberAdapter;
 import com.bitdf.txing.oj.chat.service.business.RoomAppService;
 import com.bitdf.txing.oj.chat.service.cache.HotRoomCache;
 import com.bitdf.txing.oj.chat.service.cache.RoomCache;
@@ -17,14 +21,19 @@ import com.bitdf.txing.oj.chat.service.cache.RoomFriendCache;
 import com.bitdf.txing.oj.chat.service.cache.RoomGroupCache;
 import com.bitdf.txing.oj.chat.service.strategy.AbstractMsghandler;
 import com.bitdf.txing.oj.chat.service.strategy.MsgHandlerFactory;
+import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
 import com.bitdf.txing.oj.model.entity.chat.*;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
+import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.service.cache.UserCache;
+import com.bitdf.txing.oj.service.cache.UserRelateCache;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
 import java.util.function.Function;
@@ -56,6 +65,16 @@ public class RoomAppServiceImpl implements RoomAppService {
     RoomService roomService;
     @Autowired
     RoomFriendService roomFriendService;
+    @Autowired
+    UserRelateCache userRelateCache;
+    @Autowired
+    GroupMemberService groupMemberService;
+    @Autowired
+    UserService userService;
+    @Autowired
+    RoomGroupService roomGroupService;
+    @Autowired
+    ApplicationEventPublisher applicationEventPublisher;
 
     @Override
     public CursorPageBaseVO<ChatRoomVO> getContactPageByCursor(CursorPageBaseRequest cursorPageBaseRequest, Long userId) {
@@ -124,7 +143,7 @@ public class RoomAppServiceImpl implements RoomAppService {
      * @param roomIds
      * @return
      */
-    private Map<Long, Integer> getUnReadCountMap(Long userId, List<Long> roomIds) {
+    public Map<Long, Integer> getUnReadCountMap(Long userId, List<Long> roomIds) {
         List<Contact> contacts = contactService.getByRoomIds(roomIds, userId);
         return contacts.parallelStream().map(contact -> {
             Integer unReadCount = messageService.getUnReadCount(contact.getRoomId(), contact.getReadTime());
@@ -132,7 +151,7 @@ public class RoomAppServiceImpl implements RoomAppService {
         }).collect(Collectors.toMap(Pair::getKey, Pair::getValue));
     }
 
-    private Map<Long, RoomBaseInfo> getRoomBaseInfoMap(List<Long> roomIds, Long userId) {
+    public Map<Long, RoomBaseInfo> getRoomBaseInfoMap(List<Long> roomIds, Long userId) {
         Map<Long, Room> roomMap = roomCache.getBatch(roomIds);
         Map<Integer, List<Long>> groupedRoomIdMap = roomMap.values().stream().collect(
                 Collectors.groupingBy(Room::getType, Collectors.mapping(Room::getId, Collectors.toList())));
@@ -170,7 +189,7 @@ public class RoomAppServiceImpl implements RoomAppService {
      * @param userId
      * @return
      */
-    private Map<Long, User> getFriendRoomMap(List<Long> friendRoomIds, Long userId) {
+    public Map<Long, User> getFriendRoomMap(List<Long> friendRoomIds, Long userId) {
         if (CollectionUtil.isEmpty(friendRoomIds)) {
             return new HashMap<>();
         }
@@ -184,7 +203,7 @@ public class RoomAppServiceImpl implements RoomAppService {
         return collect;
     }
 
-    private Double getCursorOrNull(String cursor) {
+    public Double getCursorOrNull(String cursor) {
         Double aDouble = Optional.ofNullable(cursor).map(Double::parseDouble).orElse(null);
         return aDouble;
     }
@@ -215,5 +234,126 @@ public class RoomAppServiceImpl implements RoomAppService {
         RoomFriend roomFriend = roomFriendService.getByUserIds(lists.get(0), lists.get(1));
         List<ChatRoomVO> chatRoomVOS = buildContactResp(userId, Collections.singletonList(roomFriend.getRoomId()));
         return chatRoomVOS.get(0);
+    }
+
+    /**
+     * 获取群组详情
+     * @param userId
+     * @param roomId
+     * @return
+     */
+    @Override
+    public GroupDetailVO getGroupDetail(Long userId, Long roomId) {
+        RoomGroup roomGroup = roomGroupCache.get(roomId);
+        Room room = roomCache.get(roomId);
+        ThrowUtils.throwIf(roomGroup == null, "roomId错误");
+        Long onlineCount;
+        if (room.getHotFlag()) {
+            onlineCount = userRelateCache.getOnlineCount();
+        } else {
+            List<Long> memberIdList = groupMemberService.getMemberListByGroupId(roomGroup.getId());
+            onlineCount = userService.getGroupOnlineCount(memberIdList).longValue();
+        }
+        GroupRoleEnum groupRoleEnum = getGroupRole(userId, roomGroup, room);
+        return GroupDetailVO.builder()
+                .roomId(roomId)
+                .onlineCount(onlineCount)
+                .groupName(roomGroup.getName())
+                .avatar(roomGroup.getAvatar())
+                .role(groupRoleEnum.getType())
+                .build();
+    }
+
+    public GroupRoleEnum getGroupRole(Long userId, RoomGroup roomGroup, Room room) {
+        GroupMember member = groupMemberService.getMember(userId, roomGroup.getId());
+        if (Objects.nonNull(member)) {
+            return GroupRoleEnum.of(member.getRole());
+        } else if (room.getHotFlag()) {
+            return GroupRoleEnum.MEMBER;
+        } else {
+            return GroupRoleEnum.REMOVE;
+        }
+    }
+
+    /**
+     *
+     * @param groupMemberRequest
+     * @return
+     */
+    @Override
+    public CursorPageBaseVO<ChatMemberVO> getGroupMembersByCursor(GroupMemberRequest groupMemberRequest) {
+        Room room = roomCache.get(groupMemberRequest.getRoomId());
+        ThrowUtils.throwIf(room == null, "房间id不正确");
+        List<Long> memberIdList;
+        List<User> userList;
+        Boolean isLast;
+        String cursor;
+        if (room.getHotFlag()) {
+            memberIdList = null;
+            CursorPageBaseVO<User> cursorPageBaseVO = userService.getMemberPageByCursor(memberIdList, groupMemberRequest);
+            userList = cursorPageBaseVO.getList();
+            isLast = cursorPageBaseVO.getIsLast();
+            cursor = cursorPageBaseVO.getCursor();
+        } else {
+            RoomGroup roomGroup = roomGroupCache.get(room.getId());
+            CursorPageBaseVO<GroupMember> cursorPageBaseVO = groupMemberService.getMembersPageByCursor(groupMemberRequest, roomGroup.getId());
+            userList = cursorPageBaseVO.getList().stream().map(groupMember -> {
+                User user = userCache.get(groupMember.getUserId());
+                return user;
+            }).collect(Collectors.toList());
+            isLast = cursorPageBaseVO.getIsLast();
+            cursor = cursorPageBaseVO.getCursor();
+        }
+        List<ChatMemberVO> chatMemberVOS = MemberAdapter.buildChatMember(userList);
+        CursorPageBaseVO<ChatMemberVO> result = new CursorPageBaseVO<>(cursor, isLast, chatMemberVOS);
+        return result;
+    }
+
+    /**
+     * 创建群聊
+     * @param groupAddRequest
+     * @param userId
+     * @return
+     */
+    @Override
+    @Transactional
+    public Long addGroup(GroupAddRequest groupAddRequest, Long userId) {
+        // 创建Room RoomGroup 添加群主
+        RoomGroup roomGroup = cteateGroupRoom(userId, groupAddRequest);
+        // 保存其他成员
+        List<GroupMember> groupMembers = MemberAdapter.buildGroupMemberBatch(groupAddRequest.getUserIdList(), roomGroup.getId());
+        boolean b = groupMemberService.saveBatch(groupMembers);
+        // 发送通知 触发群聊每个成员的会话
+        applicationEventPublisher.publishEvent(new GroupMemberAddEvent(this, roomGroup, groupMembers, userId));
+        return roomGroup.getRoomId();
+    }
+
+    /**
+     * 创建room
+     * @param userId
+     * @return
+     */
+    @Transactional(rollbackFor = Exception.class)
+    public RoomGroup cteateGroupRoom(Long userId, GroupAddRequest groupAddRequest) {
+        // TODO 这里可以作每个用户最大建群数的限制
+        // 创建Room
+        Room room = createRoom(RoomTypeEnum.GROUP);
+        // 创建RoomGroup
+        User user = userCache.get(userId);
+        RoomGroup roomGroup = ChatAdapter.buildRoomGroup(user, room.getId(), groupAddRequest);
+        roomGroupService.save(roomGroup);
+        // 添加群主
+        GroupMember groupMember = GroupMember.builder()
+                .groupId(roomGroup.getId())
+                .role(GroupRoleEnum.LEADER.getType())
+                .userId(userId).build();
+        groupMemberService.save(groupMember);
+        return roomGroup;
+    }
+
+    public Room createRoom(RoomTypeEnum group) {
+        Room room = ChatAdapter.buildRoom(group);
+        roomService.save(room);
+        return room;
     }
 }

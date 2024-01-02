@@ -20,6 +20,11 @@ import lombok.Data;
 public class User implements Serializable {
 
     /**
+     * 系统id
+     */
+    public static final Long SYSTEM_USER_ID = 1L;
+
+    /**
      * id
      */
     @TableId(type = IdType.ASSIGN_ID)
@@ -128,4 +133,9 @@ public class User implements Serializable {
      * 通过数
      */
     private Integer acceptedCount;
+
+    /**
+     * 最近一次上下线时间
+     */
+    private Date lastOpsTime;
 }

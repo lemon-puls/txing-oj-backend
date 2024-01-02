@@ -11,7 +11,7 @@ import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
  * 注释：
  */
 public interface ChatService {
-    Long sendMsg(ChatMessageRequest buildAgreeMessage, Long userId);
+    Long sendMsg(ChatMessageRequest chatMessageRequest, Long userId);
 
     ChatMessageVO getMessageVO(Long msgId, Long userId);
 

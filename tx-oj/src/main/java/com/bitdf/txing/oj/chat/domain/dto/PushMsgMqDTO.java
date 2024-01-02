@@ -36,7 +36,7 @@ public class PushMsgMqDTO {
         this.type = WsPushTypeEnum.ALL.getType();
     }
 
-    public PushMsgMqDTO(WsBaseVO<ChatMessageVO> wsBaseVO, List<Long> targetUserIds) {
+    public PushMsgMqDTO(WsBaseVO<?> wsBaseVO, List<Long> targetUserIds) {
         this.wsBaseVO = wsBaseVO;
         this.userIds = targetUserIds;
         this.type = WsPushTypeEnum.USER.getType();

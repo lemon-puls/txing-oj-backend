@@ -6,7 +6,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
+import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRequest;
 import com.bitdf.txing.oj.constant.CommonConstant;
+import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
 import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
@@ -14,7 +16,9 @@ import com.bitdf.txing.oj.mapper.UserMapper;
 import com.bitdf.txing.oj.model.dto.user.UserModifyPwdRequest;
 import com.bitdf.txing.oj.model.dto.user.UserQueryRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.UserActiveStatusEnum;
 import com.bitdf.txing.oj.model.enume.UserRoleEnum;
+import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.model.vo.user.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.user.UserVO;
 import com.bitdf.txing.oj.service.UserService;
@@ -24,6 +28,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
+import com.bitdf.txing.oj.utils.CursorUtils;
 import com.bitdf.txing.oj.utils.page.SQLFilter;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
@@ -336,5 +341,31 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return lambdaQuery().in(User::getId, friendIds)
                 .select(User::getId, User::getActiveStatus, User::getUserAvatar)
                 .list();
+    }
+
+    /**
+     * 获取在线人数
+     * @param memberIdList
+     * @return
+     */
+    @Override
+    public Integer getGroupOnlineCount(List<Long> memberIdList) {
+        return lambdaQuery().eq(User::getActiveStatus, UserActiveStatusEnum.ONLINE.getCode())
+                .in(CollectionUtils.isNotEmpty(memberIdList), User::getId, memberIdList)
+                .count();
+    }
+
+    /**
+     * 游标查询群组成员信息
+     * @param memberIdList
+     * @param cursorPageBaseRequest
+     * @return
+     */
+    @Override
+    public CursorPageBaseVO<User> getMemberPageByCursor(List<Long> memberIdList, CursorPageBaseRequest cursorPageBaseRequest) {
+        CursorPageBaseVO<User> cursorPageBaseVO = CursorUtils.getCursorPageByMysql(this, cursorPageBaseRequest, wrapper -> {
+            wrapper.in(memberIdList != null, User::getId, memberIdList);
+        }, User::getCreateTime);
+        return cursorPageBaseVO;
     }
 }

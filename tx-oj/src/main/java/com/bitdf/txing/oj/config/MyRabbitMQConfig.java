@@ -50,6 +50,7 @@ public class MyRabbitMQConfig {
          */
         //设置确认回调
         rabbitTemplate.setConfirmCallback((correlationData, ack, cause) -> {
+//            byte[] body = correlationData.getReturned().getMessage().getBody();
             if (!ack) {
                 log.info("作答提交[{}]: 发送到Mq交换机失败 {}", correlationData.getId(), cause);
                 boolean update = questionSubmitService.update(new UpdateWrapper<QuestionSubmit>().lambda()
