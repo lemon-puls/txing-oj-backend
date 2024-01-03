@@ -1,5 +1,7 @@
 package com.bitdf.txing.oj.chat.service.business;
 
+import com.bitdf.txing.oj.chat.domain.vo.response.WsBaseVO;
+import com.bitdf.txing.oj.chat.domain.vo.response.WsOnlineOfflineNotifyVO;
 import io.netty.channel.Channel;
 
 /**
@@ -9,4 +11,6 @@ import io.netty.channel.Channel;
  */
 public interface WebSocketService {
     void removed(Channel channel);
+
+    void sendToAllOnline(WsBaseVO<WsOnlineOfflineNotifyVO> buildOffLineNotifyWsVO, Long userId);
 }

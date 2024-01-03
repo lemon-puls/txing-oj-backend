@@ -4,9 +4,10 @@ import com.bitdf.txing.oj.chat.event.UserOffLineEvent;
 import com.bitdf.txing.oj.chat.service.adapter.WsAdapter;
 import com.bitdf.txing.oj.chat.service.business.WebSocketService;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.UserActiveStatusEnum;
+import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.service.cache.UserRelateCache;
 import lombok.extern.slf4j.Slf4j;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
@@ -27,6 +28,8 @@ public class UserOffLineListener {
     WebSocketService webSocketService;
     @Autowired
     WsAdapter wsAdapter;
+    @Autowired
+    UserService userService;
 
     @Async
     @EventListener(classes = UserOffLineListener.class)
@@ -34,12 +37,18 @@ public class UserOffLineListener {
         User user = event.getUser();
         userRelateCache.offLine(user.getId(),user.getLastOpsTime());
         // 推送给所有用户
-        webSocketService.sendToAllOnline(wsAdapter.buildOffLineNotifyWsVO(event.getUser(), event.getUser().getId()));
+        webSocketService.sendToAllOnline(wsAdapter.buildOffLineNotifyWsVO(event.getUser(), event.getUser().getId()),
+                event.getUser().getId());
     }
 
-//    @Async
-//    @EventListener(classes = UserOffLineListener.class)
-//    public void saveDB(UserOf) {
-//
-//    }
+    @Async
+    @EventListener(classes = UserOffLineListener.class)
+    public void saveDB(UserOffLineEvent event) {
+        User user = event.getUser();
+        User update = new User();
+        update.setId(user.getId());
+        update.setLastOpsTime(user.getLastOpsTime());
+        update.setActiveStatus(UserActiveStatusEnum.OFFLINE.getCode());
+        userService.updateById(update);
+    }
 }

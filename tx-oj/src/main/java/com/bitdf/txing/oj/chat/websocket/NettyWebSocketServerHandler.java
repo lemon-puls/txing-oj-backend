@@ -6,6 +6,8 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
+import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -26,7 +28,8 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        super.channelInactive(ctx);
+        log.warn("触发channelInactive掉线 [{}]", ctx.channel().id());
+        userOffLine(ctx);
     }
 
     @Override
@@ -47,5 +50,16 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
     private void userOffLine(ChannelHandlerContext ctx) {
         this.webSocketService.removed(ctx.channel());
         ctx.channel().close();
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            // 读空闲事件
+
+        } else if(evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
+            // websocket握手完成
+        }
+        super.userEventTriggered(ctx, evt);
     }
 }

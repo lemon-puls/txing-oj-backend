@@ -1,16 +1,24 @@
 package com.bitdf.txing.oj.chat.service.business.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.json.JSONUtil;
 import com.bitdf.txing.oj.chat.domain.dto.WsChannelExtraDTO;
+import com.bitdf.txing.oj.chat.domain.vo.response.WsBaseVO;
+import com.bitdf.txing.oj.chat.domain.vo.response.WsOnlineOfflineNotifyVO;
 import com.bitdf.txing.oj.chat.event.UserOffLineEvent;
 import com.bitdf.txing.oj.chat.service.business.WebSocketService;
+import com.bitdf.txing.oj.config.ThreadPoolConfig;
 import com.bitdf.txing.oj.model.entity.user.User;
 import io.netty.channel.Channel;
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -25,6 +33,9 @@ public class WebSocketServiceImpl implements WebSocketService {
 
     @Autowired
     ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    @Qualifier(ThreadPoolConfig.WS_EXECUTOR)
+    ThreadPoolTaskExecutor websocketExecutor;
 
     /**
      * 已连接的websocket连接 ===》 一些额外的参数
@@ -64,5 +75,31 @@ public class WebSocketServiceImpl implements WebSocketService {
             return CollectionUtil.isEmpty(channels);
         }
         return true;
+    }
+
+    /**
+     * @param wsBaseVO
+     * @param userId
+     */
+    @Override
+    public void sendToAllOnline(WsBaseVO<WsOnlineOfflineNotifyVO> wsBaseVO, Long userId) {
+        ONLINE_WS_MAP.forEach(((channel, wsChannelExtraDTO) -> {
+            if (Objects.nonNull(userId) && Objects.equals(wsChannelExtraDTO.getUserId(), userId)) {
+                return;
+            }
+            websocketExecutor.execute(() -> sendMsg(channel, wsBaseVO));
+
+        }));
+
+    }
+
+    /**
+     * 发送系哦啊剖析
+     * @param channel
+     * @param wsBaseVO
+     */
+    private void sendMsg(Channel channel, WsBaseVO<?> wsBaseVO) {
+        TextWebSocketFrame textWebSocketFrame = new TextWebSocketFrame(JSONUtil.toJsonStr(wsBaseVO));
+        channel.writeAndFlush(textWebSocketFrame);
     }
 }

@@ -8,7 +8,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 
 /**
@@ -23,6 +22,12 @@ public class ThreadPoolConfig implements AsyncConfigurer {
      * 共用线程池
      */
     public static final String COMMON_EXECUTOR = "commonExecutor";
+
+    /**
+     * websocket线程池
+     */
+    public static final String WS_EXECUTOR = "websocketExecutor";
+
 
     @Override
     public Executor getAsyncExecutor() {
@@ -40,5 +45,18 @@ public class ThreadPoolConfig implements AsyncConfigurer {
         threadPoolTaskExecutor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         threadPoolTaskExecutor.initialize();
         return threadPoolTaskExecutor;
+    }
+
+    @Bean(WS_EXECUTOR)
+    public ThreadPoolTaskExecutor websocketExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(16);
+        executor.setMaxPoolSize(16);
+        // 同时推送1000人
+        executor.setQueueCapacity(1000);
+        executor.setThreadNamePrefix("websocket-executor-");
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.DiscardPolicy());
+        executor.initialize();
+        return executor;
     }
 }
