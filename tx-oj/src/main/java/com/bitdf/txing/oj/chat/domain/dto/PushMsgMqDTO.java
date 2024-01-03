@@ -4,6 +4,7 @@ import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.WsBaseVO;
 import com.bitdf.txing.oj.chat.enume.WsPushTypeEnum;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -17,6 +18,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class PushMsgMqDTO {
     /**
      * 要推送的ws消息

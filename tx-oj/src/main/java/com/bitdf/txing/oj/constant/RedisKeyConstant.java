@@ -44,6 +44,7 @@ public class RedisKeyConstant {
     public static final String USER_STRING = "user:userid_%d";
 
     public static final String ONLINE_USERID_ZET = "online";
+    public static final String OFFLINE_USERID_ZET = "offline";
 
 
     public static String getKey(String key, Object... objects) {

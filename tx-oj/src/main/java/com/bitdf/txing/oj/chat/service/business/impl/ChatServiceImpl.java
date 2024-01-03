@@ -3,6 +3,7 @@ package com.bitdf.txing.oj.chat.service.business.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import com.bitdf.txing.oj.chat.domain.vo.request.ChatMessageRequest;
 import com.bitdf.txing.oj.chat.domain.vo.request.MessagePageRequest;
+import com.bitdf.txing.oj.chat.domain.vo.response.ChatMemberStatisticVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
 import com.bitdf.txing.oj.chat.event.MessageSendEvent;
 import com.bitdf.txing.oj.chat.service.ContactService;
@@ -14,6 +15,7 @@ import com.bitdf.txing.oj.chat.service.strategy.MsgHandlerFactory;
 import com.bitdf.txing.oj.model.entity.chat.Contact;
 import com.bitdf.txing.oj.model.entity.chat.Message;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
+import com.bitdf.txing.oj.service.cache.UserRelateCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -38,6 +40,8 @@ public class ChatServiceImpl implements ChatService {
     MessageService messageService;
     @Autowired
     ContactService contactService;
+    @Autowired
+    UserRelateCache userRelateCache;
 
     /**
      * 发送消息
@@ -59,6 +63,7 @@ public class ChatServiceImpl implements ChatService {
 
     /**
      * 获取消息响应体
+     *
      * @param msgId
      * @param userId
      * @return
@@ -79,13 +84,14 @@ public class ChatServiceImpl implements ChatService {
 
     /**
      * 消息-游标翻页
+     *
      * @param pageRequest
      * @param userId
      * @return
      */
     @Override
     public CursorPageBaseVO<ChatMessageVO> getMsgPageByCursor(MessagePageRequest pageRequest, Long userId) {
-        Date lastMsgTime =  contactService.getUserContactLastMsgTime(pageRequest.getRoomId(), userId);
+        Date lastMsgTime = contactService.getUserContactLastMsgTime(pageRequest.getRoomId(), userId);
         CursorPageBaseVO<Message> cursorPageBaseVO = messageService.getPageByCursor(pageRequest.getRoomId(), pageRequest, lastMsgTime);
         if (cursorPageBaseVO.isEmpty()) {
             return CursorPageBaseVO.empty();
@@ -95,6 +101,7 @@ public class ChatServiceImpl implements ChatService {
 
     /**
      * 消息阅读上报
+     *
      * @param userId
      * @param roomId
      */
@@ -114,5 +121,18 @@ public class ChatServiceImpl implements ChatService {
             insert.setReadTime(new Date());
             contactService.save(insert);
         }
+    }
+
+    /**
+     * 获取成员相关的一些统计信息
+     *
+     * @return
+     */
+    @Override
+    public ChatMemberStatisticVO getChatMemberStatisticVO() {
+        Long onlineCount = userRelateCache.getOnlineCount();
+        return ChatMemberStatisticVO.builder()
+                .onlineNum(onlineCount)
+                .build();
     }
 }

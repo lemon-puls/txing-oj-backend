@@ -2,6 +2,7 @@ package com.bitdf.txing.oj.chat.service.business;
 
 import com.bitdf.txing.oj.chat.domain.vo.request.ChatMessageRequest;
 import com.bitdf.txing.oj.chat.domain.vo.request.MessagePageRequest;
+import com.bitdf.txing.oj.chat.domain.vo.response.ChatMemberStatisticVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 
@@ -18,4 +19,6 @@ public interface ChatService {
     CursorPageBaseVO<ChatMessageVO> getMsgPageByCursor(MessagePageRequest pageRequest, Long userId);
 
     void msgRead(Long userId, Long roomId);
+
+    ChatMemberStatisticVO getChatMemberStatisticVO();
 }
