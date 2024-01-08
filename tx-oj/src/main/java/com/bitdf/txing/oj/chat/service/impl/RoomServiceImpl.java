@@ -1,21 +1,16 @@
 package com.bitdf.txing.oj.chat.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.bitdf.txing.oj.chat.domain.enume.RoomTypeEnum;
-import com.bitdf.txing.oj.chat.domain.vo.response.GroupDetailVO;
-import com.bitdf.txing.oj.chat.enume.GroupRoleEnum;
+import com.bitdf.txing.oj.chat.enume.RoomTypeEnum;
 import com.bitdf.txing.oj.chat.mapper.RoomMapper;
 import com.bitdf.txing.oj.chat.service.GroupMemberService;
 import com.bitdf.txing.oj.chat.service.RoomFriendService;
-import com.bitdf.txing.oj.chat.service.RoomGroupService;
 import com.bitdf.txing.oj.chat.service.RoomService;
 import com.bitdf.txing.oj.chat.service.adapter.ChatAdapter;
-import com.bitdf.txing.oj.chat.service.cache.RoomCache;
 import com.bitdf.txing.oj.chat.service.cache.RoomGroupCache;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.model.entity.chat.Room;
 import com.bitdf.txing.oj.model.entity.chat.RoomFriend;
-import com.bitdf.txing.oj.model.entity.chat.RoomGroup;
 import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.service.cache.UserRelateCache;
 import org.springframework.beans.factory.annotation.Autowired;

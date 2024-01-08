@@ -1,6 +1,6 @@
 package com.bitdf.txing.oj.chat.service.strategy;
 
-import com.bitdf.txing.oj.chat.domain.enume.MessageTypeEnum;
+import com.bitdf.txing.oj.chat.enume.MessageTypeEnum;
 import com.bitdf.txing.oj.chat.service.MessageService;
 import com.bitdf.txing.oj.model.entity.chat.Message;
 import org.springframework.beans.factory.annotation.Autowired;

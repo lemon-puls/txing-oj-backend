@@ -1,4 +1,4 @@
-package com.bitdf.txing.oj.chat.domain.enume;
+package com.bitdf.txing.oj.chat.enume;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

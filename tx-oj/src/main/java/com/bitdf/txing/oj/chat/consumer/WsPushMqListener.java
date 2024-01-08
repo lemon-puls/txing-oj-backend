@@ -2,34 +2,14 @@ package com.bitdf.txing.oj.chat.consumer;
 
 import com.bitdf.txing.oj.chat.constant.ChatMqConstant;
 import com.bitdf.txing.oj.chat.domain.dto.PushMsgMqDTO;
-import com.bitdf.txing.oj.chat.domain.enume.RoomTypeEnum;
-import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
-import com.bitdf.txing.oj.chat.domain.vo.response.WsBaseVO;
-import com.bitdf.txing.oj.chat.service.ContactService;
-import com.bitdf.txing.oj.chat.service.MessageService;
-import com.bitdf.txing.oj.chat.service.RoomFriendService;
-import com.bitdf.txing.oj.chat.service.RoomService;
-import com.bitdf.txing.oj.chat.service.adapter.WsAdapter;
-import com.bitdf.txing.oj.chat.service.business.ChatService;
-import com.bitdf.txing.oj.chat.service.business.PushService;
-import com.bitdf.txing.oj.chat.service.cache.GroupMemberCache;
-import com.bitdf.txing.oj.chat.service.cache.HotRoomCache;
-import com.bitdf.txing.oj.chat.service.cache.RoomCache;
-import com.bitdf.txing.oj.model.entity.chat.Room;
-import com.bitdf.txing.oj.model.entity.chat.RoomFriend;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 
 /**
  * @author Lizhiwei

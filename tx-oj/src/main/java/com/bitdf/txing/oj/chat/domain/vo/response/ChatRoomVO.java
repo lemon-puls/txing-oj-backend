@@ -1,7 +1,5 @@
 package com.bitdf.txing.oj.chat.domain.vo.response;
 
-import com.bitdf.txing.oj.chat.domain.enume.RoomTypeEnum;
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -15,9 +15,10 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum WsRespTypeEnum {
 
-    MESSAGE(0,"新消息",ChatMessageVO.class),
+    MESSAGE(0, "新消息", ChatMessageVO.class),
     GROUP_MEMBER_CHANGE(1, "群聊成员变动", WsGroupMemberChangeVO.class),
-    USER_ONLINE_OFFLINE_NOTIFY(2, "上下线通知", WsOnlineOfflineNotifyVO.class);
+    USER_ONLINE_OFFLINE_NOTIFY(2, "上下线通知", WsOnlineOfflineNotifyVO.class),
+    USER_TOKEN_INVALID(3, "用户Token失效", null);
 
     private final Integer type;
     private final String desc;

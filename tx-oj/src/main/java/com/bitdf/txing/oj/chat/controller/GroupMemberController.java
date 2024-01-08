@@ -1,18 +1,9 @@
 package com.bitdf.txing.oj.chat.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
-import com.bitdf.txing.oj.model.entity.chat.GroupMember;
-import com.bitdf.txing.oj.utils.R;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.bitdf.txing.oj.chat.service.GroupMemberService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 /**
@@ -29,53 +20,53 @@ public class GroupMemberController {
     /**
      * 列表
      */
-    @RequestMapping("/list")
-    public R list(@RequestParam Map<String, Object> params) {
-//        PageUtils page = groupMemberService.queryPage(params);
-//
-//        return R.ok().put("page", page);
-        return R.ok();
-    }
+//    @RequestMapping("/list")
+//    public R list(@RequestParam Map<String, Object> params) {
+////        PageUtils page = groupMemberService.queryPage(params);
+////
+////        return R.ok().put("page", page);
+//        return R.ok();
+//    }
 
 
     /**
      * 信息
      */
-    @RequestMapping("/info/{id}")
-    public R info(@PathVariable("id") Long id) {
-        GroupMember groupMember = groupMemberService.getById(id);
-
-        return R.ok().put("groupMember", groupMember);
-    }
+//    @RequestMapping("/info/{id}")
+//    public R info(@PathVariable("id") Long id) {
+//        GroupMember groupMember = groupMemberService.getById(id);
+//
+//        return R.ok().put("groupMember", groupMember);
+//    }
 
     /**
      * 保存
      */
-    @RequestMapping("/save")
-    public R save(@RequestBody GroupMember groupMember) {
-        groupMemberService.save(groupMember);
-
-        return R.ok();
-    }
+//    @RequestMapping("/save")
+//    public R save(@RequestBody GroupMember groupMember) {
+//        groupMemberService.save(groupMember);
+//
+//        return R.ok();
+//    }
 
     /**
      * 修改
      */
-    @RequestMapping("/update")
-    public R update(@RequestBody GroupMember groupMember) {
-        groupMemberService.updateById(groupMember);
-
-        return R.ok();
-    }
+//    @RequestMapping("/update")
+//    public R update(@RequestBody GroupMember groupMember) {
+//        groupMemberService.updateById(groupMember);
+//
+//        return R.ok();
+//    }
 
     /**
      * 删除
      */
-    @RequestMapping("/delete")
-    public R delete(@RequestBody Long[] ids) {
-        groupMemberService.removeByIds(Arrays.asList(ids));
-
-        return R.ok();
-    }
+//    @RequestMapping("/delete")
+//    public R delete(@RequestBody Long[] ids) {
+//        groupMemberService.removeByIds(Arrays.asList(ids));
+//
+//        return R.ok();
+//    }
 
 }

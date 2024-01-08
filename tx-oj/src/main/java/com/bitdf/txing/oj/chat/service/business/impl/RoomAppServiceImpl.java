@@ -2,7 +2,7 @@ package com.bitdf.txing.oj.chat.service.business.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Pair;
-import com.bitdf.txing.oj.chat.domain.enume.RoomTypeEnum;
+import com.bitdf.txing.oj.chat.enume.RoomTypeEnum;
 import com.bitdf.txing.oj.chat.domain.vo.RoomBaseInfo;
 import com.bitdf.txing.oj.chat.domain.vo.request.GroupAddRequest;
 import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRequest;

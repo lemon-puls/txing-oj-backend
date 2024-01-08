@@ -34,6 +34,8 @@ public class NettyWebSocketServer {
 
     public static final int WEB_SOCKET_PORT = 8090;
 
+    public static final NettyWebSocketServerHandler NETTY_WEB_SOCKET_SERVER_HANDLER = new NettyWebSocketServerHandler();
+
     private EventLoopGroup bossGroup = new NioEventLoopGroup(1);
 
     private EventLoopGroup workerGroup = new NioEventLoopGroup(NettyRuntime.availableProcessors());
@@ -80,6 +82,7 @@ public class NettyWebSocketServer {
                         pipeline.addLast(new ChunkedWriteHandler());
                         pipeline.addLast(new HttpObjectAggregator(8192));
                         pipeline.addLast(new WebSocketServerProtocolHandler("/"));
+                        pipeline.addLast(NETTY_WEB_SOCKET_SERVER_HANDLER);
                     }
                 });
         serverBootstrap.bind(WEB_SOCKET_PORT).sync();

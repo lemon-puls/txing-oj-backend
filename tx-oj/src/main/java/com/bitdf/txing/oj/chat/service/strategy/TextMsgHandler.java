@@ -1,7 +1,7 @@
 package com.bitdf.txing.oj.chat.service.strategy;
 
 import cn.hutool.core.collection.CollectionUtil;
-import com.bitdf.txing.oj.chat.domain.enume.MessageTypeEnum;
+import com.bitdf.txing.oj.chat.enume.MessageTypeEnum;
 import com.bitdf.txing.oj.chat.domain.vo.request.TextMessageRequest;
 import com.bitdf.txing.oj.chat.domain.vo.response.TextMessageResponse;
 import com.bitdf.txing.oj.model.entity.chat.Message;

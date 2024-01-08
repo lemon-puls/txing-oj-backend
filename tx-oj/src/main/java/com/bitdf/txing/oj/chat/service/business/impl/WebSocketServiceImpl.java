@@ -1,14 +1,21 @@
 package com.bitdf.txing.oj.chat.service.business.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
+import com.bitdf.txing.oj.chat.domain.dto.WsAuthorize;
 import com.bitdf.txing.oj.chat.domain.dto.WsChannelExtraDTO;
 import com.bitdf.txing.oj.chat.domain.vo.response.WsBaseVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.WsOnlineOfflineNotifyVO;
 import com.bitdf.txing.oj.chat.event.UserOffLineEvent;
+import com.bitdf.txing.oj.chat.event.UserOnlineEvent;
+import com.bitdf.txing.oj.chat.service.adapter.WsAdapter;
 import com.bitdf.txing.oj.chat.service.business.WebSocketService;
+import com.bitdf.txing.oj.chat.websocket.NettyUtil;
 import com.bitdf.txing.oj.config.ThreadPoolConfig;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.service.UserService;
+import com.bitdf.txing.oj.service.cache.UserRelateCache;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +43,10 @@ public class WebSocketServiceImpl implements WebSocketService {
     @Autowired
     @Qualifier(ThreadPoolConfig.WS_EXECUTOR)
     ThreadPoolTaskExecutor websocketExecutor;
+    @Autowired
+    UserService userService;
+    @Autowired
+    UserRelateCache userRelateCache;
 
     /**
      * 已连接的websocket连接 ===》 一些额外的参数
@@ -101,5 +112,53 @@ public class WebSocketServiceImpl implements WebSocketService {
     private void sendMsg(Channel channel, WsBaseVO<?> wsBaseVO) {
         TextWebSocketFrame textWebSocketFrame = new TextWebSocketFrame(JSONUtil.toJsonStr(wsBaseVO));
         channel.writeAndFlush(textWebSocketFrame);
+    }
+
+    @Override
+    public void connect(Channel channel) {
+        ONLINE_WS_MAP.put(channel, new WsChannelExtraDTO());
+    }
+
+    /**
+     * ws连接建立完成后通过此方法判断是否已登录 以及 进行相应的处理
+     * @param channel
+     * @param wsAuthorize
+     */
+    @Override
+    public void authorize(Channel channel, WsAuthorize wsAuthorize) {
+        // TODO 校验是否已登录
+        boolean isLogin = true;
+        if (isLogin) {
+            User user = userService.getById(wsAuthorize.getUserId());
+            alreadyLogin(channel, user, wsAuthorize.getToken());
+        } else {
+            // 通知前端重新登录（使前端token失效）
+            sendMsg(channel, WsAdapter.buildInvalidTokenWsVO());
+        }
+    }
+
+
+    private void alreadyLogin(Channel channel, User user, String token) {
+        // 更新在线列表
+        online(channel, user.getId());
+        // 如果用户是刚上线 就触发用户上线事件
+        boolean isOnline = userRelateCache.isOnline(user.getId());
+        if (!isOnline) {
+            user.setLastOpsTime(new Date());
+            applicationEventPublisher.publishEvent(new UserOnlineEvent(this, user));
+        }
+    }
+
+    private void online(Channel channel, Long userId) {
+        WsChannelExtraDTO wsChannelExtraDTO = getInitChannelExt(channel);
+        ONLINE_USERID_MAP.putIfAbsent(userId, new CopyOnWriteArrayList<>());
+        ONLINE_USERID_MAP.get(userId).add(channel);
+        NettyUtil.setAttr(channel, NettyUtil.USERID, userId);
+    }
+
+    private WsChannelExtraDTO getInitChannelExt(Channel channel) {
+        WsChannelExtraDTO wsChannelExtraDTO = ONLINE_WS_MAP.getOrDefault(channel, new WsChannelExtraDTO());
+        WsChannelExtraDTO old = ONLINE_WS_MAP.putIfAbsent(channel, wsChannelExtraDTO);
+        return ObjectUtil.isNull(old) ? wsChannelExtraDTO : old;
     }
 }

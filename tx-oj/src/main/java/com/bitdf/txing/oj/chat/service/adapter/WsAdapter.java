@@ -28,6 +28,12 @@ public class WsAdapter {
         return wsBaseVO;
     }
 
+    public static WsBaseVO<?> buildInvalidTokenWsVO() {
+        WsBaseVO wsBaseVO = new WsBaseVO();
+        wsBaseVO.setType(WsRespTypeEnum.USER_TOKEN_INVALID.getType());
+        return wsBaseVO;
+    }
+
     public WsBaseVO<WsOnlineOfflineNotifyVO> buildOffLineNotifyWsVO(User user, Long userId) {
         WsBaseVO<WsOnlineOfflineNotifyVO> wsBaseVO = new WsBaseVO<>();
         wsBaseVO.setType(WsRespTypeEnum.USER_ONLINE_OFFLINE_NOTIFY.getType());
@@ -51,4 +57,21 @@ public class WsAdapter {
                 .build();
     }
 
+    public WsBaseVO<WsOnlineOfflineNotifyVO> buildOnlineNotifyWsVO(User user) {
+        WsBaseVO<WsOnlineOfflineNotifyVO> wsBaseVO = new WsBaseVO<>();
+        wsBaseVO.setType(WsRespTypeEnum.USER_ONLINE_OFFLINE_NOTIFY.getType());
+        WsOnlineOfflineNotifyVO onlineNotifyVO = new WsOnlineOfflineNotifyVO();
+        onlineNotifyVO.setChatMemberVOS(Collections.singletonList(buildOnlineChatMember(user)));
+        onlineNotifyVO.setOnlineNum(getChatMemberStatisticVO().getOnlineNum());
+        wsBaseVO.setData(onlineNotifyVO);
+        return wsBaseVO;
+    }
+
+    private ChatMemberVO buildOnlineChatMember(User user) {
+        return ChatMemberVO.builder()
+                .lastOpsTime(user.getLastOpsTime())
+                .activeStatus(UserActiveStatusEnum.ONLINE.getCode())
+                .userId(user.getId())
+                .build();
+    }
 }

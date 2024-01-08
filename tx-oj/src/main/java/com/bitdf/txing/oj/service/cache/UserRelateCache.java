@@ -38,4 +38,15 @@ public class UserRelateCache {
     }
 
 
+    public boolean isOnline(Long userId) {
+        String key = RedisKeyConstant.getKey(RedisKeyConstant.ONLINE_USERID_ZET);
+        return RedisUtils.zIsMember(key, userId);
+    }
+
+    public void online(Long userId, Date lastOpsTime) {
+        String onlineKey = RedisKeyConstant.getKey(RedisKeyConstant.ONLINE_USERID_ZET);
+        String offlineKey = RedisKeyConstant.getKey(RedisKeyConstant.OFFLINE_USERID_ZET);
+        RedisUtils.zRemove(offlineKey, userId);
+        RedisUtils.zAdd(onlineKey, userId, lastOpsTime.getTime());
+    }
 }

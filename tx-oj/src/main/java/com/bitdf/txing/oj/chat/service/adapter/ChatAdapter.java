@@ -1,7 +1,7 @@
 package com.bitdf.txing.oj.chat.service.adapter;
 
-import com.bitdf.txing.oj.chat.domain.enume.RoomFriendStatusEnum;
-import com.bitdf.txing.oj.chat.domain.enume.RoomTypeEnum;
+import com.bitdf.txing.oj.chat.enume.RoomFriendStatusEnum;
+import com.bitdf.txing.oj.chat.enume.RoomTypeEnum;
 import com.bitdf.txing.oj.chat.domain.vo.request.GroupAddRequest;
 import com.bitdf.txing.oj.model.entity.chat.Room;
 import com.bitdf.txing.oj.model.entity.chat.RoomFriend;
