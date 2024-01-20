@@ -14,7 +14,6 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
-import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.NettyRuntime;
 import io.netty.util.concurrent.Future;
 import lombok.extern.slf4j.Slf4j;
@@ -42,15 +41,18 @@ public class NettyWebSocketServer {
 
     /**
      * 启动ws server
+     *
      * @throws InterruptedException
      */
     @PostConstruct
     public void start() throws InterruptedException {
+        log.info("开始启动websocket服务器...");
         run();
     }
 
     /**
      * 销毁
+     *
      * @throws InterruptedException
      */
     @PreDestroy
@@ -61,7 +63,6 @@ public class NettyWebSocketServer {
         future1.syncUninterruptibly();
         log.info("关闭ws server成功");
     }
-
 
 
     public void run() throws InterruptedException {
@@ -75,12 +76,13 @@ public class NettyWebSocketServer {
                     @Override
                     protected void initChannel(SocketChannel socketChannel) throws Exception {
                         ChannelPipeline pipeline = socketChannel.pipeline();
-                        // 超过30秒客户端没有向服务器端发送心跳 则关闭连接
-                        pipeline.addLast(new IdleStateHandler(30, 0, 0));
+                        // 超过30秒客户端没有向服务器端发送心跳 则关闭连接 TODO 暂时关闭 方便测试
+//                        pipeline.addLast(new IdleStateHandler(30, 0, 0));
                         // http协议编解码器
                         pipeline.addLast(new HttpServerCodec());
                         pipeline.addLast(new ChunkedWriteHandler());
                         pipeline.addLast(new HttpObjectAggregator(8192));
+                        pipeline.addLast(new HttpHeaderHandler());
                         pipeline.addLast(new WebSocketServerProtocolHandler("/"));
                         pipeline.addLast(NETTY_WEB_SOCKET_SERVER_HANDLER);
                     }

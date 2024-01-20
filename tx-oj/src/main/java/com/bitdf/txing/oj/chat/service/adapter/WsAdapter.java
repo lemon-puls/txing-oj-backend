@@ -34,6 +34,19 @@ public class WsAdapter {
         return wsBaseVO;
     }
 
+    public static WsBaseVO<WsLoginSuccessVO> buildLoginSuccessVO(User user, String token) {
+        WsBaseVO<WsLoginSuccessVO> wsBaseVO = new WsBaseVO<>();
+        wsBaseVO.setType(WsRespTypeEnum.USER_LOGIN_SUCCESS.getType());
+        WsLoginSuccessVO build = WsLoginSuccessVO.builder()
+                .avatar(user.getUserAvatar())
+                .token(token)
+                .userName(user.getUserName())
+                .userId(user.getId())
+                .build();
+        wsBaseVO.setData(build);
+        return wsBaseVO;
+    }
+
     public WsBaseVO<WsOnlineOfflineNotifyVO> buildOffLineNotifyWsVO(User user, Long userId) {
         WsBaseVO<WsOnlineOfflineNotifyVO> wsBaseVO = new WsBaseVO<>();
         wsBaseVO.setType(WsRespTypeEnum.USER_ONLINE_OFFLINE_NOTIFY.getType());

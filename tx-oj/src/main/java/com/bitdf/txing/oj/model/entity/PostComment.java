@@ -22,7 +22,7 @@ public class PostComment {
     /**
      * id
      */
-    @TableId(type = IdType.ASSIGN_ID)
+    @TableId(type = IdType.AUTO)
     private Long id;
     /**
      * 评论内容

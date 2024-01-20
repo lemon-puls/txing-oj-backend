@@ -1,27 +1,36 @@
 package com.bitdf.txing.oj.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.chat.service.RoomService;
 import com.bitdf.txing.oj.chat.service.adapter.MessageAdapter;
 import com.bitdf.txing.oj.chat.service.business.ChatService;
 import com.bitdf.txing.oj.event.UserApplyEvent;
-import com.bitdf.txing.oj.model.entity.chat.RoomFriend;
-import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.mapper.UserApplyMapper;
+import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
 import com.bitdf.txing.oj.model.dto.user.UserApplyRequest;
+import com.bitdf.txing.oj.model.entity.chat.RoomFriend;
 import com.bitdf.txing.oj.model.entity.user.UserApply;
 import com.bitdf.txing.oj.model.entity.user.UserFriend;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.enume.UserApplyReadStatusEnum;
 import com.bitdf.txing.oj.model.enume.UserApplyStatusEnum;
+import com.bitdf.txing.oj.model.enume.UserApplyTypeEnum;
+import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
+import com.bitdf.txing.oj.model.vo.user.FriendApplyVO;
+import com.bitdf.txing.oj.service.UserApplyService;
 import com.bitdf.txing.oj.service.UserFriendService;
 import com.bitdf.txing.oj.service.adapter.FriendAdapter;
+import com.bitdf.txing.oj.utils.CursorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.bitdf.txing.oj.service.UserApplyService;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service("userApplyService")
@@ -96,4 +105,28 @@ public class UserApplyServiceImpl extends ServiceImpl<UserApplyMapper, UserApply
         chatService.sendMsg(MessageAdapter.buildAgreeMessage(roomFriend.getRoomId()), userId);
     }
 
+    @Override
+    public CursorPageBaseVO<FriendApplyVO> getPageByCursor(CursorPageBaseRequest cursorPageBaseRequest, Long userId) {
+        CursorPageBaseVO<UserApply> cursorPageByMysql = CursorUtils.getCursorPageByMysql(this, cursorPageBaseRequest,
+                wrapper -> wrapper.eq(UserApply::getTargetId, userId)
+                        .eq(UserApply::getType, UserApplyTypeEnum.ADD_FRIEND.getCode()),
+                UserApply::getCreateTime);
+        if (CollectionUtil.isEmpty(cursorPageByMysql.getList())) {
+            return CursorPageBaseVO.empty();
+        }
+        // 将这些申请列表标为已读
+        readApplys(userId, cursorPageByMysql.getList());
+        // 返回消息
+        List<FriendApplyVO> friendApplyVOS = FriendAdapter.buildFriendApplyVOBatch(cursorPageByMysql.getList());
+        return CursorPageBaseVO.init(cursorPageByMysql, friendApplyVOS);
+    }
+
+    private void readApplys(Long userId, List<UserApply> userApplyList) {
+        List<Long> applyIds = userApplyList.stream().map(UserApply::getId).collect(Collectors.toList());
+        lambdaUpdate().set(UserApply::getReadStatus, UserApplyReadStatusEnum.READ)
+                .eq(UserApply::getReadStatus, UserApplyReadStatusEnum.UNREAD)
+                .in(UserApply::getId, applyIds)
+                .eq(UserApply::getTargetId, userId)
+                .update();
+    }
 }

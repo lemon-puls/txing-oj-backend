@@ -23,7 +23,7 @@ public class ChatRoomVO {
     @ApiModelProperty("是否是全员会话")
     private Boolean hotFlag;
     @ApiModelProperty("最新消息")
-    private String text;
+    private String lastMessage;
     @ApiModelProperty("最新活跃时间")
     private Date activeTime;
     @ApiModelProperty("会话名称")

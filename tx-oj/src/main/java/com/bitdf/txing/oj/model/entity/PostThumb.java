@@ -1,13 +1,12 @@
 package com.bitdf.txing.oj.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-
-import java.io.Serializable;
-import java.util.Date;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 帖子点赞
@@ -25,7 +24,7 @@ public class PostThumb implements Serializable {
     /**
      * id
      */
-    @TableId(type = IdType.ASSIGN_ID)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**

@@ -1,9 +1,9 @@
 package com.bitdf.txing.oj.model.vo.user;
 
+import lombok.Data;
+
 import java.io.Serializable;
 import java.util.Date;
-
-import lombok.Data;
 
 /**
  * 已登录用户视图（脱敏）
@@ -75,6 +75,11 @@ public class LoginUserVO implements Serializable {
      * 个性签名
      */
     private String personSign;
+
+    /**
+     * token
+     */
+    private String token;
 
     private static final long serialVersionUID = 1L;
 }

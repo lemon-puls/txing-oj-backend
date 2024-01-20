@@ -32,8 +32,9 @@ public class UserOffLineListener {
     UserService userService;
 
     @Async
-    @EventListener(classes = UserOffLineListener.class)
+    @EventListener(classes = UserOffLineEvent.class)
     public void saveRedisAndPush(UserOffLineEvent event) {
+        log.info("触发saveRedisAndPush");
         User user = event.getUser();
         userRelateCache.offLine(user.getId(),user.getLastOpsTime());
         // 推送给所有用户
@@ -42,8 +43,9 @@ public class UserOffLineListener {
     }
 
     @Async
-    @EventListener(classes = UserOffLineListener.class)
+    @EventListener(classes = UserOffLineEvent.class)
     public void saveDB(UserOffLineEvent event) {
+        log.info("触发saveDB");
         User user = event.getUser();
         User update = new User();
         update.setId(user.getId());

@@ -5,6 +5,8 @@ import com.bitdf.txing.oj.utils.RedisUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author Lizhiwei
@@ -16,6 +18,7 @@ public class UserRelateCache {
 
     /**
      * 获取在线用户数
+     *
      * @return
      */
     public Long getOnlineCount() {
@@ -24,7 +27,6 @@ public class UserRelateCache {
     }
 
     /**
-     *
      * @param userId
      * @param lastOpsTime
      */
@@ -48,5 +50,17 @@ public class UserRelateCache {
         String offlineKey = RedisKeyConstant.getKey(RedisKeyConstant.OFFLINE_USERID_ZET);
         RedisUtils.zRemove(offlineKey, userId);
         RedisUtils.zAdd(onlineKey, userId, lastOpsTime.getTime());
+    }
+
+    // 刷新用户信息修改时间
+    public void refreshUserModifyTime(Long userId) {
+        String key = RedisKeyConstant.getKey(RedisKeyConstant.USER_MODIFY_TIME, userId);
+        RedisUtils.set(key, new Date().getTime());
+    }
+    // 批量获取修改时间
+    public List<Long> getUserModifyTimeBatch(List<Long> userList) {
+        List<String> keys = userList.stream().map(userId -> RedisKeyConstant.getKey(RedisKeyConstant.USER_MODIFY_TIME, userId))
+                .collect(Collectors.toList());
+        return RedisUtils.mget(keys, Long.class);
     }
 }

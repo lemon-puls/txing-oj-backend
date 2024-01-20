@@ -21,7 +21,7 @@ public class UserApply {
     /**
      * id
      */
-    @TableId(type = IdType.ASSIGN_ID)
+    @TableId(type = IdType.AUTO)
     private Long id;
     /**
      * 申请人id

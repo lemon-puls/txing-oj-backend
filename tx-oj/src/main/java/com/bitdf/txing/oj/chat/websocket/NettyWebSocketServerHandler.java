@@ -49,7 +49,9 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
 
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+        log.info("ws连接建立成功");
         this.webSocketService = getWebSocketService();
+        log.info("ws连接建立成功了");
     }
 
     private WebSocketService getWebSocketService() {
@@ -76,6 +78,7 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
                 userOffLine(ctx);
             }
         } else if(evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
+            log.info("websocket握手完成");
             // websocket握手完成
             this.webSocketService.connect(ctx.channel());
             String token = NettyUtil.getAttr(ctx.channel(), NettyUtil.TOKEN);

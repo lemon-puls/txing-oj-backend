@@ -2,17 +2,18 @@ package com.bitdf.txing.oj.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRequest;
 import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
 import com.bitdf.txing.oj.model.dto.user.UserModifyPwdRequest;
 import com.bitdf.txing.oj.model.dto.user.UserQueryRequest;
+import com.bitdf.txing.oj.model.dto.user.UserVOBatchRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.model.vo.user.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.user.UserVO;
-import java.util.List;
-import javax.servlet.http.HttpServletRequest;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * 用户服务
@@ -132,4 +133,6 @@ public interface UserService extends IService<User> {
     Integer getGroupOnlineCount(List<Long> memberIdList);
 
     CursorPageBaseVO<User> getMemberPageByCursor(List<Long> memberIdList, CursorPageBaseRequest cursorPageBaseRequest);
+
+    List<UserVO> getUserVOBatch(UserVOBatchRequest request);
 }

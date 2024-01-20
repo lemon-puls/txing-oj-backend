@@ -5,23 +5,17 @@ import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.common.DeleteRequest;
 import com.bitdf.txing.oj.constant.UserConstant;
-import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.model.dto.user.*;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.model.vo.user.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.user.UserVO;
 import com.bitdf.txing.oj.service.QuestionSubmitService;
 import com.bitdf.txing.oj.service.UserService;
-
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
 import com.bitdf.txing.oj.utils.R;
+import com.bitdf.txing.oj.utils.UserTokenUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -29,11 +23,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 用户接口
@@ -94,6 +90,8 @@ public class UserController {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         LoginUserVO loginUserVO = userService.userLogin(userAccount, userPassword, request);
+        String token = UserTokenUtils.generateAndSaveUserToken(loginUserVO.getId());
+        loginUserVO.setToken(token);
         return R.ok(loginUserVO);
     }
 
@@ -354,4 +352,10 @@ public class UserController {
 //    public R updateAvatar() {
 //
 //    }
+
+    @PostMapping("/vo/batch/get")
+    public R getUserVoBatch(@RequestBody UserVOBatchRequest request) {
+        List<UserVO> userVOS = userService.getUserVOBatch(request);
+        return R.ok(userVOS);
+    }
 }

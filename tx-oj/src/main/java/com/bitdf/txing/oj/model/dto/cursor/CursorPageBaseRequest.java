@@ -2,7 +2,6 @@ package com.bitdf.txing.oj.model.dto.cursor;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,7 +17,7 @@ import javax.validation.constraints.Min;
  * 注释：
  */
 @Data
-@ApiModel("游标翻页请求")
+//@ApiModel("游标翻页请求")
 @AllArgsConstructor
 @NoArgsConstructor
 public class CursorPageBaseRequest {

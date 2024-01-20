@@ -1,12 +1,11 @@
 package com.bitdf.txing.oj.model.entity.user;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.lemon.util.anno.MysqlColumn;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
-
-import com.lemon.util.anno.MysqlColumn;
-import lombok.Data;
 
 /**
  * 用户
@@ -27,7 +26,7 @@ public class User implements Serializable {
     /**
      * id
      */
-    @TableId(type = IdType.ASSIGN_ID)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**

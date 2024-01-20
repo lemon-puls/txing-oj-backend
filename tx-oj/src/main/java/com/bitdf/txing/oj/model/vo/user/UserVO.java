@@ -1,9 +1,14 @@
 package com.bitdf.txing.oj.model.vo.user;
 
+import com.lemon.util.anno.MysqlColumn;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.io.Serializable;
 import java.util.Date;
-
-import lombok.Data;
 
 /**
  * 用户视图（脱敏）
@@ -13,6 +18,9 @@ import lombok.Data;
  * 注释：
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class UserVO implements Serializable {
 
     /**
@@ -78,5 +86,26 @@ public class UserVO implements Serializable {
      */
     private String personSign;
 
+    @ApiModelProperty(value = "是否需要刷新")
+    private Boolean needRefresh = Boolean.TRUE;
+
+    /**
+     * 最近一次上下线时间
+     */
+    private Date lastOpsTime;
+    /**
+     * 在线状态 0:在线 1: 下线
+     */
+    @MysqlColumn(defaultValue = "0")
+    private Integer activeStatus;
+
+
     private static final long serialVersionUID = 1L;
+
+    public static UserVO skip(Long userId) {
+        return UserVO.builder()
+                .id(userId)
+                .needRefresh(false)
+                .build();
+    }
 }

@@ -1,5 +1,6 @@
 package com.bitdf.txing.oj.service.adapter;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.bitdf.txing.oj.model.dto.user.UserApplyRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.entity.user.UserApply;
@@ -7,9 +8,8 @@ import com.bitdf.txing.oj.model.entity.user.UserFriend;
 import com.bitdf.txing.oj.model.enume.UserApplyReadStatusEnum;
 import com.bitdf.txing.oj.model.enume.UserApplyStatusEnum;
 import com.bitdf.txing.oj.model.enume.UserApplyTypeEnum;
+import com.bitdf.txing.oj.model.vo.user.FriendApplyVO;
 import com.bitdf.txing.oj.model.vo.user.FriendVO;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 
 import java.util.List;
 import java.util.Map;
@@ -57,5 +57,14 @@ public class FriendAdapter {
             }
             return friendVO;
         }).collect(Collectors.toList());
+    }
+
+    public static List<FriendApplyVO> buildFriendApplyVOBatch(List<UserApply> userApplyList) {
+        List<FriendApplyVO> collect = userApplyList.stream().map(userApply -> {
+            FriendApplyVO friendApplyVO = new FriendApplyVO();
+            BeanUtil.copyProperties(userApply, friendApplyVO);
+            return friendApplyVO;
+        }).collect(Collectors.toList());
+        return collect;
     }
 }

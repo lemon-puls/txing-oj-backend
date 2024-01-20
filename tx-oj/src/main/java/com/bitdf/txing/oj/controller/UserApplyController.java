@@ -1,18 +1,17 @@
 package com.bitdf.txing.oj.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
+import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
 import com.bitdf.txing.oj.model.dto.user.UserApplyRequest;
-import com.bitdf.txing.oj.model.entity.user.UserApply;
+import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
+import com.bitdf.txing.oj.model.vo.user.FriendApplyVO;
+import com.bitdf.txing.oj.service.UserApplyService;
 import com.bitdf.txing.oj.utils.R;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import com.bitdf.txing.oj.service.UserApplyService;
 
 
 /**
@@ -48,6 +47,18 @@ public class UserApplyController {
     public R agreeApply(@RequestParam("applyId") Long applyId) {
         userApplyService.agreeApply(AuthInterceptor.userThreadLocal.get().getId(), applyId);
         return R.ok();
+    }
+
+    /**
+     * 查询好友申请列表（游标）
+     */
+    @PostMapping("/cursor/list")
+    @AuthCheck(mustRole = "login")
+    @ApiOperation("获取好友申请列表")
+    public R getFriendApplyPageByCursor(@RequestBody CursorPageBaseRequest cursorPageBaseRequest) {
+        User user = AuthInterceptor.userThreadLocal.get();
+        CursorPageBaseVO<FriendApplyVO> cursorPageBaseVO = userApplyService.getPageByCursor(cursorPageBaseRequest, user.getId());
+        return R.ok(cursorPageBaseVO);
     }
 
 

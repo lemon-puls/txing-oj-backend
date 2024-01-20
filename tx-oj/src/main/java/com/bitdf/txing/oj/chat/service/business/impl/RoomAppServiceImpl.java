@@ -2,7 +2,6 @@ package com.bitdf.txing.oj.chat.service.business.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Pair;
-import com.bitdf.txing.oj.chat.enume.RoomTypeEnum;
 import com.bitdf.txing.oj.chat.domain.vo.RoomBaseInfo;
 import com.bitdf.txing.oj.chat.domain.vo.request.GroupAddRequest;
 import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRequest;
@@ -10,6 +9,7 @@ import com.bitdf.txing.oj.chat.domain.vo.response.ChatMemberVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatRoomVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.GroupDetailVO;
 import com.bitdf.txing.oj.chat.enume.GroupRoleEnum;
+import com.bitdf.txing.oj.chat.enume.RoomTypeEnum;
 import com.bitdf.txing.oj.chat.event.GroupMemberAddEvent;
 import com.bitdf.txing.oj.chat.service.*;
 import com.bitdf.txing.oj.chat.service.adapter.ChatAdapter;
@@ -31,7 +31,6 @@ import com.bitdf.txing.oj.service.cache.UserCache;
 import com.bitdf.txing.oj.service.cache.UserRelateCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -87,10 +86,11 @@ public class RoomAppServiceImpl implements RoomAppService {
             hotStart = getCursorOrNull(contactCursorPageBaseVO.getCursor());
         }
         // 获取热门会话
-        Set<ZSetOperations.TypedTuple<String>> typedTuples = hotRoomCache.getRoomRange(hotStart, hotEnd);
-        List<Long> hotRoomIds = typedTuples.stream().map(ZSetOperations.TypedTuple::getValue).filter(Objects::nonNull)
-                .map(Long::parseLong).collect(Collectors.toList());
-        roomIds.addAll(hotRoomIds);
+//        Set<ZSetOperations.TypedTuple<String>> typedTuples = hotRoomCache.getRoomRange(hotStart, hotEnd);
+//        List<Long> hotRoomIds = typedTuples.stream().map(ZSetOperations.TypedTuple::getValue).filter(Objects::nonNull)
+//                .map(Long::parseLong).collect(Collectors.toList());
+//        roomIds.addAll(hotRoomIds);
+        roomIds.add(1L);
         // 组装会话信息（名称 头像 未读数等等）
         List<ChatRoomVO> result = buildContactResp(userId, roomIds);
         return CursorPageBaseVO.init(contactCursorPageBaseVO, result);
@@ -128,7 +128,7 @@ public class RoomAppServiceImpl implements RoomAppService {
                     if (Objects.nonNull(message)) {
                         AbstractMsghandler msghandler = MsgHandlerFactory.getStrategyNoNull(message.getType());
                         String text = msghandler.showContactMsg(message);
-                        chatRoomVO.setText(userMap.get(message.getFromUserId()).getUserName() + ":" + text);
+                        chatRoomVO.setLastMessage(userMap.get(message.getFromUserId()).getUserName() + ":" + text);
                     }
                     chatRoomVO.setUnreadCount(unReadCountMap.getOrDefault(roomBaseInfo.getRoomId(), 0));
                     return chatRoomVO;
@@ -238,6 +238,7 @@ public class RoomAppServiceImpl implements RoomAppService {
 
     /**
      * 获取群组详情
+     *
      * @param userId
      * @param roomId
      * @return
@@ -276,7 +277,6 @@ public class RoomAppServiceImpl implements RoomAppService {
     }
 
     /**
-     *
      * @param groupMemberRequest
      * @return
      */
@@ -311,6 +311,7 @@ public class RoomAppServiceImpl implements RoomAppService {
 
     /**
      * 创建群聊
+     *
      * @param groupAddRequest
      * @param userId
      * @return
@@ -330,6 +331,7 @@ public class RoomAppServiceImpl implements RoomAppService {
 
     /**
      * 创建room
+     *
      * @param userId
      * @return
      */

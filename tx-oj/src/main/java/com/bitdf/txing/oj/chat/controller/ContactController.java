@@ -1,16 +1,13 @@
 package com.bitdf.txing.oj.chat.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatRoomVO;
+import com.bitdf.txing.oj.chat.service.ContactService;
 import com.bitdf.txing.oj.chat.service.RoomService;
 import com.bitdf.txing.oj.chat.service.business.ChatService;
 import com.bitdf.txing.oj.chat.service.business.RoomAppService;
 import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
-import com.bitdf.txing.oj.model.entity.chat.Contact;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.utils.R;
 import io.swagger.annotations.Api;
@@ -18,8 +15,6 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import com.bitdf.txing.oj.chat.service.ContactService;
 
 
 /**
@@ -46,7 +41,7 @@ public class ContactController {
     @PostMapping("/list")
     @ApiOperation("查询（游标翻页）")
     @AuthCheck(mustRole = "login")
-    public R list(@RequestBody CursorPageBaseRequest cursorPageBaseRequest) {
+    public R getSessionPageByCursor(@RequestBody CursorPageBaseRequest cursorPageBaseRequest) {
         Long userId = AuthInterceptor.userThreadLocal.get().getId();
         CursorPageBaseVO<ChatRoomVO> cursorPageBaseVO = roomAppService.getContactPageByCursor(cursorPageBaseRequest, userId);
         return R.ok(cursorPageBaseVO);

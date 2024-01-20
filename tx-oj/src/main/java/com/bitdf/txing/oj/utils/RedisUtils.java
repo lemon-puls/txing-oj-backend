@@ -1,7 +1,6 @@
 package com.bitdf.txing.oj.utils;
 
 import cn.hutool.extra.spring.SpringUtil;
-import cn.hutool.json.JSON;
 import cn.hutool.json.JSONUtil;
 import com.bitdf.txing.oj.constant.RedisKeyConstant;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +33,7 @@ public class RedisUtils {
         String key = RedisKeyConstant.QUESTION_COMMENT_THUMB + questionId + "-" + commentId;
         return key;
     }
+
     /**
      * 获取到 文章评论点赞 Redis key
      *
@@ -258,7 +258,7 @@ public class RedisUtils {
      * @param key 键
      * @return 值
      */
-    private static String get(String key) {
+    public static String get(String key) {
         return key == null ? null : stringRedisTemplate.opsForValue().get(key);
     }
 

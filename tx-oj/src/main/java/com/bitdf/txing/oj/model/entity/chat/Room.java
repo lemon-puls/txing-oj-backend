@@ -22,7 +22,7 @@ public class Room {
     /**
      * id
      */
-    @TableId(type = IdType.ASSIGN_ID)
+    @TableId(type = IdType.AUTO)
     private Long id;
     /**
      * 房间类型： 0：私聊 1：群聊

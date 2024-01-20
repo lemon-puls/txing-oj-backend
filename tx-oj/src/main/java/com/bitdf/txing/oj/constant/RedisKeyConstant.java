@@ -36,6 +36,7 @@ public class RedisKeyConstant {
 
     /**
      * RoomFriend and RoomGroup
+     *
      * @param key
      * @param objects
      * @return
@@ -45,7 +46,11 @@ public class RedisKeyConstant {
 
     public static final String ONLINE_USERID_ZET = "online";
     public static final String OFFLINE_USERID_ZET = "offline";
+    // 用户信息修改时间缓存
+    public static final String USER_MODIFY_TIME = "user:modify:uid_%d";
 
+    // 用户相关
+    public static final String USER_TOKEN = "user:token:uid_%d";
 
     public static String getKey(String key, Object... objects) {
         return BASE_KEY + String.format(key, objects);

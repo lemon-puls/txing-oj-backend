@@ -1,41 +1,46 @@
 package com.bitdf.txing.oj.service.impl;
 
-import static com.bitdf.txing.oj.constant.UserConstant.USER_LOGIN_STATE;
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
-import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRequest;
 import com.bitdf.txing.oj.constant.CommonConstant;
-import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
-import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.mapper.UserMapper;
+import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
 import com.bitdf.txing.oj.model.dto.user.UserModifyPwdRequest;
 import com.bitdf.txing.oj.model.dto.user.UserQueryRequest;
+import com.bitdf.txing.oj.model.dto.user.UserVOBatchRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.model.enume.UserActiveStatusEnum;
 import com.bitdf.txing.oj.model.enume.UserRoleEnum;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.model.vo.user.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.user.UserVO;
 import com.bitdf.txing.oj.service.UserService;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
-
+import com.bitdf.txing.oj.service.cache.UserCache;
+import com.bitdf.txing.oj.service.cache.UserRelateCache;
 import com.bitdf.txing.oj.utils.CursorUtils;
 import com.bitdf.txing.oj.utils.page.SQLFilter;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
+import static com.bitdf.txing.oj.constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * 用户服务实现
@@ -52,6 +57,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * 盐值，混淆密码
      */
     private static final String SALT = "lizhiwei";
+
+    @Autowired
+    UserRelateCache userRelateCache;
+    @Autowired
+    @Lazy
+    UserCache userCache;
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -345,6 +356,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 获取在线人数
+     *
      * @param memberIdList
      * @return
      */
@@ -357,6 +369,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     /**
      * 游标查询群组成员信息
+     *
      * @param memberIdList
      * @param cursorPageBaseRequest
      * @return
@@ -367,5 +380,35 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             wrapper.in(memberIdList != null, User::getId, memberIdList);
         }, User::getCreateTime);
         return cursorPageBaseVO;
+    }
+
+    @Override
+    public List<UserVO> getUserVOBatch(UserVOBatchRequest request) {
+        // 获取需要同步到前端的用户ID集合
+        List<Long> userList = getNeedSyncUserIds(request.getRequestList());
+        // 加载用户信息
+        Map<Long, User> batch = userCache.getBatch(userList);
+        List<UserVO> userVOS = request.getRequestList().stream().map(itemRequest -> {
+            if (batch.containsKey(itemRequest.getUserId())) {
+                return getUserVO(batch.get(itemRequest.getUserId()));
+            } else {
+                return UserVO.skip(itemRequest.getUserId());
+            }
+        }).filter(Objects::nonNull).collect(Collectors.toList());
+        return userVOS;
+    }
+
+    private List<Long> getNeedSyncUserIds(List<UserVOBatchRequest.ItemRequest> request) {
+        List<Long> needSyncUserIds = new ArrayList<>();
+        List<Long> userModifyTimeBatch = userRelateCache.getUserModifyTimeBatch(request.stream()
+                .map(UserVOBatchRequest.ItemRequest::getUserId).collect(Collectors.toList()));
+        for (int i = 0; i < request.size(); i++) {
+            UserVOBatchRequest.ItemRequest itemRequest = request.get(i);
+            Long modifyTime = userModifyTimeBatch.get(i);
+            if (Objects.isNull(itemRequest.getLastModifyTime()) || (Objects.nonNull(modifyTime) && modifyTime > itemRequest.getLastModifyTime())) {
+                needSyncUserIds.add(itemRequest.getUserId());
+            }
+        }
+        return needSyncUserIds;
     }
 }

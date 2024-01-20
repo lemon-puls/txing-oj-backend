@@ -1,14 +1,13 @@
 package com.bitdf.txing.oj.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-
-import java.io.Serializable;
-import java.util.Date;
-
 import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 帖子
@@ -26,7 +25,7 @@ public class Post implements Serializable {
     /**
      * id
      */
-    @TableId(type = IdType.ASSIGN_ID)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
