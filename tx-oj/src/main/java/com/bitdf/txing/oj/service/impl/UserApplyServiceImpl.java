@@ -68,9 +68,9 @@ public class UserApplyServiceImpl extends ServiceImpl<UserApplyMapper, UserApply
         UserFriend userFriend = userFriendService.getByFriend(userId, request.getTargetUserId());
         ThrowUtils.throwIf(userFriend != null, TxCodeEnume.USER_ALEARDY_IS_FRIEND_EXCEPTION);
         // 存在申请记录 防止重复申请
-        UserApply userApply = lambdaQuery().eq(UserApply::getUserId, userId)
-                .eq(UserApply::getTargetId, request.getTargetUserId()).one();
-        ThrowUtils.throwIf(userApply != null, TxCodeEnume.USER_REPEAT_APPLY_EXCEPTION);
+//        UserApply userApply = lambdaQuery().eq(UserApply::getUserId, userId)
+//                .eq(UserApply::getTargetId, request.getTargetUserId()).one();
+//        ThrowUtils.throwIf(userApply != null, TxCodeEnume.USER_REPEAT_APPLY_EXCEPTION);
         // 是否目标用户已申请过了 这样就直接同意对方的申请即可成为好友
         // TODO
         // 申请入库
@@ -89,6 +89,9 @@ public class UserApplyServiceImpl extends ServiceImpl<UserApplyMapper, UserApply
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void agreeApply(Long userId, Long applyId) {
+        // 判断是否已经是好友
+        UserFriend friend = userFriendService.getByFriend(userId, applyId);
+        ThrowUtils.throwIf(friend != null, "当前已是好友关系");
         // 判断是否合法
         UserApply userApply = this.getById(applyId);
         ThrowUtils.throwIf(userApply == null, "申请记录不存在");
@@ -123,8 +126,8 @@ public class UserApplyServiceImpl extends ServiceImpl<UserApplyMapper, UserApply
 
     private void readApplys(Long userId, List<UserApply> userApplyList) {
         List<Long> applyIds = userApplyList.stream().map(UserApply::getId).collect(Collectors.toList());
-        lambdaUpdate().set(UserApply::getReadStatus, UserApplyReadStatusEnum.READ)
-                .eq(UserApply::getReadStatus, UserApplyReadStatusEnum.UNREAD)
+        lambdaUpdate().set(UserApply::getReadStatus, UserApplyReadStatusEnum.READ.getCode())
+                .eq(UserApply::getReadStatus, UserApplyReadStatusEnum.UNREAD.getCode())
                 .in(UserApply::getId, applyIds)
                 .eq(UserApply::getTargetId, userId)
                 .update();

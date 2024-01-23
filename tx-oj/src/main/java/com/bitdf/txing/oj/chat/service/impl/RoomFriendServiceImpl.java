@@ -1,5 +1,6 @@
 package com.bitdf.txing.oj.chat.service.impl;
 
+import com.bitdf.txing.oj.chat.enume.RoomFriendStatusEnum;
 import com.bitdf.txing.oj.chat.service.RoomFriendService;
 import com.bitdf.txing.oj.chat.service.adapter.ChatAdapter;
 import com.bitdf.txing.oj.model.entity.chat.RoomFriend;
@@ -37,6 +38,7 @@ public class RoomFriendServiceImpl extends ServiceImpl<RoomFriendMapper, RoomFri
 
     /**
      * 创建RoomFriend
+     *
      * @return
      */
     @Override
@@ -57,5 +59,14 @@ public class RoomFriendServiceImpl extends ServiceImpl<RoomFriendMapper, RoomFri
     @Override
     public List<RoomFriend> listByRoomIds(List<Long> roomIds) {
         return lambdaQuery().in(RoomFriend::getRoomId, roomIds).list();
+    }
+
+    @Override
+    public void disableRoom(List<Long> userIdList) {
+        lambdaUpdate()
+                .eq(RoomFriend::getUserId1, userIdList.get(0))
+                .eq(RoomFriend::getUserId2, userIdList.get(1))
+                .set(RoomFriend::getStatus, RoomFriendStatusEnum.FORBIDDEN.getCode())
+                .update();
     }
 }

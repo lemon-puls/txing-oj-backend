@@ -1,40 +1,39 @@
 package com.bitdf.txing.oj.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.bitdf.txing.oj.chat.service.business.RoomAppService;
 import com.bitdf.txing.oj.mapper.UserFriendMapper;
 import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
-import com.bitdf.txing.oj.model.dto.user.UserApplyRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
-import com.bitdf.txing.oj.model.entity.user.UserApply;
 import com.bitdf.txing.oj.model.entity.user.UserFriend;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.model.vo.user.FriendVO;
+import com.bitdf.txing.oj.service.UserFriendService;
 import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.service.adapter.FriendAdapter;
 import com.bitdf.txing.oj.utils.CursorUtils;
-import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.bitdf.txing.oj.service.UserFriendService;
 
 
 @Service("userFriendService")
+@Slf4j
 public class UserFriendServiceImpl extends ServiceImpl<UserFriendMapper, UserFriend> implements UserFriendService {
 
     @Autowired
     UserFriendMapper userFriendMapper;
     @Autowired
     UserService userService;
+    @Autowired
+    RoomAppService roomAppService;
 
     /**
      * 获取好友记录
@@ -69,6 +68,7 @@ public class UserFriendServiceImpl extends ServiceImpl<UserFriendMapper, UserFri
 
     /**
      * 游标翻页
+     *
      * @param userId
      * @param cursorPageBaseRequest
      * @return
@@ -88,6 +88,7 @@ public class UserFriendServiceImpl extends ServiceImpl<UserFriendMapper, UserFri
 
     /**
      * 获取下一页（游标翻页）
+     *
      * @param userId
      * @param cursorPageBaseRequest
      * @return
@@ -109,4 +110,35 @@ public class UserFriendServiceImpl extends ServiceImpl<UserFriendMapper, UserFri
 //        return new PageUtils(page);
 //    }
 
+
+    /**
+     * 删除好友
+     *
+     * @param userId
+     * @param friendId
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteFriend(Long userId, Long friendId) {
+        List<UserFriend> userFriends = this.getUserFriend(userId, friendId);
+        if (CollectionUtil.isEmpty(userFriends)) {
+            log.info("[删除好友] --> 无需删除 不存在好友关系");
+            return;
+        }
+        List<Long> entityIds = userFriends.stream().map(UserFriend::getId).collect(Collectors.toList());
+        this.removeByIds(entityIds);
+        // 禁用房间
+        roomAppService.deleteFriendRoom(Arrays.asList(userId, friendId));
+    }
+
+    private List<UserFriend> getUserFriend(Long userId, Long friendId) {
+        return lambdaQuery()
+                .eq(UserFriend::getUserId, userId)
+                .eq(UserFriend::getFriendId, friendId)
+                .or()
+                .eq(UserFriend::getFriendId, userId)
+                .eq(UserFriend::getUserId, friendId)
+                .select(UserFriend::getId)
+                .list();
+    }
 }

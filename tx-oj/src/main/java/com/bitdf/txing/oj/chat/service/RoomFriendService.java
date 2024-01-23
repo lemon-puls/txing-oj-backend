@@ -19,6 +19,8 @@ public interface RoomFriendService extends IService<RoomFriend> {
 
     List<RoomFriend> listByRoomIds(List<Long> roomIds);
 
+    void disableRoom(List<Long> userIdList);
+
 //    PageUtils queryPage(Map<String, Object> params);
 }
 

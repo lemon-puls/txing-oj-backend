@@ -4,19 +4,14 @@ import cn.hutool.core.io.FileUtil;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.constant.FileConstant;
 import com.bitdf.txing.oj.constant.RedisKeyConstant;
-import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.manager.CosManager;
 import com.bitdf.txing.oj.model.dto.file.UploadFileRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.enume.FileUploadBizEnum;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.vo.cos.CosCredentialsVO;
 import com.bitdf.txing.oj.service.UserService;
-
-import java.io.File;
-import java.util.Arrays;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
 import com.bitdf.txing.oj.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -24,11 +19,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.util.Arrays;
 
 /**
  * 文件接口
@@ -130,5 +127,12 @@ public class FileController {
                 throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION, "文件类型错误");
             }
         }
+    }
+
+    @GetMapping("/credential/get")
+    @AuthCheck(mustRole = "login")
+    public R getCosCredentials() {
+        CosCredentialsVO cosCredentialsVO = cosManager.generateCreDentials();
+        return R.ok(cosCredentialsVO);
     }
 }

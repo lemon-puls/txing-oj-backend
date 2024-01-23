@@ -29,6 +29,8 @@ public class ChatMessageVO {
     public static class UserInfo {
         @ApiModelProperty("用户id")
         private Long userId;
+        private String userName;
+        private String userAvatar;
     }
 
     @Data

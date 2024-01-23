@@ -358,4 +358,10 @@ public class RoomAppServiceImpl implements RoomAppService {
         roomService.save(room);
         return room;
     }
+
+    @Override
+    public void deleteFriendRoom(List<Long> asList) {
+        ThrowUtils.throwIf(CollectionUtil.isEmpty(asList) || asList.size() != 2, "房间删除失败，用户参数数量不对");
+        roomFriendService.disableRoom(ChatAdapter.sortUserIdList(asList));
+    }
 }

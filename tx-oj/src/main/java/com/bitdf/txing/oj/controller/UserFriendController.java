@@ -1,20 +1,15 @@
 package com.bitdf.txing.oj.controller;
 
-import java.util.Arrays;
-
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
-import com.bitdf.txing.oj.model.entity.user.UserFriend;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.model.vo.user.FriendVO;
+import com.bitdf.txing.oj.service.UserFriendService;
 import com.bitdf.txing.oj.utils.R;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import com.bitdf.txing.oj.service.UserFriendService;
-
 
 
 /**
@@ -40,6 +35,16 @@ public class UserFriendController {
         Long userId = AuthInterceptor.userThreadLocal.get().getId();
         CursorPageBaseVO<FriendVO> response = userFriendService.cursorPage(userId, cursorPageBaseRequest);
         return R.ok(response);
+    }
+    /**
+     * 删除好友
+     */
+    @AuthCheck(mustRole = "login")
+    @GetMapping("/delete")
+    public R delete(@RequestParam("friendId") Long friendId){
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        userFriendService.deleteFriend(userId, friendId);
+        return R.ok();
     }
 
 
@@ -69,16 +74,6 @@ public class UserFriendController {
 //    @RequestMapping("/update")
 //    public R update(@RequestBody UserFriend userFriend){
 //		userFriendService.updateById(userFriend);
-//
-//        return R.ok();
-//    }
-
-    /**
-     * 删除
-     */
-//    @RequestMapping("/delete")
-//    public R delete(@RequestBody Long[] ids){
-//		userFriendService.removeByIds(Arrays.asList(ids));
 //
 //        return R.ok();
 //    }

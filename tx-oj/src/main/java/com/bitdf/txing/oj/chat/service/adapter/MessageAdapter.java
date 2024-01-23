@@ -10,7 +10,11 @@ import com.bitdf.txing.oj.chat.service.strategy.MsgHandlerFactory;
 import com.bitdf.txing.oj.model.entity.chat.Message;
 import com.bitdf.txing.oj.model.entity.chat.RoomGroup;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.service.cache.UserCache;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +25,11 @@ import java.util.stream.Collectors;
  * @date 2023/12/29 16:25:09
  * 注释：
  */
+@Component
 public class MessageAdapter {
+
+    @Autowired
+    UserCache userCache;
 
     /**
      * 构建同意好友请求消息
@@ -46,7 +54,7 @@ public class MessageAdapter {
                 .build();
     }
 
-    public static List<ChatMessageVO> buildMessageVOBatch(List<Message> messages, Long userId) {
+    public List<ChatMessageVO> buildMessageVOBatch(List<Message> messages, Long userId) {
         List<ChatMessageVO> collect = messages.stream().map(message -> {
                     ChatMessageVO chatMessageVO = new ChatMessageVO();
                     chatMessageVO.setFromUser(buildFromUser(message.getFromUserId()));
@@ -67,12 +75,20 @@ public class MessageAdapter {
         return messageVO;
     }
 
-    private static ChatMessageVO.UserInfo buildFromUser(Long fromUserId) {
-        return ChatMessageVO.UserInfo.builder().userId(fromUserId).build();
+    public ChatMessageVO.UserInfo buildFromUser(Long fromUserId) {
+        Map<Long, User> batch = userCache.getBatch(Arrays.asList(fromUserId));
+        User user = batch.get(fromUserId);
+        return ChatMessageVO.UserInfo
+                .builder()
+                .userId(fromUserId)
+                .userName(user.getUserName())
+                .userAvatar(user.getUserAvatar())
+                .build();
     }
 
     /**
      * 构建 群聊成员添加的通知消息
+     *
      * @param roomGroup
      * @param inviteUser
      * @param newMemberMap

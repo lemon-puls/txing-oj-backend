@@ -29,4 +29,6 @@ public interface RoomAppService {
     CursorPageBaseVO<ChatMemberVO> getGroupMembersByCursor(GroupMemberRequest groupMemberRequest);
 
     Long addGroup(GroupAddRequest groupAddRequest, Long userId);
+
+    void deleteFriendRoom(List<Long> asList);
 }

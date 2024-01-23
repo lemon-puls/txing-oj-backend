@@ -42,6 +42,8 @@ public class ChatServiceImpl implements ChatService {
     ContactService contactService;
     @Autowired
     UserRelateCache userRelateCache;
+    @Autowired
+    MessageAdapter messageAdapter;
 
     /**
      * 发送消息
@@ -79,7 +81,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     public List<ChatMessageVO> getMessageVOBatch(List<Message> messages, Long userId) {
-        return MessageAdapter.buildMessageVOBatch(messages, userId);
+        return messageAdapter.buildMessageVOBatch(messages, userId);
     }
 
     /**
@@ -96,7 +98,7 @@ public class ChatServiceImpl implements ChatService {
         if (cursorPageBaseVO.isEmpty()) {
             return CursorPageBaseVO.empty();
         }
-        return CursorPageBaseVO.init(cursorPageBaseVO, MessageAdapter.buildMessageVOBatch(cursorPageBaseVO.getList(), userId));
+        return CursorPageBaseVO.init(cursorPageBaseVO, messageAdapter.buildMessageVOBatch(cursorPageBaseVO.getList(), userId));
     }
 
     /**

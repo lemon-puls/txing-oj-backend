@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 /**
  * @author Lizhiwei
  * @date 2024/1/15 11:20:28
@@ -35,5 +37,6 @@ public class FriendApplyVO {
      * 申请状态：0：待通过 1：已通过
      */
     private Integer status;
+    private Date createTime;
 
 }

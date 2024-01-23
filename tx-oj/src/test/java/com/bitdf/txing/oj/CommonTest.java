@@ -2,12 +2,14 @@ package com.bitdf.txing.oj;
 
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
-import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.chat.service.cache.GroupMemberCache;
+import com.bitdf.txing.oj.config.CosClientConfig;
+import com.bitdf.txing.oj.manager.CosManager;
 import com.bitdf.txing.oj.model.dto.question.JudgeConfig;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.google.gson.Gson;
 import com.lemon.util.service.TableGenerator;
+import com.qcloud.cos.COSClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -22,7 +24,6 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 @SpringBootTest
 public class CommonTest {
@@ -36,6 +37,21 @@ public class CommonTest {
     @Test
     void createTable() throws SQLException {
         tableGenerator.generateTable();
+    }
+
+    /**
+     * oss生成临时秘钥
+     */
+    @Autowired
+    COSClient cosClient;
+    @Autowired
+    CosClientConfig cosClientConfig;
+    @Autowired
+    CosManager cosManager;
+    @Test
+    void generateSecretKey() {
+
+        System.out.println(cosManager.generateCreDentials());
     }
 
     @Autowired
