@@ -2,10 +2,12 @@ package com.bitdf.txing.oj;
 
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
+import com.bitdf.txing.oj.chat.service.MessageService;
 import com.bitdf.txing.oj.chat.service.cache.GroupMemberCache;
 import com.bitdf.txing.oj.config.CosClientConfig;
 import com.bitdf.txing.oj.manager.CosManager;
 import com.bitdf.txing.oj.model.dto.question.JudgeConfig;
+import com.bitdf.txing.oj.model.entity.chat.Message;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.google.gson.Gson;
 import com.lemon.util.service.TableGenerator;
@@ -39,6 +41,14 @@ public class CommonTest {
         tableGenerator.generateTable();
     }
 
+    @Autowired
+    MessageService messageService;
+    @Test
+    void testGetMessage() {
+        Message byId = messageService.getById(150);
+        System.out.println(byId);
+    }
+
     /**
      * oss生成临时秘钥
      */
@@ -48,6 +58,7 @@ public class CommonTest {
     CosClientConfig cosClientConfig;
     @Autowired
     CosManager cosManager;
+
     @Test
     void generateSecretKey() {
 

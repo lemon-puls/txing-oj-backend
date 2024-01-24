@@ -20,7 +20,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName(value = "tx_oj_message")
+@TableName(value = "tx_oj_message", autoResultMap = true)
 public class Message {
     /**
      * id

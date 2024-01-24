@@ -88,10 +88,10 @@ public class MessageSendMqListener {
                 if (Objects.equals(room.getType(), RoomTypeEnum.GROUP.getCode())) {
                     // 群聊
                     targetUserIds = groupMemberCache.getMemberUserIdList(room.getId());
-                } if (Objects.equals(room.getType(), RoomTypeEnum.FRIEND.getCode())) {
+                } else if (Objects.equals(room.getType(), RoomTypeEnum.FRIEND.getCode())) {
                     // 私聊
                     RoomFriend roomFriend = roomFriendService.getByRoomId(room.getId());
-                    targetUserIds = Arrays.asList(roomFriend.getUserId1(), roomFriend.getUserId2());
+                    targetUserIds = Arrays.asList(messageVO.getFromUser().getUserId().equals(roomFriend.getUserId1()) ? roomFriend.getUserId2() : roomFriend.getUserId1());
                 }
                 // 更新或创建所有目标用户的会话时间
                 contactService.updateOrCreateActiveTime(room.getId(), targetUserIds, messageEntity.getId(), messageEntity.getCreateTime());

@@ -1,5 +1,6 @@
 package com.bitdf.txing.oj.model.entity.chat.msg;
 
+import com.bitdf.txing.oj.chat.domain.vo.request.ImgMessageRequest;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AllArgsConstructor;
@@ -27,4 +28,8 @@ public class MessageExtra implements Serializable {
      * 艾特的用户ID
      */
     private List<Long> atUserIds;
+    /**
+     * 图片消息
+     */
+    private ImgMessageRequest imgMesssageRequest;
 }
