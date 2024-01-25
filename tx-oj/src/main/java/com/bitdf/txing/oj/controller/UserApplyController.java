@@ -13,6 +13,8 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
+
 
 /**
  * @author lizhiwei
@@ -59,6 +61,17 @@ public class UserApplyController {
         User user = AuthInterceptor.userThreadLocal.get();
         CursorPageBaseVO<FriendApplyVO> cursorPageBaseVO = userApplyService.getPageByCursor(cursorPageBaseRequest, user.getId());
         return R.ok(cursorPageBaseVO);
+    }
+
+    /**
+     * 标记好友申请为已读 以当前时间为界
+     */
+    @GetMapping("/read/mark")
+    @AuthCheck(mustRole = "login")
+    public R markReadFriendApply() {
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        userApplyService.markReadFriendApply(userId, new Date());
+        return R.ok();
     }
 
 

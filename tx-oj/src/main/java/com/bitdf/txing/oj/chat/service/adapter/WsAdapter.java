@@ -5,6 +5,7 @@ import com.bitdf.txing.oj.chat.enume.WsRespTypeEnum;
 import com.bitdf.txing.oj.chat.service.business.ChatService;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.enume.UserActiveStatusEnum;
+import com.bitdf.txing.oj.model.vo.user.WsFriendApplyVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -44,6 +45,13 @@ public class WsAdapter {
                 .userId(user.getId())
                 .build();
         wsBaseVO.setData(build);
+        return wsBaseVO;
+    }
+
+    public static WsBaseVO<WsFriendApplyVO> buildWsUserApply(WsFriendApplyVO wsFriendApplyVO) {
+        WsBaseVO<WsFriendApplyVO> wsBaseVO = new WsBaseVO<>();
+        wsBaseVO.setType(WsRespTypeEnum.FRIEND_APPLY_NOTIFY.getType());
+        wsBaseVO.setData(wsFriendApplyVO);
         return wsBaseVO;
     }
 

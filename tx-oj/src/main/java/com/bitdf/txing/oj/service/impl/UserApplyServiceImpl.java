@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -130,6 +131,33 @@ public class UserApplyServiceImpl extends ServiceImpl<UserApplyMapper, UserApply
                 .eq(UserApply::getReadStatus, UserApplyReadStatusEnum.UNREAD.getCode())
                 .in(UserApply::getId, applyIds)
                 .eq(UserApply::getTargetId, userId)
+                .update();
+    }
+
+    /**
+     * 获取指定用户所有消息为读书
+     *
+     * @param targetId
+     * @return
+     */
+    @Override
+    public Integer getUnReadApplyCount(Long targetId) {
+        return lambdaQuery().eq(UserApply::getTargetId, targetId)
+                .eq(UserApply::getReadStatus, UserApplyReadStatusEnum.UNREAD.getCode())
+                .count();
+    }
+
+    /**
+     * 将好友申请标记为已读
+     *
+     * @param userId
+     * @param date
+     */
+    @Override
+    public void markReadFriendApply(Long userId, Date date) {
+        lambdaUpdate().eq(UserApply::getTargetId, userId)
+                .le(UserApply::getCreateTime, date)
+                .set(UserApply::getReadStatus, UserApplyReadStatusEnum.READ.getCode())
                 .update();
     }
 }

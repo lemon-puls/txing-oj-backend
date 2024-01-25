@@ -10,7 +10,9 @@ import com.bitdf.txing.oj.model.enume.UserApplyStatusEnum;
 import com.bitdf.txing.oj.model.enume.UserApplyTypeEnum;
 import com.bitdf.txing.oj.model.vo.user.FriendApplyVO;
 import com.bitdf.txing.oj.model.vo.user.FriendVO;
+import com.bitdf.txing.oj.model.vo.user.WsFriendApplyVO;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -66,5 +68,14 @@ public class FriendAdapter {
             return friendApplyVO;
         }).collect(Collectors.toList());
         return collect;
+    }
+
+    public static WsFriendApplyVO buildWsUserApplyVO(UserApply userApply, Integer unReadCount) {
+        FriendApplyVO friendApplyVO = buildFriendApplyVOBatch(Collections.singletonList(userApply)).get(0);
+        WsFriendApplyVO wsFriendApplyVO = WsFriendApplyVO.builder()
+                .friendApplyVO(friendApplyVO)
+                .unreadCount(unReadCount)
+                .build();
+        return wsFriendApplyVO;
     }
 }

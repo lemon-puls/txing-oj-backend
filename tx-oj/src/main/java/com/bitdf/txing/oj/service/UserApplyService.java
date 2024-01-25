@@ -7,6 +7,8 @@ import com.bitdf.txing.oj.model.entity.user.UserApply;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.model.vo.user.FriendApplyVO;
 
+import java.util.Date;
+
 /**
  *
  *
@@ -20,6 +22,10 @@ public interface UserApplyService extends IService<UserApply> {
     void agreeApply(Long userId, Long applyId);
 
     CursorPageBaseVO<FriendApplyVO> getPageByCursor(CursorPageBaseRequest cursorPageBaseRequest, Long id);
+
+    Integer getUnReadApplyCount(Long targetId);
+
+    void markReadFriendApply(Long userId, Date date);
 
 //    PageUtils queryPage(Map<String, Object> params);
 }

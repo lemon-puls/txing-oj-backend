@@ -38,5 +38,10 @@ public class FriendApplyVO {
      */
     private Integer status;
     private Date createTime;
+    /**
+     * 阅读状态：0：未读 1：已读
+     */
+    private Integer readStatus;
+
 
 }
