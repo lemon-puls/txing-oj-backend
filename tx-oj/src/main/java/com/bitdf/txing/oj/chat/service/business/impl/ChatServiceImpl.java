@@ -5,15 +5,21 @@ import com.bitdf.txing.oj.chat.domain.vo.request.ChatMessageRequest;
 import com.bitdf.txing.oj.chat.domain.vo.request.MessagePageRequest;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatMemberStatisticVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
+import com.bitdf.txing.oj.chat.enume.RoomStatusEnum;
+import com.bitdf.txing.oj.chat.enume.RoomTypeEnum;
 import com.bitdf.txing.oj.chat.event.MessageSendEvent;
 import com.bitdf.txing.oj.chat.service.ContactService;
 import com.bitdf.txing.oj.chat.service.MessageService;
+import com.bitdf.txing.oj.chat.service.RoomService;
 import com.bitdf.txing.oj.chat.service.adapter.MessageAdapter;
 import com.bitdf.txing.oj.chat.service.business.ChatService;
 import com.bitdf.txing.oj.chat.service.strategy.AbstractMsghandler;
 import com.bitdf.txing.oj.chat.service.strategy.MsgHandlerFactory;
+import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.model.entity.chat.Contact;
 import com.bitdf.txing.oj.model.entity.chat.Message;
+import com.bitdf.txing.oj.model.entity.chat.Room;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.service.cache.UserRelateCache;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +50,8 @@ public class ChatServiceImpl implements ChatService {
     UserRelateCache userRelateCache;
     @Autowired
     MessageAdapter messageAdapter;
+    @Autowired
+    RoomService roomService;
 
     /**
      * 发送消息
@@ -55,6 +63,13 @@ public class ChatServiceImpl implements ChatService {
     @Transactional
     public Long sendMsg(ChatMessageRequest chatMessageRequest, Long userId) {
         // TODO 检查合法性
+        // 检查Room是否可用
+        Room room = roomService.getById(chatMessageRequest.getRoomId());
+        if (RoomStatusEnum.FORBIDDEN.getCode().equals(room.getStatus())) {
+            if (RoomTypeEnum.FRIEND.getCode().equals(room.getType())) {
+                throw new BusinessException(TxCodeEnume.COMMON_CUSTOM_EXCEPTION, "你们不是好友关系 无法发送消息");
+            }
+        }
         // 保存消息
         AbstractMsghandler msghandler = MsgHandlerFactory.getStrategyNoNull(chatMessageRequest.getMsgType());
         Long msgId = msghandler.checkAndSaveMsg(chatMessageRequest, userId);

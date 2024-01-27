@@ -57,7 +57,9 @@ public class MessageAdapter {
     public List<ChatMessageVO> buildMessageVOBatch(List<Message> messages, Long userId) {
         List<ChatMessageVO> collect = messages.stream().map(message -> {
                     ChatMessageVO chatMessageVO = new ChatMessageVO();
-                    chatMessageVO.setFromUser(buildFromUser(message.getFromUserId()));
+                    if (message.getFromUserId() != 0L) {
+                        chatMessageVO.setFromUser(buildFromUser(message.getFromUserId()));
+                    }
                     chatMessageVO.setMessage(buildMessage(message));
                     return chatMessageVO;
                 })
@@ -96,7 +98,7 @@ public class MessageAdapter {
      */
     public static ChatMessageRequest buildGroupMemberAddMessage(RoomGroup roomGroup, User inviteUser, Map<Long, User> newMemberMap) {
         ChatMessageRequest chatMessageRequest = new ChatMessageRequest();
-        chatMessageRequest.setRoomId(chatMessageRequest.getRoomId());
+        chatMessageRequest.setRoomId(roomGroup.getRoomId());
         chatMessageRequest.setMsgType(MessageTypeEnum.SYSTEM.getCode());
         StringBuffer sb = new StringBuffer();
         sb.append("\"")

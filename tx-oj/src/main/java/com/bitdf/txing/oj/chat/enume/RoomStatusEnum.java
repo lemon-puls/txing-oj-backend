@@ -10,7 +10,7 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public enum RoomFriendStatusEnum {
+public enum RoomStatusEnum {
     ACTIVE(0, "正常"),
 
     FORBIDDEN(1, "禁用");

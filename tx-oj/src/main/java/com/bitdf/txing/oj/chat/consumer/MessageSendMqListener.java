@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author Lizhiwei
@@ -82,12 +83,15 @@ public class MessageSendMqListener {
                 hotRoomCache.refreshActiveTime(room.getId(), messageEntity.getCreateTime());
                 // 推送给所有用户
                 WsBaseVO<ChatMessageVO> wsBaseVO = WsAdapter.buildMsgSend(messageVO);
-                pushService.sendPushMsg(wsBaseVO, messageEntity.getId());
+                pushService.sendPushMsg(wsBaseVO, messageVO.getFromUser().getUserId(), messageEntity.getId());
             } else {
                 List<Long> targetUserIds = new ArrayList<>();
                 if (Objects.equals(room.getType(), RoomTypeEnum.GROUP.getCode())) {
                     // 群聊
                     targetUserIds = groupMemberCache.getMemberUserIdList(room.getId());
+                    targetUserIds = targetUserIds.stream().filter(item -> messageVO.getFromUser() == null
+                                    || !item.equals(messageVO.getFromUser().getUserId()))
+                            .collect(Collectors.toList());
                 } else if (Objects.equals(room.getType(), RoomTypeEnum.FRIEND.getCode())) {
                     // 私聊
                     RoomFriend roomFriend = roomFriendService.getByRoomId(room.getId());

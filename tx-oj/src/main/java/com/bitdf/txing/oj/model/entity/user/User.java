@@ -21,7 +21,7 @@ public class User implements Serializable {
     /**
      * 系统id
      */
-    public static final Long SYSTEM_USER_ID = 1L;
+    public static final Long SYSTEM_USER_ID = 0L;
 
     /**
      * id

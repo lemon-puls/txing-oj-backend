@@ -3,6 +3,7 @@ package com.bitdf.txing.oj.model.entity.chat;
 import com.baomidou.mybatisplus.annotation.*;
 import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -16,6 +17,7 @@ import java.util.Date;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @TableName(value = "tx_oj_room")
 public class Room {
 
@@ -44,6 +46,11 @@ public class Room {
      * 额外消息
      */
     private String extJson;
+    /**
+     * 状态：0：正常 1：禁用
+     */
+    @MysqlColumn(defaultValue = "0")
+    private Integer status;
     /**
      * 创建时间
      */

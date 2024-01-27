@@ -1,6 +1,5 @@
 package com.bitdf.txing.oj.chat.service.business;
 
-import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.WsBaseVO;
 
 import java.util.List;
@@ -11,6 +10,8 @@ import java.util.List;
  * 注释：
  */
 public interface PushService {
+    void sendPushMsg(WsBaseVO<?> wsBaseVO, Long excludeUserId, Long id);
+
     void sendPushMsg(WsBaseVO<?> wsBaseVO, Long id);
 
     void sendPushMsg(WsBaseVO<?> buildMsgSend, List<Long> targetUserIds, Long id);

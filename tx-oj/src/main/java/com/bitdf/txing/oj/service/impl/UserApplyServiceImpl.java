@@ -2,6 +2,7 @@ package com.bitdf.txing.oj.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
 import com.bitdf.txing.oj.chat.service.RoomService;
 import com.bitdf.txing.oj.chat.service.adapter.MessageAdapter;
 import com.bitdf.txing.oj.chat.service.business.ChatService;
@@ -89,15 +90,15 @@ public class UserApplyServiceImpl extends ServiceImpl<UserApplyMapper, UserApply
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void agreeApply(Long userId, Long applyId) {
-        // 判断是否已经是好友
-        UserFriend friend = userFriendService.getByFriend(userId, applyId);
-        ThrowUtils.throwIf(friend != null, "当前已是好友关系");
+    public ChatMessageVO agreeApply(Long userId, Long applyId) {
         // 判断是否合法
         UserApply userApply = this.getById(applyId);
         ThrowUtils.throwIf(userApply == null, "申请记录不存在");
         ThrowUtils.throwIf(!userApply.getTargetId().equals(userId), "无权限操作");
         ThrowUtils.throwIf(userApply.getStatus().equals(UserApplyStatusEnum.AGREE), "已同意，无需重复操作");
+        // 判断是否已经是好友
+        UserFriend friend = userFriendService.getByFriend(userId, userApply.getUserId());
+        ThrowUtils.throwIf(friend != null, "当前已是好友关系");
         // 同意申请
         lambdaUpdate().set(UserApply::getStatus, UserApplyStatusEnum.AGREE.getCode())
                 .eq(UserApply::getId, applyId).update();
@@ -106,7 +107,9 @@ public class UserApplyServiceImpl extends ServiceImpl<UserApplyMapper, UserApply
         // 创建聊天房间
         RoomFriend roomFriend = roomService.createRoomAndRoomFriend(Arrays.asList(userId, userApply.getUserId()));
         // 同意后发送一条招呼语 我们已经是好友啦，开始聊天吧！
-        chatService.sendMsg(MessageAdapter.buildAgreeMessage(roomFriend.getRoomId()), userId);
+        Long msgId = chatService.sendMsg(MessageAdapter.buildAgreeMessage(roomFriend.getRoomId()), userId);
+        ChatMessageVO messageVO = chatService.getMessageVO(msgId, null);
+        return messageVO;
     }
 
     @Override

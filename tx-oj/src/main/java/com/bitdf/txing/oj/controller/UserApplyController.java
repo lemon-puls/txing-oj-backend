@@ -2,6 +2,7 @@ package com.bitdf.txing.oj.controller;
 
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
+import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
 import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
 import com.bitdf.txing.oj.model.dto.user.UserApplyRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
@@ -47,8 +48,8 @@ public class UserApplyController {
     @ApiOperation("同意好友申请")
     @AuthCheck(mustRole = "login")
     public R agreeApply(@RequestParam("applyId") Long applyId) {
-        userApplyService.agreeApply(AuthInterceptor.userThreadLocal.get().getId(), applyId);
-        return R.ok();
+        ChatMessageVO chatMessageVO = userApplyService.agreeApply(AuthInterceptor.userThreadLocal.get().getId(), applyId);
+        return R.ok(chatMessageVO);
     }
 
     /**

@@ -128,7 +128,8 @@ public class UserFriendServiceImpl extends ServiceImpl<UserFriendMapper, UserFri
         List<Long> entityIds = userFriends.stream().map(UserFriend::getId).collect(Collectors.toList());
         this.removeByIds(entityIds);
         // 禁用房间
-        roomAppService.deleteFriendRoom(Arrays.asList(userId, friendId));
+//        roomAppService.deleteFriendRoom(Arrays.asList(userId, friendId));
+        roomAppService.disableRoom(Arrays.asList(userId, friendId));
     }
 
     private List<UserFriend> getUserFriend(Long userId, Long friendId) {

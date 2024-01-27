@@ -4,6 +4,7 @@ import com.bitdf.txing.oj.chat.constant.ChatMqConstant;
 import com.bitdf.txing.oj.chat.domain.dto.PushMsgMqDTO;
 import com.bitdf.txing.oj.chat.domain.vo.response.WsBaseVO;
 import com.bitdf.txing.oj.chat.enume.WsPushTypeEnum;
+import com.bitdf.txing.oj.chat.enume.WsRespTypeEnum;
 import com.bitdf.txing.oj.chat.service.business.WebSocketService;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
@@ -50,7 +51,11 @@ public class WsPushMqListener {
                     });
                     break;
                 case ALL:
-                    webSocketService.sendToAllOnline(wsBaseVO, null);
+                    Long excludeUserId = null;
+                    if (wsBaseVO.getType() == WsRespTypeEnum.MESSAGE.getType()) {
+                        excludeUserId = pushMsgMqDTO.getExcludeUserId();
+                    }
+                    webSocketService.sendToAllOnline(wsBaseVO, excludeUserId);
                     break;
 
             }

@@ -2,7 +2,6 @@ package com.bitdf.txing.oj.chat.service.business.impl;
 
 import com.bitdf.txing.oj.chat.constant.ChatMqConstant;
 import com.bitdf.txing.oj.chat.domain.dto.PushMsgMqDTO;
-import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.WsBaseVO;
 import com.bitdf.txing.oj.chat.service.business.PushService;
 import com.bitdf.txing.oj.utils.MqProducer;
@@ -29,6 +28,11 @@ public class PushServiceImpl implements PushService {
      * @param wsBaseVO
      * @param id
      */
+    @Override
+    public void sendPushMsg(WsBaseVO<?> wsBaseVO, Long excludeUserId, Long id) {
+        mqProducer.sendMsg(ChatMqConstant.CHAT_EXCHANGE, ChatMqConstant.WEBSOCKET_PUSH_ROUTING_KEY, new PushMsgMqDTO(wsBaseVO, excludeUserId),
+                id != null ? id.toString() : UUID.randomUUID().toString());
+    }
     @Override
     public void sendPushMsg(WsBaseVO<?> wsBaseVO, Long id) {
         mqProducer.sendMsg(ChatMqConstant.CHAT_EXCHANGE, ChatMqConstant.WEBSOCKET_PUSH_ROUTING_KEY, new PushMsgMqDTO(wsBaseVO),

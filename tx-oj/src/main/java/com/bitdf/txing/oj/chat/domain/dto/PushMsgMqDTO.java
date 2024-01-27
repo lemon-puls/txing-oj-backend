@@ -1,6 +1,5 @@
 package com.bitdf.txing.oj.chat.domain.dto;
 
-import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.WsBaseVO;
 import com.bitdf.txing.oj.chat.enume.WsPushTypeEnum;
 import lombok.AllArgsConstructor;
@@ -29,6 +28,10 @@ public class PushMsgMqDTO {
      */
     private List<Long> userIds;
     /**
+     * 需要排除的用户id
+     */
+    private Long excludeUserId;
+    /**
      * 推送类型 0：部分 1：全员
      */
     private Integer type;
@@ -42,5 +45,11 @@ public class PushMsgMqDTO {
         this.wsBaseVO = wsBaseVO;
         this.userIds = targetUserIds;
         this.type = WsPushTypeEnum.USER.getType();
+    }
+
+    public PushMsgMqDTO(WsBaseVO<?> wsBaseVO, Long excludeUserId) {
+        this.wsBaseVO = wsBaseVO;
+        this.excludeUserId = excludeUserId;
+        this.type = WsPushTypeEnum.ALL.getType();
     }
 }

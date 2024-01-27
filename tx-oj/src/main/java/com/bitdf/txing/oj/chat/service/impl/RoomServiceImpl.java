@@ -1,6 +1,7 @@
 package com.bitdf.txing.oj.chat.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.bitdf.txing.oj.chat.enume.RoomStatusEnum;
 import com.bitdf.txing.oj.chat.enume.RoomTypeEnum;
 import com.bitdf.txing.oj.chat.mapper.RoomMapper;
 import com.bitdf.txing.oj.chat.service.GroupMemberService;
@@ -62,6 +63,11 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
         RoomFriend roomFriend = roomFriendService.getByUserIds(sortedList.get(0), sortedList.get(1));
         if (roomFriend != null) {
             //  TODO 如果之前已经创建过 之前恢复之前的使用即可
+            Room room = Room.builder()
+                    .id(roomFriend.getRoomId())
+                    .status(RoomStatusEnum.ACTIVE.getCode())
+                    .build();
+            boolean b = this.updateById(room);
         } else {
             Room room = createRoom(RoomTypeEnum.FRIEND);
             roomFriend = roomFriendService.createRoomFriend(room.getId(), sortedList.get(0), sortedList.get(1));
@@ -83,6 +89,19 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
         lambdaUpdate().eq(Room::getId, roomId)
                 .set(Room::getMsgId, msgId)
                 .set(Room::getActiveTime, createTime)
+                .update();
+    }
+
+    @Override
+    public void disableRoom(List<Long> sortUserIdList) {
+        RoomFriend roomFriend = roomFriendService.lambdaQuery()
+                .eq(RoomFriend::getUserId1, sortUserIdList.get(0))
+                .eq(RoomFriend::getUserId2, sortUserIdList.get(1))
+                .select(RoomFriend::getRoomId)
+                .one();
+        lambdaUpdate()
+                .eq(Room::getId, roomFriend.getRoomId())
+                .set(Room::getStatus, RoomStatusEnum.FORBIDDEN.getCode())
                 .update();
     }
 }

@@ -32,4 +32,5 @@ public class MessageExtra implements Serializable {
      * 图片消息
      */
     private ImgMessageRequest imgMesssageRequest;
+
 }

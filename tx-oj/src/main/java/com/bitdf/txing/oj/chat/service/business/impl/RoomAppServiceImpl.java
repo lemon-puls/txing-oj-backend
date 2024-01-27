@@ -128,7 +128,8 @@ public class RoomAppServiceImpl implements RoomAppService {
                     if (Objects.nonNull(message)) {
                         AbstractMsghandler msghandler = MsgHandlerFactory.getStrategyNoNull(message.getType());
                         String text = msghandler.showContactMsg(message);
-                        chatRoomVO.setLastMessage(userMap.get(message.getFromUserId()).getUserName() + ":" + text);
+                        chatRoomVO.setLastMessage((message.getFromUserId() == User.SYSTEM_USER_ID
+                                ? "[系统消息] " : (userMap.get(message.getFromUserId()).getUserName() + ": ")) + text);
                     }
                     chatRoomVO.setUnreadCount(unReadCountMap.getOrDefault(roomBaseInfo.getRoomId(), 0));
                     return chatRoomVO;
@@ -363,5 +364,11 @@ public class RoomAppServiceImpl implements RoomAppService {
     public void deleteFriendRoom(List<Long> asList) {
         ThrowUtils.throwIf(CollectionUtil.isEmpty(asList) || asList.size() != 2, "房间删除失败，用户参数数量不对");
         roomFriendService.disableRoom(ChatAdapter.sortUserIdList(asList));
+    }
+
+    @Override
+    public void disableRoom(List<Long> asList) {
+        ThrowUtils.throwIf(CollectionUtil.isEmpty(asList) || asList.size() != 2, "房间删除失败，用户参数数量不对");
+        roomService.disableRoom(ChatAdapter.sortUserIdList(asList));
     }
 }

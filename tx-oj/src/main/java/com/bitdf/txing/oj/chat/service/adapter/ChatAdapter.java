@@ -1,6 +1,6 @@
 package com.bitdf.txing.oj.chat.service.adapter;
 
-import com.bitdf.txing.oj.chat.enume.RoomFriendStatusEnum;
+import com.bitdf.txing.oj.chat.enume.RoomStatusEnum;
 import com.bitdf.txing.oj.chat.enume.RoomTypeEnum;
 import com.bitdf.txing.oj.chat.domain.vo.request.GroupAddRequest;
 import com.bitdf.txing.oj.model.entity.chat.Room;
@@ -41,6 +41,7 @@ public class ChatAdapter {
         Room room = new Room();
         room.setType(typeEnum.getCode());
         room.setHotFlag(false);
+        room.setStatus(RoomStatusEnum.ACTIVE.getCode());
         return room;
     }
 
@@ -49,7 +50,7 @@ public class ChatAdapter {
         roomFriend.setRoomId(roomId);
         roomFriend.setUserId1(userId1);
         roomFriend.setUserId2(userId2);
-        roomFriend.setStatus(RoomFriendStatusEnum.ACTIVE.getCode());
+        roomFriend.setStatus(RoomStatusEnum.ACTIVE.getCode());
         return roomFriend;
     }
 

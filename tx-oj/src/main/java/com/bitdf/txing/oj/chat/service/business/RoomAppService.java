@@ -31,4 +31,6 @@ public interface RoomAppService {
     Long addGroup(GroupAddRequest groupAddRequest, Long userId);
 
     void deleteFriendRoom(List<Long> asList);
+
+    void disableRoom(List<Long> asList);
 }
