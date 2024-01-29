@@ -19,7 +19,9 @@ public interface RoomService extends IService<Room> {
 
     void refreshActiveMsgAndTime(Long id, Long id1, Date createTime);
 
-    void disableRoom(List<Long> sortUserIdList);
+    void disableRoomOfFriend(List<Long> sortUserIdList);
+
+    void disableRoom(Long roomId);
 
 
 //    PageUtils queryPage(Map<String, Object> params);

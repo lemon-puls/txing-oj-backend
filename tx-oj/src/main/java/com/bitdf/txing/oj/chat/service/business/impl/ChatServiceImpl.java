@@ -13,12 +13,14 @@ import com.bitdf.txing.oj.chat.service.MessageService;
 import com.bitdf.txing.oj.chat.service.RoomService;
 import com.bitdf.txing.oj.chat.service.adapter.MessageAdapter;
 import com.bitdf.txing.oj.chat.service.business.ChatService;
+import com.bitdf.txing.oj.chat.service.cache.GroupMemberCache;
 import com.bitdf.txing.oj.chat.service.strategy.AbstractMsghandler;
 import com.bitdf.txing.oj.chat.service.strategy.MsgHandlerFactory;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.model.entity.chat.Contact;
 import com.bitdf.txing.oj.model.entity.chat.Message;
 import com.bitdf.txing.oj.model.entity.chat.Room;
+import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.service.cache.UserRelateCache;
@@ -52,6 +54,8 @@ public class ChatServiceImpl implements ChatService {
     MessageAdapter messageAdapter;
     @Autowired
     RoomService roomService;
+    @Autowired
+    GroupMemberCache groupMemberCache;
 
     /**
      * 发送消息
@@ -68,6 +72,15 @@ public class ChatServiceImpl implements ChatService {
         if (RoomStatusEnum.FORBIDDEN.getCode().equals(room.getStatus())) {
             if (RoomTypeEnum.FRIEND.getCode().equals(room.getType())) {
                 throw new BusinessException(TxCodeEnume.COMMON_CUSTOM_EXCEPTION, "你们不是好友关系 无法发送消息");
+            } else {
+                throw new BusinessException(TxCodeEnume.COMMON_CUSTOM_EXCEPTION, "该群聊已解散 无法发送消息");
+            }
+        }
+        // 如果是群聊 检查当前用户是否是群聊成员
+        if (RoomTypeEnum.GROUP.getCode().equals(room.getType())) {
+            List<Long> memberUserIdList = groupMemberCache.getMemberUserIdList(chatMessageRequest.getRoomId());
+            if (!memberUserIdList.contains(userId) && !User.SYSTEM_USER_ID.equals(userId)) {
+                throw new BusinessException(TxCodeEnume.COMMON_CUSTOM_EXCEPTION, "你当前不是该群聊成员 无法发送消息");
             }
         }
         // 保存消息

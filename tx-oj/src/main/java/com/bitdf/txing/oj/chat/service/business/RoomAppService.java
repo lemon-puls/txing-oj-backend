@@ -1,6 +1,7 @@
 package com.bitdf.txing.oj.chat.service.business;
 
 import com.bitdf.txing.oj.chat.domain.vo.request.GroupAddRequest;
+import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRemoveRequest;
 import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRequest;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatMemberVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatRoomVO;
@@ -33,4 +34,6 @@ public interface RoomAppService {
     void deleteFriendRoom(List<Long> asList);
 
     void disableRoom(List<Long> asList);
+
+    void removeGroupMember(GroupMemberRemoveRequest groupMemberRemoveRequest);
 }

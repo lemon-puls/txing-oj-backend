@@ -4,21 +4,20 @@ import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.lang.Pair;
 import com.bitdf.txing.oj.chat.domain.vo.RoomBaseInfo;
 import com.bitdf.txing.oj.chat.domain.vo.request.GroupAddRequest;
+import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRemoveRequest;
 import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRequest;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatMemberVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatRoomVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.GroupDetailVO;
 import com.bitdf.txing.oj.chat.enume.GroupRoleEnum;
+import com.bitdf.txing.oj.chat.enume.RoomStatusEnum;
 import com.bitdf.txing.oj.chat.enume.RoomTypeEnum;
 import com.bitdf.txing.oj.chat.event.GroupMemberAddEvent;
 import com.bitdf.txing.oj.chat.service.*;
 import com.bitdf.txing.oj.chat.service.adapter.ChatAdapter;
 import com.bitdf.txing.oj.chat.service.adapter.MemberAdapter;
 import com.bitdf.txing.oj.chat.service.business.RoomAppService;
-import com.bitdf.txing.oj.chat.service.cache.HotRoomCache;
-import com.bitdf.txing.oj.chat.service.cache.RoomCache;
-import com.bitdf.txing.oj.chat.service.cache.RoomFriendCache;
-import com.bitdf.txing.oj.chat.service.cache.RoomGroupCache;
+import com.bitdf.txing.oj.chat.service.cache.*;
 import com.bitdf.txing.oj.chat.service.strategy.AbstractMsghandler;
 import com.bitdf.txing.oj.chat.service.strategy.MsgHandlerFactory;
 import com.bitdf.txing.oj.exception.ThrowUtils;
@@ -74,6 +73,8 @@ public class RoomAppServiceImpl implements RoomAppService {
     RoomGroupService roomGroupService;
     @Autowired
     ApplicationEventPublisher applicationEventPublisher;
+    @Autowired
+    GroupMemberCache groupMemberCache;
 
     @Override
     public CursorPageBaseVO<ChatRoomVO> getContactPageByCursor(CursorPageBaseRequest cursorPageBaseRequest, Long userId) {
@@ -256,6 +257,7 @@ public class RoomAppServiceImpl implements RoomAppService {
             List<Long> memberIdList = groupMemberService.getMemberListByGroupId(roomGroup.getId());
             onlineCount = userService.getGroupOnlineCount(memberIdList).longValue();
         }
+        // 获取用户群聊角色
         GroupRoleEnum groupRoleEnum = getGroupRole(userId, roomGroup, room);
         return GroupDetailVO.builder()
                 .roomId(roomId)
@@ -263,6 +265,8 @@ public class RoomAppServiceImpl implements RoomAppService {
                 .groupName(roomGroup.getName())
                 .avatar(roomGroup.getAvatar())
                 .role(groupRoleEnum.getType())
+                .memberOrNot(!groupRoleEnum.equals(GroupRoleEnum.REMOVE))
+                .forbiddenOrNot(RoomStatusEnum.FORBIDDEN.getCode().equals(room.getStatus()))
                 .build();
     }
 
@@ -369,6 +373,39 @@ public class RoomAppServiceImpl implements RoomAppService {
     @Override
     public void disableRoom(List<Long> asList) {
         ThrowUtils.throwIf(CollectionUtil.isEmpty(asList) || asList.size() != 2, "房间删除失败，用户参数数量不对");
-        roomService.disableRoom(ChatAdapter.sortUserIdList(asList));
+        roomService.disableRoomOfFriend(ChatAdapter.sortUserIdList(asList));
+    }
+
+    /**
+     * 移除群聊成员
+     */
+    @Override
+    @Transactional
+    public void removeGroupMember(GroupMemberRemoveRequest removeMemberRequest) {
+        RoomGroup roomGroup = roomGroupCache.get(removeMemberRequest.getRoomId());
+        // 是否是目标群聊成员
+        GroupMember groupMember = groupMemberService.getMember(removeMemberRequest.getUserId(), roomGroup.getId());
+        ThrowUtils.throwIf(Objects.isNull(groupMember), "不是该群聊成员 无需移除");
+        if (GroupRoleEnum.LEADER.getType().equals(groupMember.getRole())) {
+            // if 是群主 then 解散该群
+//            List<Long> memberUserIdList = groupMemberCache.getMemberUserIdList(removeMemberRequest.getRoomId());
+//            List<Long> filterList = memberUserIdList.stream()
+//                    .filter(id -> !id.equals(removeMemberRequest.getUserId()))
+//                    .collect(Collectors.toList());
+//            groupMemberService.removeByIds(filterList);
+            groupMemberService.dissolveGroup(roomGroup.getId(), removeMemberRequest.getUserId());
+            // 禁用room
+            roomService.disableRoom(removeMemberRequest.getRoomId());
+            // 删除缓存
+            roomCache.delete(removeMemberRequest.getRoomId());
+        } else {
+            // else 仅剔除该用户
+//            groupMemberService.removeById(groupMember.getId());
+            groupMember.setRole(GroupRoleEnum.REMOVE.getType());
+            groupMemberService.updateById(groupMember);
+        }
+        // 删除缓存
+        groupMemberCache.evictMemberIdList(removeMemberRequest.getRoomId());
+        // TODO 触发成员变动通知
     }
 }

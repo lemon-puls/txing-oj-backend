@@ -30,4 +30,8 @@ public class GroupDetailVO {
      */
     @ApiModelProperty("当前用户角色：0:群主 1：管理员 2：普通成员 3：被踢出群聊")
     private Integer role;
+    @ApiModelProperty("当前用户是否是该群聊成员（用户有可能已退群）")
+    private Boolean memberOrNot;
+    @ApiModelProperty("群聊是否已禁用（解散）")
+    private Boolean forbiddenOrNot;
 }

@@ -1,8 +1,8 @@
 package com.bitdf.txing.oj.chat.consumer;
 
-import com.bitdf.txing.oj.chat.enume.RoomTypeEnum;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.WsBaseVO;
+import com.bitdf.txing.oj.chat.enume.RoomTypeEnum;
 import com.bitdf.txing.oj.chat.service.ContactService;
 import com.bitdf.txing.oj.chat.service.MessageService;
 import com.bitdf.txing.oj.chat.service.RoomFriendService;
@@ -89,18 +89,22 @@ public class MessageSendMqListener {
                 if (Objects.equals(room.getType(), RoomTypeEnum.GROUP.getCode())) {
                     // 群聊
                     targetUserIds = groupMemberCache.getMemberUserIdList(room.getId());
-                    targetUserIds = targetUserIds.stream().filter(item -> messageVO.getFromUser() == null
-                                    || !item.equals(messageVO.getFromUser().getUserId()))
-                            .collect(Collectors.toList());
+//                    targetUserIds = targetUserIds.stream().filter(item -> messageVO.getFromUser() == null
+//                                    || !item.equals(messageVO.getFromUser().getUserId()))
+//                            .collect(Collectors.toList());
                 } else if (Objects.equals(room.getType(), RoomTypeEnum.FRIEND.getCode())) {
                     // 私聊
                     RoomFriend roomFriend = roomFriendService.getByRoomId(room.getId());
-                    targetUserIds = Arrays.asList(messageVO.getFromUser().getUserId().equals(roomFriend.getUserId1()) ? roomFriend.getUserId2() : roomFriend.getUserId1());
+//                    targetUserIds = Arrays.asList(messageVO.getFromUser().getUserId().equals(roomFriend.getUserId1()) ? roomFriend.getUserId2() : roomFriend.getUserId1());
+                    targetUserIds = Arrays.asList(roomFriend.getUserId2(), roomFriend.getUserId1());
                 }
+                List<Long> filterUserIds = targetUserIds.stream().filter(item -> messageVO.getFromUser() == null
+                                || !item.equals(messageVO.getFromUser().getUserId()))
+                        .collect(Collectors.toList());
                 // 更新或创建所有目标用户的会话时间
                 contactService.updateOrCreateActiveTime(room.getId(), targetUserIds, messageEntity.getId(), messageEntity.getCreateTime());
                 // 推送
-                pushService.sendPushMsg(WsAdapter.buildMsgSend(messageVO), targetUserIds, messageEntity.getId());
+                pushService.sendPushMsg(WsAdapter.buildMsgSend(messageVO), filterUserIds, messageEntity.getId());
             }
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
             log.info("完成消息{}的处理并且发送到Ws推送队列", msgId);

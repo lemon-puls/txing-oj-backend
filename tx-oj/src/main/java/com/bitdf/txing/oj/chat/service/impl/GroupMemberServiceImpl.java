@@ -1,5 +1,7 @@
 package com.bitdf.txing.oj.chat.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.bitdf.txing.oj.chat.enume.GroupRoleEnum;
 import com.bitdf.txing.oj.chat.mapper.GroupMemberMapper;
 import com.bitdf.txing.oj.chat.service.GroupMemberService;
 import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
@@ -9,19 +11,16 @@ import com.bitdf.txing.oj.utils.CursorUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 
 @Service("groupMemberService")
 public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, GroupMember> implements GroupMemberService {
     @Override
     public List<Long> getMemberListByGroupId(Long groupId) {
-        List<GroupMember> list = lambdaQuery().eq(GroupMember::getGroupId, groupId)
+        List<GroupMember> list = lambdaQuery()
+                .eq(GroupMember::getGroupId, groupId)
+                .ne(GroupMember::getRole, GroupRoleEnum.REMOVE.getType())
                 .select(GroupMember::getUserId)
                 .list();
         return list.stream().map(GroupMember::getUserId).collect(Collectors.toList());
@@ -47,6 +46,7 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
 
     /**
      * 获取普通群聊的成员（游标分页）
+     *
      * @param request
      * @param groupId
      * @return
@@ -54,8 +54,24 @@ public class GroupMemberServiceImpl extends ServiceImpl<GroupMemberMapper, Group
     @Override
     public CursorPageBaseVO<GroupMember> getMembersPageByCursor(CursorPageBaseRequest request, Long groupId) {
         CursorPageBaseVO<GroupMember> cursorPageBaseVO = CursorUtils.getCursorPageByMysql(this, request, wrapper -> {
-            wrapper.eq(GroupMember::getGroupId, groupId);
+            wrapper.eq(GroupMember::getGroupId, groupId)
+                    .ne(GroupMember::getRole, GroupRoleEnum.REMOVE.getType());
         }, GroupMember::getCreateTime);
         return cursorPageBaseVO;
+    }
+
+    /**
+     * 解散群组
+     *
+     * @param groupId
+     * @param userId
+     */
+    @Override
+    public void dissolveGroup(Long groupId, Long userId) {
+        lambdaUpdate()
+                .eq(GroupMember::getGroupId, groupId)
+                .ne(GroupMember::getUserId, userId)
+                .set(GroupMember::getRole, GroupRoleEnum.REMOVE.getType())
+                .update();
     }
 }

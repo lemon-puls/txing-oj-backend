@@ -1,16 +1,14 @@
 package com.bitdf.txing.oj.chat.controller;
 
-import java.util.Arrays;
-import java.util.Map;
-
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.chat.domain.vo.request.GroupAddRequest;
+import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRemoveRequest;
 import com.bitdf.txing.oj.chat.domain.vo.request.GroupMemberRequest;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatMemberVO;
 import com.bitdf.txing.oj.chat.domain.vo.response.GroupDetailVO;
+import com.bitdf.txing.oj.chat.service.RoomService;
 import com.bitdf.txing.oj.chat.service.business.RoomAppService;
-import com.bitdf.txing.oj.model.entity.chat.Room;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.utils.R;
@@ -19,7 +17,7 @@ import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.bitdf.txing.oj.chat.service.RoomService;
+import java.util.Objects;
 
 
 /**
@@ -60,6 +58,22 @@ public class RoomController {
         Long userId = AuthInterceptor.userThreadLocal.get().getId();
         Long roomId = roomAppService.addGroup(groupAddRequest, userId);
         return R.ok(roomId);
+    }
+
+    /**
+     * 移除群聊成员
+     * @param groupMemberRemoveRequest
+     * @return
+     */
+    @PostMapping("/group/member/remove")
+    @AuthCheck(mustRole = "login")
+    public R removeGroupMember(@RequestBody GroupMemberRemoveRequest groupMemberRemoveRequest) {
+        if (Objects.isNull(groupMemberRemoveRequest.getUserId())) {
+            User user = AuthInterceptor.userThreadLocal.get();
+            groupMemberRemoveRequest.setUserId(user.getId());
+        }
+        roomAppService.removeGroupMember(groupMemberRemoveRequest);
+        return R.ok();
     }
 
 
