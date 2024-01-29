@@ -19,7 +19,7 @@ public interface RoomService extends IService<Room> {
 
     void refreshActiveMsgAndTime(Long id, Long id1, Date createTime);
 
-    void disableRoomOfFriend(List<Long> sortUserIdList);
+    Long disableRoomOfFriend(List<Long> sortUserIdList);
 
     void disableRoom(Long roomId);
 

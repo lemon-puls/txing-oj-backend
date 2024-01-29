@@ -61,5 +61,9 @@ public class Contact {
     @TableField("is_delete")
     @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
+    /**
+     * 状态：0：正常 1：移除
+     */
+    private Integer status;
 
 }

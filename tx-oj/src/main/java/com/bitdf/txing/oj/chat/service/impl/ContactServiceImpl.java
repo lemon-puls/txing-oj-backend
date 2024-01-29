@@ -1,5 +1,9 @@
 package com.bitdf.txing.oj.chat.service.impl;
 
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.bitdf.txing.oj.chat.domain.vo.request.ContactUpdateOrAddRequest;
+import com.bitdf.txing.oj.chat.domain.vo.request.RemoveSessionRequest;
+import com.bitdf.txing.oj.chat.enume.RoomStatusEnum;
 import com.bitdf.txing.oj.chat.mapper.ContactMapper;
 import com.bitdf.txing.oj.chat.service.ContactService;
 import com.bitdf.txing.oj.chat.service.cache.RoomCache;
@@ -12,13 +16,9 @@ import com.bitdf.txing.oj.utils.CursorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 
 
 @Service("contactService")
@@ -66,7 +66,8 @@ public class ContactServiceImpl extends ServiceImpl<ContactMapper, Contact> impl
     @Override
     public CursorPageBaseVO<Contact> getContactPageByCursor(CursorPageBaseRequest cursorPageBaseRequest, Long userId) {
         return CursorUtils.getCursorPageByMysql(this, cursorPageBaseRequest, wrapper -> {
-            wrapper.eq(Contact::getUserId, userId);
+            wrapper.eq(Contact::getUserId, userId)
+                    .eq(Contact::getStatus, RoomStatusEnum.ACTIVE.getCode());
         }, Contact::getActiveTime);
     }
 
@@ -78,7 +79,6 @@ public class ContactServiceImpl extends ServiceImpl<ContactMapper, Contact> impl
     }
 
     /**
-     *
      * @param userId
      * @param roomId
      * @return
@@ -88,5 +88,28 @@ public class ContactServiceImpl extends ServiceImpl<ContactMapper, Contact> impl
         return lambdaQuery().eq(Contact::getUserId, userId)
                 .eq(Contact::getRoomId, roomId)
                 .one();
+    }
+
+    /**
+     * 移除会话
+     *
+     * @param userId
+     * @param removeSessionRequest
+     */
+    @Override
+    public void removeSession(Long userId, RemoveSessionRequest removeSessionRequest) {
+        lambdaUpdate()
+                .eq(Contact::getRoomId, removeSessionRequest.getRoomId())
+                .eq(Contact::getUserId, userId)
+                .set(Contact::getStatus, RoomStatusEnum.FORBIDDEN.getCode())
+                .update();
+    }
+
+    @Override
+    public void updateOrCreateContact(Long userId, ContactUpdateOrAddRequest updateOrAddRequest) {
+//        // 判断会话是否创建过
+//        Contact contact = getByUserIdAndRoomId(userId, updateOrAddRequest.getRoomId());
+//        if ()
+        updateOrCreateActiveTime(updateOrAddRequest.getRoomId(), Arrays.asList(userId), null, new Date());
     }
 }

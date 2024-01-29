@@ -93,13 +93,14 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
     }
 
     @Override
-    public void disableRoomOfFriend(List<Long> sortUserIdList) {
+    public Long disableRoomOfFriend(List<Long> sortUserIdList) {
         RoomFriend roomFriend = roomFriendService.lambdaQuery()
                 .eq(RoomFriend::getUserId1, sortUserIdList.get(0))
                 .eq(RoomFriend::getUserId2, sortUserIdList.get(1))
                 .select(RoomFriend::getRoomId)
                 .one();
         disableRoom(roomFriend.getRoomId());
+        return roomFriend.getRoomId();
     }
 
     @Override

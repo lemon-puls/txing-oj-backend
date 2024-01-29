@@ -3,7 +3,7 @@
 
 <mapper namespace="com.bitdf.txing.oj.chat.mapper.ContactMapper">
 
-	<!-- 可根据自己的需求，是否要使用 -->
+    <!-- 可根据自己的需求，是否要使用 -->
     <resultMap type="com.bitdf.txing.oj.model.entity.chat.Contact" id="contactMap">
         <result property="id" column="id"/>
         <result property="userId" column="user_id"/>
@@ -19,12 +19,13 @@
     <update id="updateOrCreateActiveTime">
         insert into tx_oj_contact(`id`, `room_id`, `user_id`, `active_time`, `msg_id`)
         values
-            <foreach collection="targetUserIds" item="userId" separator=",">
-                (null, #{roomId}, #{userId}, #{createTime}, #{msgId})
-            </foreach>
+        <foreach collection="targetUserIds" item="userId" separator=",">
+            (null, #{roomId}, #{userId}, #{createTime}, #{msgId})
+        </foreach>
         on DUPLICATE KEY UPDATE
         `active_time` = values(active_time),
-        `msg_id` = values(msg_id)
+        `msg_id` = CASE WHEN values(msg_id) IS NOT NULL THEN VALUES(msg_id) ELSE `msg_id` END,
+        `status` = 0
     </update>
 
 

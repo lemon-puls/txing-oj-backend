@@ -109,7 +109,7 @@ public class RoomAppServiceImpl implements RoomAppService {
         // 获取最后一条消息
         List<Long> msgIds = roomBaseInfoMap.values().stream().map(roomBaseInfo -> {
             return roomBaseInfo.getLastMsgId();
-        }).collect(Collectors.toList());
+        }).filter(msgId -> Objects.nonNull(msgId)).collect(Collectors.toList());
         List<Message> messages = msgIds.isEmpty() ? new ArrayList<>() : messageService.listByIds(msgIds);
         Map<Long, Message> messageMap = messages.stream().collect(Collectors.toMap(Message::getId, Function.identity()));
         // 获取消息发送者信息
@@ -134,7 +134,8 @@ public class RoomAppServiceImpl implements RoomAppService {
                     }
                     chatRoomVO.setUnreadCount(unReadCountMap.getOrDefault(roomBaseInfo.getRoomId(), 0));
                     return chatRoomVO;
-                }).sorted(Comparator.comparing(ChatRoomVO::getActiveTime).reversed())
+                })
+//                .sorted(Comparator.comparing(ChatRoomVO::getActiveTime).reversed())
                 .collect(Collectors.toList());
     }
 
@@ -165,12 +166,15 @@ public class RoomAppServiceImpl implements RoomAppService {
         Map<Long, User> friendRoomMap = getFriendRoomMap(friendRoomIds, userId);
 
         return roomMap.values().stream().map(room -> {
+            // 获取会话
+            Contact contact = contactService.getByUserIdAndRoomId(userId, room.getId());
+
             RoomBaseInfo roomBaseInfo = new RoomBaseInfo();
             roomBaseInfo.setRoomId(room.getId());
             roomBaseInfo.setType(room.getType());
             roomBaseInfo.setHotFlag(room.getHotFlag());
-            roomBaseInfo.setActiveTime(room.getActiveTime());
-            roomBaseInfo.setLastMsgId(room.getMsgId());
+            roomBaseInfo.setActiveTime(contact.getActiveTime());
+            roomBaseInfo.setLastMsgId(contact.getMsgId());
             if (RoomTypeEnum.FRIEND.getCode().equals(room.getType())) {
                 User user = friendRoomMap.get(room.getId());
                 roomBaseInfo.setAvatar(user.getUserAvatar());
@@ -371,9 +375,10 @@ public class RoomAppServiceImpl implements RoomAppService {
     }
 
     @Override
-    public void disableRoom(List<Long> asList) {
+    public Long disableRoom(List<Long> asList) {
         ThrowUtils.throwIf(CollectionUtil.isEmpty(asList) || asList.size() != 2, "房间删除失败，用户参数数量不对");
-        roomService.disableRoomOfFriend(ChatAdapter.sortUserIdList(asList));
+        Long roomId = roomService.disableRoomOfFriend(ChatAdapter.sortUserIdList(asList));
+        return roomId;
     }
 
     /**

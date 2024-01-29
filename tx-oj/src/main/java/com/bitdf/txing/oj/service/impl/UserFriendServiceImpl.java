@@ -3,6 +3,7 @@ package com.bitdf.txing.oj.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.chat.service.business.RoomAppService;
+import com.bitdf.txing.oj.chat.service.cache.RoomCache;
 import com.bitdf.txing.oj.mapper.UserFriendMapper;
 import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
@@ -34,6 +35,8 @@ public class UserFriendServiceImpl extends ServiceImpl<UserFriendMapper, UserFri
     UserService userService;
     @Autowired
     RoomAppService roomAppService;
+    @Autowired
+    RoomCache roomCache;
 
     /**
      * 获取好友记录
@@ -129,7 +132,9 @@ public class UserFriendServiceImpl extends ServiceImpl<UserFriendMapper, UserFri
         this.removeByIds(entityIds);
         // 禁用房间
 //        roomAppService.deleteFriendRoom(Arrays.asList(userId, friendId));
-        roomAppService.disableRoom(Arrays.asList(userId, friendId));
+        Long roomId = roomAppService.disableRoom(Arrays.asList(userId, friendId));
+        // 删除缓存
+        roomCache.delete(roomId);
     }
 
     private List<UserFriend> getUserFriend(Long userId, Long friendId) {

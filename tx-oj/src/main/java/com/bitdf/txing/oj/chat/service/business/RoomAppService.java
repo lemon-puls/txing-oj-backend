@@ -33,7 +33,7 @@ public interface RoomAppService {
 
     void deleteFriendRoom(List<Long> asList);
 
-    void disableRoom(List<Long> asList);
+    Long disableRoom(List<Long> asList);
 
     void removeGroupMember(GroupMemberRemoveRequest groupMemberRemoveRequest);
 }
