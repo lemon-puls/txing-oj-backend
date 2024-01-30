@@ -1,6 +1,7 @@
 package com.bitdf.txing.oj.service.adapter;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.bitdf.txing.oj.chat.domain.vo.response.WsFriendApplyAgreeVO;
 import com.bitdf.txing.oj.model.dto.user.UserApplyRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.entity.user.UserApply;
@@ -77,5 +78,12 @@ public class FriendAdapter {
                 .unreadCount(unReadCount)
                 .build();
         return wsFriendApplyVO;
+    }
+
+    public static WsFriendApplyAgreeVO buildWsFriendApplyAgreeVO(Long userId, Integer activeStatus) {
+        return WsFriendApplyAgreeVO.builder()
+                .userId(userId)
+                .activeStatus(activeStatus)
+                .build();
     }
 }

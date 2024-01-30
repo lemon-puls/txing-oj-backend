@@ -55,6 +55,13 @@ public class WsAdapter {
         return wsBaseVO;
     }
 
+    public static WsBaseVO<WsFriendApplyAgreeVO> buildFriendApplyAgreeWs(WsFriendApplyAgreeVO applyAgreeVO) {
+        WsBaseVO<WsFriendApplyAgreeVO> wsBaseVO = new WsBaseVO<>();
+        wsBaseVO.setData(applyAgreeVO);
+        wsBaseVO.setType(WsRespTypeEnum.FRIEND_APPLY_AGREE_NOTIFY.getType());
+        return wsBaseVO;
+    }
+
     public WsBaseVO<WsOnlineOfflineNotifyVO> buildOffLineNotifyWsVO(User user, Long userId) {
         WsBaseVO<WsOnlineOfflineNotifyVO> wsBaseVO = new WsBaseVO<>();
         wsBaseVO.setType(WsRespTypeEnum.USER_ONLINE_OFFLINE_NOTIFY.getType());

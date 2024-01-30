@@ -32,4 +32,8 @@ public class ChatRoomVO {
     private String avatar;
     @ApiModelProperty("未读数")
     private Integer unreadCount;
+    @ApiModelProperty("好友id(仅针对私聊设置)")
+    private Long userId;
+    @ApiModelProperty("房间状态 0：正常 1：禁用")
+    private Integer status;
 }

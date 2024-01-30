@@ -1,6 +1,5 @@
 package com.bitdf.txing.oj.chat.domain.vo;
 
-import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -31,4 +30,8 @@ public class RoomBaseInfo {
     private Date activeTime;
     @ApiModelProperty("最新消息id")
     private Long lastMsgId;
+    @ApiModelProperty("好友id(仅针对私聊设置)")
+    private Long userId;
+    @ApiModelProperty("房间状态 0：正常 1：禁用")
+    private Integer status;
 }

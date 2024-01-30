@@ -1,9 +1,6 @@
 package com.bitdf.txing.oj.chat.enume;
 
-import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
-import com.bitdf.txing.oj.chat.domain.vo.response.WsGroupMemberChangeVO;
-import com.bitdf.txing.oj.chat.domain.vo.response.WsLoginSuccessVO;
-import com.bitdf.txing.oj.chat.domain.vo.response.WsOnlineOfflineNotifyVO;
+import com.bitdf.txing.oj.chat.domain.vo.response.*;
 import com.bitdf.txing.oj.model.vo.user.WsFriendApplyVO;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,9 +19,10 @@ public enum WsRespTypeEnum {
     USER_ONLINE_OFFLINE_NOTIFY(2, "上下线通知", WsOnlineOfflineNotifyVO.class),
     USER_TOKEN_INVALID(3, "用户Token失效", null),
     USER_LOGIN_SUCCESS(4, "用户登录成功", WsLoginSuccessVO.class),
-    FRIEND_APPLY_NOTIFY(5, "好友申请通知", WsFriendApplyVO.class);
+    FRIEND_APPLY_NOTIFY(5, "好友申请通知", WsFriendApplyVO.class),
+    FRIEND_APPLY_AGREE_NOTIFY(6, "好友申请同意通知", WsFriendApplyAgreeVO.class);
 
     private final Integer type;
     private final String desc;
     private final Class dataClass;
-}
+    }

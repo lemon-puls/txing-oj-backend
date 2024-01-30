@@ -125,6 +125,7 @@ public class RoomAppServiceImpl implements RoomAppService {
                     chatRoomVO.setHotFlag(roomBaseInfo.getHotFlag());
                     chatRoomVO.setType(roomBaseInfo.getType());
                     chatRoomVO.setName(roomBaseInfo.getName());
+                    chatRoomVO.setStatus(roomBaseInfo.getStatus());
                     Message message = messageMap.get(roomBaseInfo.getLastMsgId());
                     if (Objects.nonNull(message)) {
                         AbstractMsghandler msghandler = MsgHandlerFactory.getStrategyNoNull(message.getType());
@@ -133,6 +134,7 @@ public class RoomAppServiceImpl implements RoomAppService {
                                 ? "[系统消息] " : (userMap.get(message.getFromUserId()).getUserName() + ": ")) + text);
                     }
                     chatRoomVO.setUnreadCount(unReadCountMap.getOrDefault(roomBaseInfo.getRoomId(), 0));
+                    chatRoomVO.setUserId(roomBaseInfo.getUserId());
                     return chatRoomVO;
                 })
 //                .sorted(Comparator.comparing(ChatRoomVO::getActiveTime).reversed())
@@ -175,10 +177,12 @@ public class RoomAppServiceImpl implements RoomAppService {
             roomBaseInfo.setHotFlag(room.getHotFlag());
             roomBaseInfo.setActiveTime(contact.getActiveTime());
             roomBaseInfo.setLastMsgId(contact.getMsgId());
+            roomBaseInfo.setStatus(room.getStatus());
             if (RoomTypeEnum.FRIEND.getCode().equals(room.getType())) {
                 User user = friendRoomMap.get(room.getId());
                 roomBaseInfo.setAvatar(user.getUserAvatar());
                 roomBaseInfo.setName(user.getUserName());
+                roomBaseInfo.setUserId(user.getId());
             } else if (RoomTypeEnum.GROUP.getCode().equals(room.getType())) {
                 RoomGroup roomGroup = roomGroupMap.get(room.getId());
                 roomBaseInfo.setName(roomGroup.getName());

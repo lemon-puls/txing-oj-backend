@@ -4,10 +4,12 @@ import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.chat.service.business.RoomAppService;
 import com.bitdf.txing.oj.chat.service.cache.RoomCache;
+import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.mapper.UserFriendMapper;
 import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.entity.user.UserFriend;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.model.vo.user.FriendVO;
 import com.bitdf.txing.oj.service.UserFriendService;
@@ -126,7 +128,7 @@ public class UserFriendServiceImpl extends ServiceImpl<UserFriendMapper, UserFri
         List<UserFriend> userFriends = this.getUserFriend(userId, friendId);
         if (CollectionUtil.isEmpty(userFriends)) {
             log.info("[删除好友] --> 无需删除 不存在好友关系");
-            return;
+            throw new BusinessException(TxCodeEnume.COMMON_CUSTOM_EXCEPTION, "当前你们不是好友关系！");
         }
         List<Long> entityIds = userFriends.stream().map(UserFriend::getId).collect(Collectors.toList());
         this.removeByIds(entityIds);

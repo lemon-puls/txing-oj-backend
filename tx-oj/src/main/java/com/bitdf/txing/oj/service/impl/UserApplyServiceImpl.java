@@ -3,9 +3,13 @@ package com.bitdf.txing.oj.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.chat.domain.vo.response.ChatMessageVO;
+import com.bitdf.txing.oj.chat.domain.vo.response.WsBaseVO;
+import com.bitdf.txing.oj.chat.domain.vo.response.WsFriendApplyAgreeVO;
 import com.bitdf.txing.oj.chat.service.RoomService;
 import com.bitdf.txing.oj.chat.service.adapter.MessageAdapter;
+import com.bitdf.txing.oj.chat.service.adapter.WsAdapter;
 import com.bitdf.txing.oj.chat.service.business.ChatService;
+import com.bitdf.txing.oj.chat.service.business.PushService;
 import com.bitdf.txing.oj.event.UserApplyEvent;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.mapper.UserApplyMapper;
@@ -14,10 +18,7 @@ import com.bitdf.txing.oj.model.dto.user.UserApplyRequest;
 import com.bitdf.txing.oj.model.entity.chat.RoomFriend;
 import com.bitdf.txing.oj.model.entity.user.UserApply;
 import com.bitdf.txing.oj.model.entity.user.UserFriend;
-import com.bitdf.txing.oj.model.enume.TxCodeEnume;
-import com.bitdf.txing.oj.model.enume.UserApplyReadStatusEnum;
-import com.bitdf.txing.oj.model.enume.UserApplyStatusEnum;
-import com.bitdf.txing.oj.model.enume.UserApplyTypeEnum;
+import com.bitdf.txing.oj.model.enume.*;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.model.vo.user.FriendApplyVO;
 import com.bitdf.txing.oj.service.UserApplyService;
@@ -47,6 +48,8 @@ public class UserApplyServiceImpl extends ServiceImpl<UserApplyMapper, UserApply
     RoomService roomService;
     @Autowired
     ChatService chatService;
+    @Autowired
+    PushService pushService;
 
 //    @Override
 //    public PageUtils queryPage(Map<String, Object> params) {
@@ -109,6 +112,11 @@ public class UserApplyServiceImpl extends ServiceImpl<UserApplyMapper, UserApply
         // 同意后发送一条招呼语 我们已经是好友啦，开始聊天吧！
         Long msgId = chatService.sendMsg(MessageAdapter.buildAgreeMessage(roomFriend.getRoomId()), userId);
         ChatMessageVO messageVO = chatService.getMessageVO(msgId, null);
+        // 给对方发送申请同意消息（ws）
+        WsFriendApplyAgreeVO applyAgreeVO = FriendAdapter.buildWsFriendApplyAgreeVO(userId, UserActiveStatusEnum.ONLINE.getCode());
+        WsBaseVO<WsFriendApplyAgreeVO> wsBaseVO = WsAdapter.buildFriendApplyAgreeWs(applyAgreeVO);
+        Long friendId = userId.equals(roomFriend.getUserId1()) ? roomFriend.getUserId2() : roomFriend.getUserId1();
+        pushService.sendPushMsg(wsBaseVO, Arrays.asList(friendId), applyId);
         return messageVO;
     }
 
