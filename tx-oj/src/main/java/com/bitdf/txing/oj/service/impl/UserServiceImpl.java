@@ -19,6 +19,7 @@ import com.bitdf.txing.oj.model.enume.UserRoleEnum;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.model.vo.user.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.user.UserVO;
+import com.bitdf.txing.oj.service.LoginService;
 import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.service.cache.UserCache;
 import com.bitdf.txing.oj.service.cache.UserRelateCache;
@@ -63,6 +64,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Autowired
     @Lazy
     UserCache userCache;
+    @Autowired
+    LoginService loginService;
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -141,8 +144,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION, "用户不存在或密码错误");
         }
         // 3. 记录用户的登录态
-        request.getSession().setAttribute(USER_LOGIN_STATE, user);
-        return this.getLoginUserVO(user);
+//        request.getSession().setAttribute(USER_LOGIN_STATE, user);
+        String token = loginService.login(user.getId());
+        LoginUserVO loginUserVO = this.getLoginUserVO(user);
+        loginUserVO.setToken(token);
+        return loginUserVO;
     }
 
     @Override

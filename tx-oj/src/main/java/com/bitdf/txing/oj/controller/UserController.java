@@ -12,10 +12,10 @@ import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.model.vo.user.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.user.UserVO;
+import com.bitdf.txing.oj.service.LoginService;
 import com.bitdf.txing.oj.service.QuestionSubmitService;
 import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.utils.R;
-import com.bitdf.txing.oj.utils.UserTokenUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -47,6 +47,8 @@ public class UserController {
     private UserService userService;
     @Autowired
     QuestionSubmitService questionSubmitService;
+    @Autowired
+    LoginService loginService;
 
 
     // region 登录相关
@@ -90,8 +92,8 @@ public class UserController {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         LoginUserVO loginUserVO = userService.userLogin(userAccount, userPassword, request);
-        String token = UserTokenUtils.generateAndSaveUserToken(loginUserVO.getId());
-        loginUserVO.setToken(token);
+//        String token = UserTokenUtils.generateAndSaveUserToken(loginUserVO.getId());
+//        loginUserVO.setToken(token);
         return R.ok(loginUserVO);
     }
 
@@ -104,6 +106,7 @@ public class UserController {
     @PostMapping("/pwd/modify")
     @AuthCheck(mustRole = "login")
     public R modifyPwd(@Validated @RequestBody UserModifyPwdRequest userModifyPwdRequest, BindingResult result, HttpServletRequest request) {
+        User user = AuthInterceptor.userThreadLocal.get();
         // 判断校验是否成功
         if (result.hasErrors()) {
             Map<String, String> errors = result.getFieldErrors().stream().collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
@@ -113,7 +116,7 @@ public class UserController {
         boolean modifyResult = userService.modifyPwd(userModifyPwdRequest);
         ThrowUtils.throwIf(!modifyResult, TxCodeEnume.COMMON_OPS_FAILURE_EXCEPTION);
         // 退出登录
-        boolean b = userService.userLogout(request);
+        boolean b = loginService.userLogout(user.getId());
         return R.ok("修改密码成功 请重新登录！");
     }
 
@@ -142,29 +145,27 @@ public class UserController {
 //    }
 
     /**
-     * 用户注销
+     * 用户退出登录
      *
-     * @param request
      * @return
      */
     @PostMapping("/logout")
-    public R userLogout(HttpServletRequest request) {
-        if (request == null) {
-            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
-        }
-        boolean result = userService.userLogout(request);
+    @AuthCheck(mustRole = "login")
+    public R userLogout() {
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        boolean result = loginService.userLogout(userId);
         return R.ok(result);
     }
 
     /**
      * 获取当前登录用户
      *
-     * @param request
      * @return
      */
     @GetMapping("/get/login")
-    public R getLoginUser(HttpServletRequest request) {
-        User user = userService.getLoginUser(request);
+    @AuthCheck(mustRole = "login")
+    public R getLoginUser() {
+        User user = AuthInterceptor.userThreadLocal.get();
         return R.ok(userService.getLoginUserVO(user));
     }
 

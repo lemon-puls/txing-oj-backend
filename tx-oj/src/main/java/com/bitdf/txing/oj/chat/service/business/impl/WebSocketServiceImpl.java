@@ -14,9 +14,9 @@ import com.bitdf.txing.oj.chat.service.business.WebSocketService;
 import com.bitdf.txing.oj.chat.websocket.NettyUtil;
 import com.bitdf.txing.oj.config.ThreadPoolConfig;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.service.LoginService;
 import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.service.cache.UserRelateCache;
-import com.bitdf.txing.oj.utils.UserTokenUtils;
 import io.netty.channel.Channel;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +50,8 @@ public class WebSocketServiceImpl implements WebSocketService {
     UserService userService;
     @Autowired
     UserRelateCache userRelateCache;
+    @Autowired
+    LoginService loginService;
 
     /**
      * 已连接的websocket连接 ===》 一些额外的参数
@@ -134,7 +136,8 @@ public class WebSocketServiceImpl implements WebSocketService {
     @Override
     public void authorize(Channel channel, WsAuthorize wsAuthorize) {
         // TODO 校验是否已登录
-        boolean isLogin = UserTokenUtils.isLogin(wsAuthorize.getUserId());
+//        boolean isLogin = UserTokenUtils.isLogin(wsAuthorize.getUserId());
+        boolean isLogin = loginService.verifyToken(wsAuthorize.getToken());
         if (isLogin) {
             User user = userService.getById(wsAuthorize.getUserId());
             alreadyLogin(channel, user, wsAuthorize.getToken());

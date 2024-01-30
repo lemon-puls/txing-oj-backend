@@ -77,7 +77,7 @@ public class ChatServiceImpl implements ChatService {
             }
         }
         // 如果是群聊 检查当前用户是否是群聊成员
-        if (RoomTypeEnum.GROUP.getCode().equals(room.getType())) {
+        if (RoomTypeEnum.GROUP.getCode().equals(room.getType()) && !Room.HOT_ROOM_ID.equals(room.getId())) {
             List<Long> memberUserIdList = groupMemberCache.getMemberUserIdList(chatMessageRequest.getRoomId());
             if (!memberUserIdList.contains(userId) && !User.SYSTEM_USER_ID.equals(userId)) {
                 throw new BusinessException(TxCodeEnume.COMMON_CUSTOM_EXCEPTION, "你当前不是该群聊成员 无法发送消息");

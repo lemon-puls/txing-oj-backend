@@ -22,6 +22,11 @@ import java.util.Date;
 public class Room {
 
     /**
+     * 总群房间id
+     */
+    public static final Long HOT_ROOM_ID = 1L;
+
+    /**
      * id
      */
     @TableId(type = IdType.AUTO)

@@ -20,6 +20,13 @@
     </properties>
     <dependencies>
 
+
+        <dependency>
+            <groupId>com.auth0</groupId>
+            <artifactId>java-jwt</artifactId>
+            <version>3.19.0</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/com.tencent.cloud/cos-sts-java -->
         <dependency>
             <groupId>com.tencent.cloud</groupId>
