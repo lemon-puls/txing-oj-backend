@@ -1,18 +1,15 @@
 package com.bitdf.txing.oj.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.constant.RedisKeyConstant;
-import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.model.dto.question.QuestionCommentAddRequest;
 import com.bitdf.txing.oj.model.entity.QuestionComment;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.model.vo.question.QuestionCommentVO;
+import com.bitdf.txing.oj.service.QuestionCommentService;
 import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.utils.R;
 import com.bitdf.txing.oj.utils.page.PageUtils;
@@ -23,9 +20,10 @@ import org.springframework.data.redis.core.BoundSetOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import com.bitdf.txing.oj.service.QuestionCommentService;
-
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -52,7 +50,8 @@ public class QuestionCommentController {
         // TODO 根据题目id查询
         PageUtils page = questionCommentService.queryPage(queryVO);
         // 判断是否已登录
-        User loginUser = userService.getLoginUserNoThrow(request);
+//        User loginUser = userService.getLoginUserNoThrow(request);
+        User loginUser = AuthInterceptor.userThreadLocal.get();
         List<QuestionCommentVO> list = questionCommentService.getQuestionCommentVOs(page.getList(), loginUser);
         page.setList(list);
         return R.ok().put("data", page);

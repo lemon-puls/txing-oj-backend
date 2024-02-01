@@ -62,7 +62,8 @@ public class PostFavourController {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         // 登录才能操作
-        final User loginUser = userService.getLoginUser(request);
+//        final User loginUser = userService.getLoginUser(request);
+        final User loginUser = AuthInterceptor.userThreadLocal.get();
         long postId = postFavourAddRequest.getPostId();
         int result = postFavourService.doPostFavour(postId, loginUser);
         return R.ok(result);

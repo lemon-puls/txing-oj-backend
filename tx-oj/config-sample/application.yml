@@ -11,7 +11,7 @@ spring:
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
-#    date-format: yyyy-MM-dd HH:mm:ss
+  #    date-format: yyyy-MM-dd HH:mm:ss
   # session 配置
   session:
     # todo 取消注释开启分布式 session（须先配置 Redis）
@@ -23,7 +23,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/txing_oj
-#    ?useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=Asia/Shanghai
+    #    ?useSSL=false&autoReconnect=true&useUnicode=true&characterEncoding=UTF8&zeroDateTimeBehavior=convertToNull&allowMultiQueries=true&serverTimezone=Asia/Shanghai
     username: root
     password: 123456
   # Redis 配置
@@ -45,9 +45,7 @@ spring:
     multipart:
       # 大小限制
       max-file-size: 10MB
-#  jackson:
-#    date-format: yyyy-MM-dd HH:mm:ss
-#    time-zone: GMT+8
+  #    time-zone: GMT+8
   rabbitmq:
     virtual-host: /
     host: 127.0.0.1
@@ -117,8 +115,9 @@ cos:
 
 lemon:
   generator:
-    basePath: com.bitdf.txing.oj.model.entity
+    basePath: com.bitdf.txing.oj.model.entity.chat
     driver: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/txing_oj?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true
     username: root
     password: 123456
+#    root: off

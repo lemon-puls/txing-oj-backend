@@ -1,34 +1,26 @@
 package com.bitdf.txing.oj.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
+import com.bitdf.txing.oj.common.DeleteRequest;
 import com.bitdf.txing.oj.constant.RedisKeyConstant;
-import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.esdao.PostEsDao;
+import com.bitdf.txing.oj.exception.BusinessException;
+import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.job.cycle.IncSyncPostToEs;
 import com.bitdf.txing.oj.manager.CosManager;
 import com.bitdf.txing.oj.model.dto.post.*;
+import com.bitdf.txing.oj.model.entity.Post;
+import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.model.vo.post.PostUpdateVO;
+import com.bitdf.txing.oj.service.PostService;
+import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.utils.CustomStringUtils;
 import com.bitdf.txing.oj.utils.R;
 import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.google.gson.Gson;
-import com.bitdf.txing.oj.annotation.AuthCheck;
-import com.bitdf.txing.oj.common.DeleteRequest;
-import com.bitdf.txing.oj.exception.BusinessException;
-import com.bitdf.txing.oj.exception.ThrowUtils;
-import com.bitdf.txing.oj.model.entity.Post;
-import com.bitdf.txing.oj.model.entity.user.User;
-import com.bitdf.txing.oj.service.PostService;
-import com.bitdf.txing.oj.service.UserService;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +28,13 @@ import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.redis.core.BoundHashOperations;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.web.bind.annotation.*;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 帖子接口
@@ -89,7 +88,8 @@ public class PostController {
 //            post.setTags(GSON.toJson(tags));
 //        }
         postService.validPost(post, true);
-        User loginUser = userService.getLoginUser(request);
+//        User loginUser = userService.getLoginUser(request);
+        User loginUser = AuthInterceptor.userThreadLocal.get();
         post.setUserId(loginUser.getId());
         post.setFavourNum(0);
         post.setThumbNum(0);
@@ -130,7 +130,8 @@ public class PostController {
         if (deleteRequest == null || deleteRequest.getId() <= 0) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
-        User user = userService.getLoginUser(request);
+//        User user = userService.getLoginUser(request);
+        User user = AuthInterceptor.userThreadLocal.get();
         long id = deleteRequest.getId();
         // 判断是否存在
         Post oldPost = postService.getById(id);
@@ -233,12 +234,14 @@ public class PostController {
      * @return
      */
     @PostMapping("/my/list/page/vo")
+    @AuthCheck(mustRole = "login")
     public R listMyPostVOByPage(@RequestBody PostQueryRequest postQueryRequest,
                                 HttpServletRequest request) {
         if (postQueryRequest == null) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
-        User loginUser = userService.getLoginUser(request);
+//        User loginUser = userService.getLoginUser(request);
+        User loginUser = AuthInterceptor.userThreadLocal.get();
         postQueryRequest.setUserId(loginUser.getId());
         long current = postQueryRequest.getCurrent();
         long size = postQueryRequest.getPageSize();

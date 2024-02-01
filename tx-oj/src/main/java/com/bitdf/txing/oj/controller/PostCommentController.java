@@ -64,7 +64,8 @@ public class PostCommentController {
         // TODO 根据题目id查询
         PageUtils page = postCommentService.queryPage(queryVO);
         // 判断是否已登录
-        User loginUser = userService.getLoginUserNoThrow(request);
+//        User loginUser = userService.getLoginUserNoThrow(request);
+        User loginUser = AuthInterceptor.userThreadLocal.get();
         List<PostCommentVO> list = postCommentService.getPostCommentVOs(page.getList(), loginUser);
         page.setList(list);
         return R.ok().put("data", page);
