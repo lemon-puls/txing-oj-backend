@@ -121,7 +121,12 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     public CursorPageBaseVO<ChatMessageVO> getMsgPageByCursor(MessagePageRequest pageRequest, Long userId) {
-        Date lastMsgTime = contactService.getUserContactLastMsgTime(pageRequest.getRoomId(), userId);
+        Date lastMsgTime;
+        if (Room.HOT_ROOM_ID.equals(pageRequest.getRoomId())) {
+            lastMsgTime = new Date();
+        } else {
+            lastMsgTime = contactService.getUserContactLastMsgTime(pageRequest.getRoomId(), userId);
+        }
         CursorPageBaseVO<Message> cursorPageBaseVO = messageService.getPageByCursor(pageRequest.getRoomId(), pageRequest, lastMsgTime);
         if (cursorPageBaseVO.isEmpty()) {
             return CursorPageBaseVO.empty();

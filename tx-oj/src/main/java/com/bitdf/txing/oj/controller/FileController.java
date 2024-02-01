@@ -2,6 +2,7 @@ package com.bitdf.txing.oj.controller;
 
 import cn.hutool.core.io.FileUtil;
 import com.bitdf.txing.oj.annotation.AuthCheck;
+import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.constant.FileConstant;
 import com.bitdf.txing.oj.constant.RedisKeyConstant;
 import com.bitdf.txing.oj.exception.BusinessException;
@@ -73,7 +74,8 @@ public class FileController {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
         validFile(multipartFile, fileUploadBizEnum);
-        User loginUser = userService.getLoginUser(request);
+//        User loginUser = userService.getLoginUser(request);
+        User loginUser = AuthInterceptor.userThreadLocal.get();
         // 文件目录：根据业务、用户来划分
         String uuid = RandomStringUtils.randomAlphanumeric(8);
         String filename = uuid + "-" + multipartFile.getOriginalFilename();

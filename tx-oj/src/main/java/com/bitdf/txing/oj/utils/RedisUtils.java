@@ -1,7 +1,7 @@
 package com.bitdf.txing.oj.utils;
 
 import cn.hutool.extra.spring.SpringUtil;
-import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import com.bitdf.txing.oj.constant.RedisKeyConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.RedisConnection;
@@ -297,11 +297,13 @@ public class RedisUtils {
     }
 
     static <T> T toBeanOrNull(String json, Class<T> tClass) {
-        return json == null ? null : JSONUtil.toBean(json, tClass);
+//        return json == null ? null : JSONUtil.toBean(json, tClass);
+        return json == null ? null : JSON.parseObject(json, tClass);
     }
 
     public static String objToStr(Object o) {
-        return JSONUtil.toJsonStr(o);
+//        return JSONUtil.toJsonStr(o);
+        return JSON.toJSONString(o);
     }
 
     public static <T> void mset(Map<String, T> map, long time) {

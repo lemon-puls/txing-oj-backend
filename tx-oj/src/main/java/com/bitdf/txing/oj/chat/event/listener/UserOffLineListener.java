@@ -6,6 +6,7 @@ import com.bitdf.txing.oj.chat.service.business.WebSocketService;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.enume.UserActiveStatusEnum;
 import com.bitdf.txing.oj.service.UserService;
+import com.bitdf.txing.oj.service.cache.UserCache;
 import com.bitdf.txing.oj.service.cache.UserRelateCache;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +31,13 @@ public class UserOffLineListener {
     WsAdapter wsAdapter;
     @Autowired
     UserService userService;
+    @Autowired
+    UserCache userCache;
 
     @Async
     @EventListener(classes = UserOffLineEvent.class)
     public void saveRedisAndPush(UserOffLineEvent event) {
-        log.info("触发saveRedisAndPush");
+//        log.info("触发saveRedisAndPush");
         User user = event.getUser();
         userRelateCache.offLine(user.getId(),user.getLastOpsTime());
         // 推送给所有用户
@@ -45,12 +48,14 @@ public class UserOffLineListener {
     @Async
     @EventListener(classes = UserOffLineEvent.class)
     public void saveDB(UserOffLineEvent event) {
-        log.info("触发saveDB");
+//        log.info("触发saveDB");
         User user = event.getUser();
         User update = new User();
         update.setId(user.getId());
         update.setLastOpsTime(user.getLastOpsTime());
         update.setActiveStatus(UserActiveStatusEnum.OFFLINE.getCode());
         userService.updateById(update);
+        userCache.delete(user.getId());
+        userRelateCache.refreshUserModifyTime(user.getId());
     }
 }

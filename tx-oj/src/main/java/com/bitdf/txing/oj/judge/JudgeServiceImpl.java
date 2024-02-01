@@ -142,7 +142,7 @@ public class JudgeServiceImpl implements JudgeService {
         String jsonStr = JSONUtil.toJsonStr(judgeInfo);
         questionSubmit.setJudgeInfo(jsonStr);
         questionSubmit.setStatus(JudgeStatusEnum.SUCCESS.getValue());
-        log.info("{}", questionSubmit);
+//        log.info("{}", questionSubmit);
         boolean b1 = questionSubmitService.updateById(questionSubmit);
         if (!b1) {
             throw new BusinessException(TxCodeEnume.JUDGE_SUMBIT_INFO_MODIFY_EXCEPTION);

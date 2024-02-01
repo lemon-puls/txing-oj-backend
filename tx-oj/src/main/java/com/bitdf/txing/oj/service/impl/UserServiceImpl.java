@@ -411,7 +411,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         for (int i = 0; i < request.size(); i++) {
             UserVOBatchRequest.ItemRequest itemRequest = request.get(i);
             Long modifyTime = userModifyTimeBatch.get(i);
-            if (Objects.isNull(itemRequest.getLastModifyTime()) || (Objects.nonNull(modifyTime) && modifyTime > itemRequest.getLastModifyTime())) {
+            // TODO 删掉modifyTime
+            if (Objects.isNull(modifyTime) || Objects.isNull(itemRequest.getLastModifyTime()) || (Objects.nonNull(modifyTime) && modifyTime > itemRequest.getLastModifyTime())) {
                 needSyncUserIds.add(itemRequest.getUserId());
             }
         }

@@ -74,17 +74,18 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent idleStateEvent = (IdleStateEvent) evt;
             if (idleStateEvent.state() == IdleState.READER_IDLE) {
+                log.info("触发了读空闲事件 使用户下线！");
                 // 读空闲事件
                 userOffLine(ctx);
             }
-        } else if(evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
+        } else if (evt instanceof WebSocketServerProtocolHandler.HandshakeComplete) {
             log.info("websocket握手完成");
             // websocket握手完成
             this.webSocketService.connect(ctx.channel());
             String token = NettyUtil.getAttr(ctx.channel(), NettyUtil.TOKEN);
             Long userId = NettyUtil.getAttr(ctx.channel(), NettyUtil.USERID);
             if (StringUtils.isNotBlank(token)) {
-                this.webSocketService.authorize(ctx.channel(), new WsAuthorize(token,userId));
+                this.webSocketService.authorize(ctx.channel(), new WsAuthorize(token, userId));
             }
         }
         super.userEventTriggered(ctx, evt);

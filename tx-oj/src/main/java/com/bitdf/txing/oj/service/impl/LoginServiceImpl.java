@@ -32,7 +32,7 @@ public class LoginServiceImpl implements LoginService {
             return false;
         }
         String key = RedisKeyConstant.getKey(RedisKeyConstant.USER_TOKEN, userId);
-        String realToken = RedisUtils.get(key);
+        String realToken = RedisUtils.getStr(key);
         return Objects.equals(realToken, token);
     }
 
@@ -56,7 +56,7 @@ public class LoginServiceImpl implements LoginService {
     @Override
     public String login(Long userId) {
         String key = RedisKeyConstant.getKey(RedisKeyConstant.USER_TOKEN, userId);
-        String token = RedisUtils.get(key);
+        String token = RedisUtils.getStr(key);
         if (StrUtil.isNotBlank(token)) {
             return token;
         }

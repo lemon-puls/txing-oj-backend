@@ -45,7 +45,7 @@ public class IncSyncPostToEs {
         Date fiveMinutesAgoDate = new Date(new Date().getTime() - 5 * 60 * 1000L);
         List<Post> postList = postMapper.listPostWithDelete(fiveMinutesAgoDate);
         if (CollectionUtils.isEmpty(postList)) {
-            log.info("no inc post");
+//            log.info("no inc post");
             return;
         }
 //        List<PostEsDTO> postEsDTOList = postList.stream()
@@ -54,12 +54,12 @@ public class IncSyncPostToEs {
         List<PostEsDTO> postEsDTOList = postService.getPostEsDTOByPosts(postList);
         final int pageSize = 500;
         int total = postEsDTOList.size();
-        log.info("IncSyncPostToEs start, total {}", total);
+//        log.info("IncSyncPostToEs start, total {}", total);
         for (int i = 0; i < total; i += pageSize) {
             int end = Math.min(i + pageSize, total);
-            log.info("sync from {} to {}", i, end);
+//            log.info("sync from {} to {}", i, end);
             postEsDao.saveAll(postEsDTOList.subList(i, end));
         }
-        log.info("IncSyncPostToEs end, total {}", total);
+//        log.info("IncSyncPostToEs end, total {}", total);
     }
 }

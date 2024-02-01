@@ -2,7 +2,7 @@ package com.bitdf.txing.oj.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bitdf.txing.oj.annotation.AuthCheck;
-import com.bitdf.txing.oj.model.enume.TxCodeEnume;
+import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.model.dto.post.PostEsDTO;
@@ -11,13 +11,10 @@ import com.bitdf.txing.oj.model.dto.postfavour.PostFavourAddRequest;
 import com.bitdf.txing.oj.model.dto.postfavour.PostFavourQueryRequest;
 import com.bitdf.txing.oj.model.entity.Post;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.service.PostFavourService;
 import com.bitdf.txing.oj.service.PostService;
 import com.bitdf.txing.oj.service.UserService;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
 import com.bitdf.txing.oj.utils.R;
 import com.bitdf.txing.oj.utils.page.PageUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +22,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 帖子收藏接口
@@ -81,7 +81,7 @@ public class PostFavourController {
         if (postQueryRequest == null) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION);
         }
-        User loginUser = userService.getLoginUser(request);
+        User loginUser = AuthInterceptor.userThreadLocal.get();
         long current = postQueryRequest.getCurrent();
         long size = postQueryRequest.getPageSize();
         // 限制爬虫

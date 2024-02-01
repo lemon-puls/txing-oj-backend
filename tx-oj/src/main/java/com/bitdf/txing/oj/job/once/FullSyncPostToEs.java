@@ -40,12 +40,12 @@ public class FullSyncPostToEs implements CommandLineRunner {
         List<PostEsDTO> postEsDTOList = postService.getPostEsDTOByPosts(postList);
         final int pageSize = 500;
         int total = postEsDTOList.size();
-        log.info("FullSyncPostToEs start, total {}", total);
+//        log.info("FullSyncPostToEs start, total {}", total);
         for (int i = 0; i < total; i += pageSize) {
             int end = Math.min(i + pageSize, total);
-            log.info("sync from {} to {}", i, end);
+//            log.info("sync from {} to {}", i, end);
             postEsDao.saveAll(postEsDTOList.subList(i, end));
         }
-        log.info("FullSyncPostToEs end, total {}", total);
+//        log.info("FullSyncPostToEs end, total {}", total);
     }
 }

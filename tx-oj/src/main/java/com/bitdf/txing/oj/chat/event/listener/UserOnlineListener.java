@@ -6,6 +6,7 @@ import com.bitdf.txing.oj.chat.service.business.PushService;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.enume.UserActiveStatusEnum;
 import com.bitdf.txing.oj.service.UserService;
+import com.bitdf.txing.oj.service.cache.UserCache;
 import com.bitdf.txing.oj.service.cache.UserRelateCache;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,9 @@ public class UserOnlineListener {
     WsAdapter wsAdapter;
     @Autowired
     UserService userService;
+    @Autowired
+    UserCache userCache;
+
 
     @Async
     @EventListener(classes = UserOnlineEvent.class)
@@ -49,6 +53,9 @@ public class UserOnlineListener {
         update.setLastOpsTime(user.getLastOpsTime());
         update.setActiveStatus(UserActiveStatusEnum.ONLINE.getCode());
         userService.updateById(update);
+        userCache.delete(user.getId());
+        userRelateCache.refreshUserModifyTime(user.getId());
+        log.info("执行了saveDB");
     }
 
 }
