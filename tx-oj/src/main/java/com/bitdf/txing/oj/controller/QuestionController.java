@@ -1,24 +1,22 @@
 package com.bitdf.txing.oj.controller;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.constant.UserConstant;
-import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
-import com.bitdf.txing.oj.model.dto.question.*;
+import com.bitdf.txing.oj.model.dto.question.JudgeCase;
+import com.bitdf.txing.oj.model.dto.question.JudgeConfig;
+import com.bitdf.txing.oj.model.dto.question.QuestionAddRequest;
+import com.bitdf.txing.oj.model.dto.question.QuestionUpdateRequest;
 import com.bitdf.txing.oj.model.entity.Question;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.model.vo.question.QuestionManageVO;
 import com.bitdf.txing.oj.model.vo.question.QuestionVO;
+import com.bitdf.txing.oj.service.QuestionService;
 import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.utils.R;
 import com.bitdf.txing.oj.utils.page.PageUtils;
@@ -27,7 +25,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.bitdf.txing.oj.service.QuestionService;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 /**
@@ -100,12 +100,7 @@ public class QuestionController {
     @GetMapping("/vo/get/id")
     @AuthCheck(mustRole = "login")
     public R getQuestionVoById(@RequestParam("id") Long id) {
-        Question question = questionService.getById(id);
-        // 不存在
-        ThrowUtils.throwIf(question == null, TxCodeEnume.COMMON_TARGET_NOT_EXIST_EXCEPTION);
-        List<Question> questions = new ArrayList<>();
-        questions.add(question);
-        List<QuestionVO> questionVOS = questionService.getQuestionVOsByQuestions(questions, true);
+        List<QuestionVO> questionVOS = questionService.getQuestionVOsByIds(Arrays.asList(id));
         return R.ok(questionVOS.get(0));
     }
 

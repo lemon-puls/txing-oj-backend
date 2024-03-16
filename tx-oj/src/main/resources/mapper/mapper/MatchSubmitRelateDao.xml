@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bitdf.txing.oj.mapper.MatchSubmitRelateMapper">
+
+    <!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.bitdf.txing.oj.model.entity.match.MatchSubmitRelate" id="matchSubmitRelateMap">
+        <result property="id" column="id"/>
+        <result property="matchId" column="match_id"/>
+        <result property="joinRecordId" column="join_record_id"/>
+        <result property="userId" column="user_id"/>
+        <result property="matchType" column="match_type"/>
+        <result property="submitId" column="submit_id"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="isDelete" column="is_delete"/>
+    </resultMap>
+    <select id="getSubmitsOfUser" resultType="com.bitdf.txing.oj.model.entity.QuestionSubmit">
+        select q.id,
+               q.`code`,
+               q.create_time,
+               q.exceed_percent,
+               q.is_delete,
+               q.judge_info,
+               q.`language`,
+               q.question_id,
+               q.`status`,
+               q.update_time
+        from txing_oj_match_submit_relate s
+                 left join tx_oj_question_submit q on s.submit_id = q.id
+        WHERE s.match_id = #{ matchId }
+          and s.join_record_id = #{ joinRecordId };
+    </select>
+
+
+</mapper>

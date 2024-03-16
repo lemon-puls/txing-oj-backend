@@ -2,6 +2,7 @@ package com.bitdf.txing.oj.service.impl;
 
 import cn.hutool.json.JSONUtil;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
+import com.bitdf.txing.oj.config.MyMqConfig;
 import com.bitdf.txing.oj.model.enume.LanguageEnum;
 import com.bitdf.txing.oj.model.enume.JudgeStatusEnum;
 import com.bitdf.txing.oj.model.enume.TxCodeEnume;
@@ -55,8 +56,6 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
 
     /**
      * 提交代码
-     *
-     * @param questionSubmit
      */
     @Override
     public Long doSubmit(QuestionSubmitDoRequest questionSubmitDoRequest) {
@@ -89,7 +88,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
 //            AuthInterceptor.userThreadLocal.set(loginUser);
 //            judgeService.doJudge(questionSubmit.getId());
 //        });
-        rabbitTemplate.convertAndSend("judge.exchange", "submit.and.judge",
+        rabbitTemplate.convertAndSend(MyMqConfig.JUDGE_EXCHANGE, MyMqConfig.WAITTING_JUDGE_ROUTINGKEY,
                 questionSubmit.getId(), new CorrelationData(questionSubmit.getId().toString()));
         return questionSubmit.getId();
     }

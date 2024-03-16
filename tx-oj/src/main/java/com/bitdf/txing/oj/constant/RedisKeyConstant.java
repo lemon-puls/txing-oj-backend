@@ -52,6 +52,11 @@ public class RedisKeyConstant {
     // 用户相关
     public static final String USER_TOKEN = "user:token:uid_%d";
 
+    /**
+     * 比赛相关
+     */
+    public static final String MATCH_WEEK_RANK = "match:week:rank";
+
     public static String getKey(String key, Object... objects) {
         return BASE_KEY + String.format(key, objects);
     }

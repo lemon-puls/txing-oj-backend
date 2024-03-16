@@ -57,7 +57,6 @@ public class WsPushMqListener {
                     }
                     webSocketService.sendToAllOnline(wsBaseVO, excludeUserId);
                     break;
-
             }
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
             log.info("完成消息的推送，确认消息");

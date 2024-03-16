@@ -120,4 +120,9 @@ lemon:
     url: jdbc:mysql://localhost:3306/txing_oj?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&allowMultiQueries=true
     username: root
     password: 123456
+#日志控制
+#logging:
+#  level:
+#    com.bitdf.txing.oj.mapper: off
 #    root: off
+

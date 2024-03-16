@@ -54,6 +54,9 @@ public class AuthInterceptor {
         RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
         HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
         String token = request.getHeader("TOKEN");
+        if (StringUtils.isBlank(token)) {
+            token = request.getParameter("TOKEN");
+        }
         Long userId = loginService.getValidUserId(token);
         if (userId == null) {
             throw new BusinessException(TxCodeEnume.COMMON_CUSTOM_EXCEPTION, "未登录异常");

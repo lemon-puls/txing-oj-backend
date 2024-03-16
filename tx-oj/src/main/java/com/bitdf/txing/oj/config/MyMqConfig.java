@@ -18,6 +18,17 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MyMqConfig {
 
+//    @Value("${spring.profiles.active}")
+    private static String profile = "dev";
+
+    public static final String JUDGE_EXCHANGE = genName("judge.exchange");
+    public static final String WAITTING_JUDGE_QUEUE = genName("waitting.judge.queue");
+    public static final String WAITTING_JUDGE_ROUTINGKEY = genName("submit.and.judge");
+
+    public static final String MATCH_HANDLE_QUEUE = genName("match.handle.queue");
+    public static final String MATCH_HANDLE_ROUTTINGKEY = genName("match.and.handle");
+
+
     @Bean
     public MessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();
@@ -25,6 +36,7 @@ public class MyMqConfig {
 
     /**
      * 交换机--判题
+     *
      * @return
      */
     @Bean
@@ -35,31 +47,62 @@ public class MyMqConfig {
          *   boolean autoDelete,
          *   Map<String, Object> arguments
          * */
-        return new TopicExchange("judge.exchange", true, false);
+        return new TopicExchange(JUDGE_EXCHANGE, true, false);
 
     }
 
     /**
      * 用户作答提交在此队列等待处理（判题）
+     *
      * @return
      */
     @Bean("waitting.judge.queue")
     public Queue orderSecKillOrrderQueue() {
-        Queue queue = new Queue("waitting.judge.queue", true, false, false);
+        Queue queue = new Queue(WAITTING_JUDGE_QUEUE, true, false, false);
         return queue;
     }
 
     /**
      * 绑定--判题
+     *
      * @return
      */
     @Bean
     public Binding judgeBinding() {
         Binding binding = new Binding(
-                "waitting.judge.queue",
+                WAITTING_JUDGE_QUEUE,
                 Binding.DestinationType.QUEUE,
-                "judge.exchange",
-                "submit.and.judge",
+                JUDGE_EXCHANGE,
+                WAITTING_JUDGE_ROUTINGKEY,
+                null);
+        return binding;
+    }
+
+    // 比赛 ===================================================
+
+    /**
+     * 周赛作答等待处理队列
+     *
+     * @return
+     */
+    @Bean("waitting.week.match.handle.queue")
+    public Queue waittingWeekMatchHandleQueue() {
+        Queue queue = new Queue(MATCH_HANDLE_QUEUE, true, false, false);
+        return queue;
+    }
+
+    /**
+     * 绑定--等待处理比赛作答
+     *
+     * @return
+     */
+    @Bean
+    public Binding matchHandleBinding() {
+        Binding binding = new Binding(
+                MATCH_HANDLE_QUEUE,
+                Binding.DestinationType.QUEUE,
+                JUDGE_EXCHANGE,
+                MATCH_HANDLE_ROUTTINGKEY,
                 null);
         return binding;
     }
@@ -68,6 +111,7 @@ public class MyMqConfig {
 
     /**
      * 聊天交换机
+     *
      * @return
      */
     @Bean
@@ -83,7 +127,8 @@ public class MyMqConfig {
     }
 
     /**
-     *  消息发送队列
+     * 消息发送队列
+     *
      * @return
      */
     @Bean("message.send.queue")
@@ -94,6 +139,7 @@ public class MyMqConfig {
 
     /**
      * 消息发送队列 === 聊天交换机
+     *
      * @return
      */
     @Bean
@@ -108,7 +154,8 @@ public class MyMqConfig {
     }
 
     /**
-     *  websocket推送队列
+     * websocket推送队列
+     *
      * @return
      */
     @Bean("websocket.push.queue")
@@ -119,6 +166,7 @@ public class MyMqConfig {
 
     /**
      * websocket推送队列 === 聊天交换机
+     *
      * @return
      */
     @Bean
@@ -133,5 +181,7 @@ public class MyMqConfig {
     }
 
 
-
+    public static String genName(String base) {
+        return base + "." + profile;
+    }
 }

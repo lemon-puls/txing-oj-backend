@@ -5,7 +5,7 @@
       <webServer id="1a59e4f6-77bb-4021-b7dc-07bf867417d8" name="华为云">
         <fileTransfer accessType="SFTP" host="124.71.1.148" port="22" sshConfigId="b6a5acfd-4e34-48f1-84f2-9383bc39bf66" sshConfig="root@124.71.1.148:22 password">
           <advancedOptions>
-            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+            <advancedOptions dataProtectionLevel="Private" keepAliveTimeout="0" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>
         </fileTransfer>
       </webServer>

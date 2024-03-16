@@ -1,15 +1,19 @@
 package com.bitdf.txing.oj.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
-import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.mapper.QuestionMapper;
-import com.bitdf.txing.oj.model.entity.QuestionFavour;
-import com.bitdf.txing.oj.model.vo.question.QuestionVO;
 import com.bitdf.txing.oj.model.entity.Question;
+import com.bitdf.txing.oj.model.entity.QuestionFavour;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.vo.question.QuestionVO;
 import com.bitdf.txing.oj.service.QuestionFavourService;
+import com.bitdf.txing.oj.service.QuestionService;
 import com.bitdf.txing.oj.service.UserService;
 import com.bitdf.txing.oj.utils.page.FilterVO;
 import com.bitdf.txing.oj.utils.page.PageUtils;
@@ -20,16 +24,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.bitdf.txing.oj.service.QuestionService;
 
 
 @Service("questionService")
@@ -164,4 +160,16 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         return questionVOList;
     }
 
+    /**
+     * @return
+     */
+    @Override
+    public List<QuestionVO> getQuestionVOsByIds(List<Long> idList) {
+        List<Question> questions = this.listByIds(idList);
+        // 不存在
+        ThrowUtils.throwIf(questions == null || questions.isEmpty(), TxCodeEnume.COMMON_TARGET_NOT_EXIST_EXCEPTION);
+
+        List<QuestionVO> questionVOS = this.getQuestionVOsByQuestions(questions, false);
+        return questionVOS;
+    }
 }

@@ -1,4 +1,4 @@
-package com.bitdf.txing.oj.model.entity;
+package com.bitdf.txing.oj.model.entity.match;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.lemon.util.anno.MysqlColumn;
@@ -9,61 +9,64 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-/**
- * 题目提交
- */
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Builder
-@TableName("tx_oj_question_submit")
-public class QuestionSubmit {
+@TableName("txing_oj_match_onlinepk")
+public class OnlinePkMatch {
     /**
      * id
      */
     @TableId(type = IdType.AUTO)
     private Long id;
     /**
-     * 编程语言
+     * 用户1 id
      */
-    private String language;
+    private Long userId1;
     /**
-     * 用户代码
+     * 用户2 id
      */
-    @MysqlColumn(length = "5000")
-    private String code;
+    private Long userId2;
     /**
-     * 判题信息
+     * 竞赛开始时间
      */
-    private String judgeInfo;
+    private Date startTime;
     /**
-     * 判题状态 0：待判题 1： 判题中 2：成功 3：失败 4: 发送到mq失败
+     * 竞赛结束时间
      */
-    private Integer status;
+    private Date endTime;
     /**
-     * 题目ID
+     * 用户1提交时间
+     */
+    private Date submitTime1;
+    /**
+     * 用户2提交时间
+     */
+    private Date submitTime2;
+    /**
+     * 获胜者id
+     */
+    private Long winnerId;
+    /**
+     * 题目id
      */
     private Long questionId;
     /**
-     * 用户ID
+     * 竞赛状态(0: 未开始 1：进行中 2：已结束)
      */
-    private Long userId;
+    private Integer status;
     /**
-     * 超过百分之多少的人
-     */
-    private Float exceedPercent;
     /**
      * 创建时间
      */
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private Date createTime;
-
     /**
      * 更新时间
      */
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
-
     /**
      * 是否删除
      */

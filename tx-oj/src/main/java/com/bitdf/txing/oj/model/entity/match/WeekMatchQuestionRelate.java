@@ -1,4 +1,4 @@
-package com.bitdf.txing.oj.model.entity;
+package com.bitdf.txing.oj.model.entity.match;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.lemon.util.anno.MysqlColumn;
@@ -9,61 +9,39 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-/**
- * 题目提交
- */
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Builder
-@TableName("tx_oj_question_submit")
-public class QuestionSubmit {
+@TableName("txing_oj_match_week_question_relate")
+public class WeekMatchQuestionRelate {
     /**
      * id
      */
     @TableId(type = IdType.AUTO)
     private Long id;
     /**
-     * 编程语言
+     * 竞赛id
      */
-    private String language;
+    private Long matchId;
     /**
-     * 用户代码
-     */
-    @MysqlColumn(length = "5000")
-    private String code;
-    /**
-     * 判题信息
-     */
-    private String judgeInfo;
-    /**
-     * 判题状态 0：待判题 1： 判题中 2：成功 3：失败 4: 发送到mq失败
-     */
-    private Integer status;
-    /**
-     * 题目ID
+     * 题目id
      */
     private Long questionId;
     /**
-     * 用户ID
+     * 题目序号
      */
-    private Long userId;
-    /**
-     * 超过百分之多少的人
-     */
-    private Float exceedPercent;
+    private Integer questionOrder;
     /**
      * 创建时间
      */
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private Date createTime;
-
     /**
      * 更新时间
      */
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
-
     /**
      * 是否删除
      */

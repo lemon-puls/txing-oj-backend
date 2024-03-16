@@ -5,3 +5,7 @@ spring:
       matching-strategy: ant_path_matcher
 server:
   port: 8082
+#日志控制
+logging:
+  level:
+    root: off

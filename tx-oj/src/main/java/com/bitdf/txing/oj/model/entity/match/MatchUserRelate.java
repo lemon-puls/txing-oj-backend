@@ -1,4 +1,4 @@
-package com.bitdf.txing.oj.model.entity;
+package com.bitdf.txing.oj.model.entity.match;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.lemon.util.anno.MysqlColumn;
@@ -9,61 +9,68 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
-/**
- * 题目提交
- */
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Data
 @Builder
-@TableName("tx_oj_question_submit")
-public class QuestionSubmit {
+@TableName("txing_oj_match_user_relate")
+public class MatchUserRelate {
     /**
      * id
      */
     @TableId(type = IdType.AUTO)
     private Long id;
     /**
-     * 编程语言
+     *  竞赛id
      */
-    private String language;
+    private Long matchId;
     /**
-     * 用户代码
-     */
-    @MysqlColumn(length = "5000")
-    private String code;
-    /**
-     * 判题信息
-     */
-    private String judgeInfo;
-    /**
-     * 判题状态 0：待判题 1： 判题中 2：成功 3：失败 4: 发送到mq失败
-     */
-    private Integer status;
-    /**
-     * 题目ID
-     */
-    private Long questionId;
-    /**
-     * 用户ID
+     * 用户id
      */
     private Long userId;
     /**
-     * 超过百分之多少的人
+     * 参赛方式（0：正式 1：模拟）
      */
-    private Float exceedPercent;
+    private Integer joinType;
+    /**
+     * 成绩排名
+     */
+    private Integer gradeRank;
+    /**
+     * 获得分数
+     */
+    private Integer score;
+    /**
+     * 判题状态（0：未完成 1：已完成）
+     */
+    private Integer judgeStatus;
+    /**
+     * Ac题目数
+     */
+    private Integer acCount;
+    /**
+     * 未AC题目通过用例和
+     */
+    private Integer unAcRateSum;
+    /**
+     * 进入赛场时间
+     */
+    private Date startTime;
+    /**
+     * 提交作答时间
+     */
+    private Date endTime;
+
     /**
      * 创建时间
      */
     @TableField(value = "create_time", fill = FieldFill.INSERT)
     private Date createTime;
-
     /**
      * 更新时间
      */
     @TableField(value = "update_time", fill = FieldFill.INSERT_UPDATE)
     private Date updateTime;
-
     /**
      * 是否删除
      */

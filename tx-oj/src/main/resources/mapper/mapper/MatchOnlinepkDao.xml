@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.bitdf.txing.oj.mapper.MatchOnlinepkMapper">
+
+	<!-- 可根据自己的需求，是否要使用 -->
+    <resultMap type="com.bitdf.txing.oj.model.entity.match.OnlinePkMatch" id="matchOnlinepkMap">
+        <result property="id" column="id"/>
+        <result property="userId1" column="user_id1"/>
+        <result property="userId2" column="user_id2"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="submitTime1" column="submit_time1"/>
+        <result property="submitTime2" column="submit_time2"/>
+        <result property="winnerId" column="winner_id"/>
+        <result property="questionId" column="question_id"/>
+        <result property="status" column="status"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="isDelete" column="is_delete"/>
+    </resultMap>
+
+
+</mapper>

@@ -1,7 +1,5 @@
 package com.bitdf.txing.txcodesandbox;
 
-import com.bitdf.txing.txcodesandbox.dto.ExecCodeRequest;
-import com.bitdf.txing.txcodesandbox.dto.ExecCodeResponse;
 import com.bitdf.txing.txcodesandbox.model.ExecMessage;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.async.ResultCallback;
@@ -10,7 +8,6 @@ import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.ExecCreateCmdResponse;
 import com.github.dockerjava.api.command.StatsCmd;
 import com.github.dockerjava.api.model.*;
-import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +18,6 @@ import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -118,7 +114,7 @@ public class JavaDockerCodeSandBox extends CodeSandBoxTemplate {
                 public void onNext(Statistics statistics) {
                     Long usage = statistics.getMemoryStats().getUsage();
                     maxMemorry[0] = usage != null ? Math.max(usage, maxMemorry[0]) : maxMemorry[0];
-                    log.error("内存占用：{}", maxMemorry[0]);
+                    log.info("内存占用：{}", maxMemorry[0]);
                 }
 
                 @Override
@@ -140,19 +136,24 @@ public class JavaDockerCodeSandBox extends CodeSandBoxTemplate {
             statsCmd.exec(statisticsResultCallback);
             // 6、获取执行时间
             Long times;
+            StopWatch stopWatch = new StopWatch();
             try {
-                StopWatch stopWatch = new StopWatch();
                 stopWatch.start();
                 dockerClient.execStartCmd(execId)
                         .exec(execStartResultCallback)
                         .awaitCompletion(TIME_OUT, TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            } finally {
                 stopWatch.stop();
                 times = stopWatch.getLastTaskTimeMillis();
                 // 关闭监控
                 statsCmd.close();
-                statisticsResultCallback.close();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+                try {
+                    statisticsResultCallback.close();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
             ExecMessage execMessage = new ExecMessage();

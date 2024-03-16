@@ -1,6 +1,7 @@
 package com.bitdf.txing.oj.listener;
 
-import com.bitdf.txing.oj.judge.JudgeService;
+import com.bitdf.txing.oj.model.dto.match.MatchSubmitBatchRequest;
+import com.bitdf.txing.oj.service.business.MatchAppService;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
@@ -10,35 +11,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-
-/**
- * @author Lizhiwei
- * @date 2023/12/6 17:06:15
- * 注释：
- */
-@Service
-//@RabbitListener(queues = {"waitting.judge.queue", "match.handle.queue"})
+@RabbitListener(queues = "match.handle.queue.dev")
 @Slf4j
-public class JudgeMqListener {
-
+@Service
+public class MatchMqListener {
     @Autowired
-    JudgeService judgeService;
-
-    /**
-     * 该监听器负责处理队列里的判题请求
-     *
-     * @param submitId
-     * @param channel
-     * @param message
-     * @throws IOException
-     */
-    @RabbitListener(queues = "waitting.judge.queue.dev")
+    MatchAppService matchAppService;
     @RabbitHandler
-    public void listener(Long submitId, Channel channel, Message message) throws IOException {
-        log.info("收到提交请求： {}, 开始执行判题", submitId);
+    public void matchHandleListener(MatchSubmitBatchRequest request, Channel channel, Message message) throws IOException {
+        log.info("收到比赛作答提交： {}, 开始处理", request);
         try {
-            // 开始执行请求
-            judgeService.doJudge(submitId);
+            matchAppService.submitAll(request);
+
             log.info("完成判题，确认消息");
             channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
         } catch (Exception e) {
@@ -46,5 +30,4 @@ public class JudgeMqListener {
             channel.basicReject(message.getMessageProperties().getDeliveryTag(), true);
         }
     }
-
 }
