@@ -1,6 +1,5 @@
 package com.bitdf.txing.oj.job.match;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.bitdf.txing.oj.model.entity.Question;
 import com.bitdf.txing.oj.model.entity.match.WeekMatch;
 import com.bitdf.txing.oj.model.enume.match.MatchStatusEnum;
@@ -9,10 +8,11 @@ import com.bitdf.txing.oj.service.MatchWeekService;
 import com.bitdf.txing.oj.service.QuestionService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 
 @Component
 @Slf4j
@@ -28,7 +28,7 @@ public class MatchJob {
     /**
      * 生成比赛 TODO 考虑事务问题
      */
-    @Scheduled(cron = "40 28 13 * * *")
+//    @Scheduled(cron = "30 56 16 * * *")
     public void createMatch() {
         // 创建周赛
         Date[] dates = getStartEndTime();
@@ -45,23 +45,8 @@ public class MatchJob {
                 .build();
         matchWeekService.save(curMatch);
         // 抽选题目
-        List<Question> questions = questionService.list(new QueryWrapper<Question>().lambda().select(Question::getId));
-        List<Question> randomQuestions = selectRandomQuestions(questions, 5);
+        List<Question> randomQuestions = questionService.getQuestionsByRandom(5);
         matchQuestionRelateService.saveMatchQuestions(curMatch.getId(), randomQuestions);
-    }
-
-    /**
-     * 抽选题目
-     */
-    public List<Question> selectRandomQuestions(List<Question> list, int count) {
-        List<Question> selectedItems = new ArrayList<>();
-        Random rand = new Random();
-        for (int i = 0; i < count && !list.isEmpty(); i++) {
-            int randomIndex = rand.nextInt(list.size());
-            selectedItems.add(list.get(randomIndex));
-            list.remove(randomIndex); // Ensure no duplicates
-        }
-        return selectedItems;
     }
 
     /**
@@ -71,6 +56,9 @@ public class MatchJob {
      */
     public Date[] getStartEndTime() {
         Calendar calendar = Calendar.getInstance();
+        int i = calendar.get(Calendar.DAY_OF_WEEK);
+        int diffDays = 7 - i + 7;
+        calendar.add(Calendar.DAY_OF_MONTH, diffDays);
         calendar.set(Calendar.HOUR_OF_DAY, 11);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);

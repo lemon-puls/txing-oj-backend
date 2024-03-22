@@ -525,6 +525,21 @@ public class RedisUtils {
     }
 
     /**
+     * 从Set中随机移除一个元素 并且作为返回值返回
+     *
+     * @param key
+     * @return
+     */
+    public static String sPop(String key) {
+        try {
+            return stringRedisTemplate.opsForSet().pop(key);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return null;
+        }
+    }
+
+    /**
      * 根据value从一个set中查询,是否存在
      *
      * @param key   键
@@ -609,12 +624,31 @@ public class RedisUtils {
      */
     public static Long setRemove(String key, Object... values) {
         try {
-            return stringRedisTemplate.opsForSet().remove(key, values);
+            List<String> strings = Arrays.stream(values).map(val -> objToStr(val)).collect(Collectors.toList());
+            return stringRedisTemplate.opsForSet().remove(key, strings.toArray());
         } catch (Exception e) {
             log.error(e.getMessage(), e);
             return 0L;
         }
     }
+
+    /**
+     * 判断某值是否存在于集合Set中
+     *
+     * @param key
+     * @param value
+     * @return
+     */
+    public static boolean sIsMember(String key, Object value) {
+        try {
+            String s = objToStr(value);
+            return stringRedisTemplate.opsForSet().isMember(key, s);
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            return false;
+        }
+    }
+
 
     // ===============================list=================================
 

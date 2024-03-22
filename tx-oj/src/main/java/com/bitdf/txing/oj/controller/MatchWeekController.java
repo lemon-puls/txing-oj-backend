@@ -1,16 +1,10 @@
 package com.bitdf.txing.oj.controller;
 
-import com.bitdf.txing.oj.model.entity.match.WeekMatch;
 import com.bitdf.txing.oj.service.MatchWeekService;
 import com.bitdf.txing.oj.service.business.MatchAppService;
-import com.bitdf.txing.oj.utils.R;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Arrays;
 
 
 
@@ -39,44 +33,44 @@ public class MatchWeekController {
 //        return R.ok().put("page", page);
 //    }
 
-    /**
-     * 信息
-     */
-    @RequestMapping("/info/{id}")
-    public R info(@PathVariable("id") Long id){
-		WeekMatch matchWeek = matchWeekService.getById(id);
-
-        return R.ok().put("matchWeek", matchWeek);
-    }
-
-    /**
-     * 保存
-     */
-    @RequestMapping("/save")
-    public R save(@RequestBody WeekMatch matchWeek){
-		matchWeekService.save(matchWeek);
-
-        return R.ok();
-    }
-
-    /**
-     * 修改
-     */
-    @RequestMapping("/update")
-    public R update(@RequestBody WeekMatch matchWeek){
-		matchWeekService.updateById(matchWeek);
-
-        return R.ok();
-    }
-
-    /**
-     * 删除
-     */
-    @RequestMapping("/delete")
-    public R delete(@RequestBody Long[] ids){
-		matchWeekService.removeByIds(Arrays.asList(ids));
-
-        return R.ok();
-    }
+//    /**
+//     * 信息
+//     */
+//    @RequestMapping("/info/{id}")
+//    public R info(@PathVariable("id") Long id){
+//		WeekMatch matchWeek = matchWeekService.getById(id);
+//
+//        return R.ok().put("matchWeek", matchWeek);
+//    }
+//
+//    /**
+//     * 保存
+//     */
+//    @RequestMapping("/save")
+//    public R save(@RequestBody WeekMatch matchWeek){
+//		matchWeekService.save(matchWeek);
+//
+//        return R.ok();
+//    }
+//
+//    /**
+//     * 修改
+//     */
+//    @RequestMapping("/update")
+//    public R update(@RequestBody WeekMatch matchWeek){
+//		matchWeekService.updateById(matchWeek);
+//
+//        return R.ok();
+//    }
+//
+//    /**
+//     * 删除
+//     */
+//    @RequestMapping("/delete")
+//    public R delete(@RequestBody Long[] ids){
+//		matchWeekService.removeByIds(Arrays.asList(ids));
+//
+//        return R.ok();
+//    }
 
 }

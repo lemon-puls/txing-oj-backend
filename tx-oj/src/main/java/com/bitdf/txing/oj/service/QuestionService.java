@@ -24,5 +24,9 @@ public interface QuestionService extends IService<Question> {
     List<QuestionVO> getQuestionVOsByQuestions(List<?> list, boolean b);
 
     List<QuestionVO> getQuestionVOsByIds(List<Long> questions);
+
+    List<Question> getQuestionsByRandom(Integer count);
+
+
 }
 

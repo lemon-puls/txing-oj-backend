@@ -6,6 +6,7 @@ import com.bitdf.txing.oj.chat.domain.dto.WsAuthorize;
 import com.bitdf.txing.oj.chat.domain.vo.request.WsBaseRequest;
 import com.bitdf.txing.oj.chat.enume.WsRequestTypeEnum;
 import com.bitdf.txing.oj.chat.service.business.WebSocketService;
+import com.bitdf.txing.oj.chat.service.business.impl.WebSocketServiceImpl;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -33,7 +34,7 @@ public class NettyWebSocketServerHandler extends SimpleChannelInboundHandler<Tex
         WsRequestTypeEnum wsRequestTypeEnum = WsRequestTypeEnum.of(wsBaseRequest.getType());
         switch (wsRequestTypeEnum) {
             case HEARTBEAT:
-                log.info("接收到了心跳检测报文");
+                log.info("接收到了心跳检测报文" + JSONUtil.toJsonStr(WebSocketServiceImpl.ONLINE_USERID_MAP));
                 break;
             default:
                 log.info("接受到未知类型的ws消息");

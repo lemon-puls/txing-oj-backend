@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.bitdf.txing.oj.model.entity.match.WeekMatch;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchVO;
 
+import java.util.List;
+
 /**
  * @author lizhiwei
  * @email
@@ -13,6 +15,8 @@ public interface MatchWeekService extends IService<WeekMatch> {
     WeekMatch getLastSessionMatch();
 
     WeekMatchVO getNextMatch();
+
+    List<WeekMatchVO> getHistoryMatch();
 
 //    PageUtils queryPage(Map<String, Object> params);
 }

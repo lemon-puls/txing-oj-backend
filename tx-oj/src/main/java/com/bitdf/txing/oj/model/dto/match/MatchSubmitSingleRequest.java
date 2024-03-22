@@ -15,4 +15,8 @@ public class MatchSubmitSingleRequest extends QuestionSubmitDoRequest {
      * 竞赛id
      */
     private Long matchId;
+    /**
+     * 是否结束比赛
+     */
+    private boolean finished;
 }

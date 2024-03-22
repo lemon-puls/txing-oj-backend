@@ -6,6 +6,7 @@ import com.bitdf.txing.oj.chat.domain.vo.response.WsBaseVO;
 import com.bitdf.txing.oj.chat.enume.WsPushTypeEnum;
 import com.bitdf.txing.oj.chat.enume.WsRespTypeEnum;
 import com.bitdf.txing.oj.chat.service.business.WebSocketService;
+import com.bitdf.txing.oj.config.MyMqConfig;
 import com.rabbitmq.client.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
@@ -22,7 +23,7 @@ import java.io.IOException;
  * 注释：
  */
 @Service
-@RabbitListener(queues = {ChatMqConstant.WEBSOCKET_PUSH_QUEUE})
+@RabbitListener(queues = {MyMqConfig.WEBSOCKET_PUSH_QUEUE})
 @Slf4j
 public class WsPushMqListener {
 

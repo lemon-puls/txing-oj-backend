@@ -57,6 +57,8 @@ public class RedisKeyConstant {
      */
     public static final String MATCH_WEEK_RANK = "match:week:rank";
 
+    public static final String MATCH_PK_FIND_SET = "match:pk:find";
+
     public static String getKey(String key, Object... objects) {
         return BASE_KEY + String.format(key, objects);
     }

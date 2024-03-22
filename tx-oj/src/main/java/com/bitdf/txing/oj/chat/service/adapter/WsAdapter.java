@@ -5,6 +5,7 @@ import com.bitdf.txing.oj.chat.enume.WsRespTypeEnum;
 import com.bitdf.txing.oj.chat.service.business.ChatService;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.enume.UserActiveStatusEnum;
+import com.bitdf.txing.oj.model.vo.match.WsOnlinePkTeamUpVO;
 import com.bitdf.txing.oj.model.vo.user.WsFriendApplyVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -26,6 +27,13 @@ public class WsAdapter {
         WsBaseVO<ChatMessageVO> wsBaseVO = new WsBaseVO<>();
         wsBaseVO.setType(WsRespTypeEnum.MESSAGE.getType());
         wsBaseVO.setData(chatMessageVO);
+        return wsBaseVO;
+    }
+
+    public static WsBaseVO<WsOnlinePkTeamUpVO> buildPKTeamUpNotifyVO(WsOnlinePkTeamUpVO wsOnlinePkTeamUpVO) {
+        WsBaseVO<WsOnlinePkTeamUpVO> wsBaseVO = new WsBaseVO<>();
+        wsBaseVO.setType(WsRespTypeEnum.ONLINE_PK_TEAM_UP_NOTIFY.getType());
+        wsBaseVO.setData(wsOnlinePkTeamUpVO);
         return wsBaseVO;
     }
 

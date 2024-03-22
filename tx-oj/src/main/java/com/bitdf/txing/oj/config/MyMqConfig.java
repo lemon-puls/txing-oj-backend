@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MyMqConfig {
 
-//    @Value("${spring.profiles.active}")
+    //    @Value("${spring.profiles.active}")
     private static String profile = "dev";
 
     public static final String JUDGE_EXCHANGE = genName("judge.exchange");
@@ -27,6 +27,8 @@ public class MyMqConfig {
 
     public static final String MATCH_HANDLE_QUEUE = genName("match.handle.queue");
     public static final String MATCH_HANDLE_ROUTTINGKEY = genName("match.and.handle");
+
+    public static final String WEBSOCKET_PUSH_QUEUE = "websocket_push_queue.dev";
 
 
     @Bean
@@ -160,7 +162,7 @@ public class MyMqConfig {
      */
     @Bean("websocket.push.queue")
     public Queue websocketPushQueue() {
-        Queue queue = new Queue(ChatMqConstant.WEBSOCKET_PUSH_QUEUE, true, false, false);
+        Queue queue = new Queue(WEBSOCKET_PUSH_QUEUE, true, false, false);
         return queue;
     }
 

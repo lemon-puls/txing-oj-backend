@@ -1,15 +1,9 @@
 package com.bitdf.txing.oj.controller;
 
-import com.bitdf.txing.oj.model.entity.match.MatchUserRelate;
 import com.bitdf.txing.oj.service.MatchUserRelateService;
-import com.bitdf.txing.oj.utils.R;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.Arrays;
 
 
 
@@ -38,44 +32,44 @@ public class MatchUserRelateController {
 //    }
 
 
-    /**
-     * 信息
-     */
-    @RequestMapping("/info/{id}")
-    public R info(@PathVariable("id") Long id){
-		MatchUserRelate matchUserRelate = matchUserRelateService.getById(id);
-
-        return R.ok().put("matchUserRelate", matchUserRelate);
-    }
-
-    /**
-     * 保存
-     */
-    @RequestMapping("/save")
-    public R save(@RequestBody MatchUserRelate matchUserRelate){
-		matchUserRelateService.save(matchUserRelate);
-
-        return R.ok();
-    }
-
-    /**
-     * 修改
-     */
-    @RequestMapping("/update")
-    public R update(@RequestBody MatchUserRelate matchUserRelate){
-		matchUserRelateService.updateById(matchUserRelate);
-
-        return R.ok();
-    }
-
-    /**
-     * 删除
-     */
-    @RequestMapping("/delete")
-    public R delete(@RequestBody Long[] ids){
-		matchUserRelateService.removeByIds(Arrays.asList(ids));
-
-        return R.ok();
-    }
+//    /**
+//     * 信息
+//     */
+//    @RequestMapping("/info/{id}")
+//    public R info(@PathVariable("id") Long id){
+//		MatchUserRelate matchUserRelate = matchUserRelateService.getById(id);
+//
+//        return R.ok().put("matchUserRelate", matchUserRelate);
+//    }
+//
+//    /**
+//     * 保存
+//     */
+//    @RequestMapping("/save")
+//    public R save(@RequestBody MatchUserRelate matchUserRelate){
+//		matchUserRelateService.save(matchUserRelate);
+//
+//        return R.ok();
+//    }
+//
+//    /**
+//     * 修改
+//     */
+//    @RequestMapping("/update")
+//    public R update(@RequestBody MatchUserRelate matchUserRelate){
+//		matchUserRelateService.updateById(matchUserRelate);
+//
+//        return R.ok();
+//    }
+//
+//    /**
+//     * 删除
+//     */
+//    @RequestMapping("/delete")
+//    public R delete(@RequestBody Long[] ids){
+//		matchUserRelateService.removeByIds(Arrays.asList(ids));
+//
+//        return R.ok();
+//    }
 
 }

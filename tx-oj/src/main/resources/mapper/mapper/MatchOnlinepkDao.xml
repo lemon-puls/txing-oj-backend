@@ -19,6 +19,29 @@
         <result property="updateTime" column="update_time"/>
         <result property="isDelete" column="is_delete"/>
     </resultMap>
+    <update id="finishMatch">
+        UPDATE txing_oj_match_onlinepk
+        SET submit_time1 = CASE
+                               WHEN user_id1 = #{ userId } THEN
+                                   NOW()
+                               ELSE
+                                   submit_time1
+            END,
+            submit_time2 = CASE
+                               WHEN user_id2 = #{ userId } THEN
+                                   NOW()
+                               ELSE
+                                   submit_time2
+                END
+        WHERE id = #{ matchId };
+    </update>
+
+    <select id="getMatchsByUserId" resultType="com.bitdf.txing.oj.model.entity.match.OnlinePkMatch">
+        SELECT *
+        FROM txing_oj_match_onlinepk
+        WHERE user_id1 = #{ userId }
+           OR user_id2 = #{ userId };
+    </select>
 
 
 </mapper>

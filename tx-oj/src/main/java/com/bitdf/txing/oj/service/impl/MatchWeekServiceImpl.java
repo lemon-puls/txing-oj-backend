@@ -6,8 +6,12 @@ import com.bitdf.txing.oj.mapper.MatchWeekMapper;
 import com.bitdf.txing.oj.model.entity.match.WeekMatch;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchVO;
 import com.bitdf.txing.oj.service.MatchWeekService;
+import com.bitdf.txing.oj.service.adapter.MatchWeekAdapter;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
+import java.util.List;
 
 
 @Service("matchWeekService")
@@ -42,5 +46,15 @@ public class MatchWeekServiceImpl extends ServiceImpl<MatchWeekMapper, WeekMatch
         WeekMatchVO weekMatchVO = new WeekMatchVO();
         BeanUtils.copyProperties(weekMatch, weekMatchVO);
         return weekMatchVO;
+    }
+
+    @Override
+    public List<WeekMatchVO> getHistoryMatch() {
+        QueryWrapper<WeekMatch> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .lt(WeekMatch::getEndTime, new Date())
+                .orderByDesc(WeekMatch::getSessionNo);
+        List<WeekMatch> list = this.list(wrapper);
+        return MatchWeekAdapter.buildWeekMatchVOs(list);
     }
 }

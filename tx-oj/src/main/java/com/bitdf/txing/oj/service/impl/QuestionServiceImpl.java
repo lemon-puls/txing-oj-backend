@@ -172,4 +172,33 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question> i
         List<QuestionVO> questionVOS = this.getQuestionVOsByQuestions(questions, false);
         return questionVOS;
     }
+
+
+    /**
+     * 随机抽选任意道题目
+     *
+     * @return
+     */
+    @Override
+    public List<Question> getQuestionsByRandom(Integer count) {
+        // 抽选题目
+        List<Question> questions = this.list(new QueryWrapper<Question>().lambda().select(Question::getId));
+        List<Question> randomQuestions = selectRandomQuestions(questions, count);
+        return randomQuestions;
+    }
+
+    /**
+     * 抽选题目
+     */
+    public List<Question> selectRandomQuestions(List<Question> list, int count) {
+        List<Question> selectedItems = new ArrayList<>();
+        Random rand = new Random();
+        for (int i = 0; i < count && !list.isEmpty(); i++) {
+            int randomIndex = rand.nextInt(list.size());
+            selectedItems.add(list.get(randomIndex));
+            list.remove(randomIndex); // Ensure no duplicates
+        }
+        return selectedItems;
+    }
+
 }

@@ -95,4 +95,13 @@ public class MatchWeekAppController {
         return R.ok(weekMatchVO);
     }
 
+    /**
+     * 获取历史周赛数据
+     */
+    @GetMapping("/history/get")
+    public R getWeekMatchHistory() {
+        List<WeekMatchVO> list = matchWeekService.getHistoryMatch();
+        return R.ok(list);
+    }
+
 }
