@@ -1,15 +1,18 @@
 package com.bitdf.txing.oj.service.impl;
 
+import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.mapper.MatchWeekMapper;
 import com.bitdf.txing.oj.model.entity.match.WeekMatch;
+import com.bitdf.txing.oj.model.enume.match.MatchStatusEnum;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchVO;
 import com.bitdf.txing.oj.service.MatchWeekService;
 import com.bitdf.txing.oj.service.adapter.MatchWeekAdapter;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -36,6 +39,7 @@ public class MatchWeekServiceImpl extends ServiceImpl<MatchWeekMapper, WeekMatch
         return weekMatch;
     }
 
+
     @Override
     public WeekMatchVO getNextMatch() {
         QueryWrapper<WeekMatch> wrapper = new QueryWrapper<>();
@@ -56,5 +60,20 @@ public class MatchWeekServiceImpl extends ServiceImpl<MatchWeekMapper, WeekMatch
                 .orderByDesc(WeekMatch::getSessionNo);
         List<WeekMatch> list = this.list(wrapper);
         return MatchWeekAdapter.buildWeekMatchVOs(list);
+    }
+
+    /**
+     * 获取上周比赛
+     *
+     * @return
+     */
+    @Override
+    public WeekMatchVO getLastWeekMatch() {
+        WeekMatch weekMatch = this.lambdaQuery()
+                .eq(WeekMatch::getStatus, MatchStatusEnum.JUDGE_FINISHED.getCode())
+                .orderByDesc(WeekMatch::getSessionNo)
+                .last("limit 1").one();
+        WeekMatchVO matchVO = CollectionUtil.getFirst(MatchWeekAdapter.buildWeekMatchVOs(Arrays.asList(weekMatch)));
+        return matchVO;
     }
 }

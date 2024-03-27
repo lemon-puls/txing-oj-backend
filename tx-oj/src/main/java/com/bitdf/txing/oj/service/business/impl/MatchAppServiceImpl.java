@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.config.MyMqConfig;
 import com.bitdf.txing.oj.constant.RedisKeyConstant;
+import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.judge.JudgeInfo;
 import com.bitdf.txing.oj.judge.JudgeService;
 import com.bitdf.txing.oj.mapper.MatchSubmitRelateMapper;
@@ -20,10 +21,7 @@ import com.bitdf.txing.oj.model.entity.match.WeekMatch;
 import com.bitdf.txing.oj.model.entity.match.WeekMatchQuestionRelate;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.enume.JudgeStatusEnum;
-import com.bitdf.txing.oj.model.enume.match.MatchJoinTypeEnum;
-import com.bitdf.txing.oj.model.enume.match.MatchStatusEnum;
-import com.bitdf.txing.oj.model.enume.match.MatchTypeEnum;
-import com.bitdf.txing.oj.model.enume.match.MatchUserJudgeStatusEnum;
+import com.bitdf.txing.oj.model.enume.match.*;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchRankItemVO;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchStartVO;
 import com.bitdf.txing.oj.model.vo.question.QuestionVO;
@@ -76,25 +74,40 @@ public class MatchAppServiceImpl implements MatchAppService {
      * @return
      */
     @Override
-    public WeekMatchStartVO startMatch() {
+    public WeekMatchStartVO startMatch(Long matchId) {
         Long userId = AuthInterceptor.userThreadLocal.get().getId();
-        WeekMatch lastSessionMatch = matchWeekService.getLastSessionMatch();
-
-
-//        boolean isStarted = new Date().compareTo(lastSessionMatch.getStartTime()) >= 0
-//                && new Date().compareTo(lastSessionMatch.getEndTime()) < 0;
-//        ThrowUtils.throwIf(lastSessionMatch == null || !isStarted, "比赛无效");
+        WeekMatch lastSessionMatch;
+        MatchJoinTypeEnum joinTypeEnum = Objects.isNull(matchId) ? MatchJoinTypeEnum.FORMAT : MatchJoinTypeEnum.SIMULATE;
+        if (Objects.isNull(matchId)) {
+            // 正式比赛
+            lastSessionMatch = matchWeekService.getLastSessionMatch();
+            boolean isStarted = new Date().compareTo(lastSessionMatch.getStartTime()) >= 0
+                    && new Date().compareTo(lastSessionMatch.getEndTime()) < 0;
+            ThrowUtils.throwIf(lastSessionMatch == null || !isStarted, "比赛无效");
+        } else {
+            // 模拟
+            // 判断是否有未完成的模拟赛
+            MatchUserRelate matchRunning = matchUserRelateService.getSimulateMatchRunning(userId);
+//            ThrowUtils.throwIf(matchRunning != null && !matchRunning.getMatchId().equals(matchId), "请先完成");
+            if (matchRunning != null && !matchRunning.getMatchId().equals(matchId)) {
+                matchId = matchRunning.getMatchId();
+            }
+            lastSessionMatch = matchWeekService.getById(matchId);
+            // 校验 是否已结束
+            boolean isFinished = new Date().compareTo(lastSessionMatch.getEndTime()) > 0;
+            ThrowUtils.throwIf(!isFinished, "该比赛未完成");
+        }
         // 保存 用户参加记录
         MatchUserRelate matchUserRelate = matchUserRelateService.getOne(new QueryWrapper<MatchUserRelate>().lambda()
                 .eq(MatchUserRelate::getMatchId, lastSessionMatch.getId())
                 .eq(MatchUserRelate::getUserId, userId)
-                .eq(MatchUserRelate::getJoinType, MatchJoinTypeEnum.FORMAT.getCode()));
+                .eq(MatchUserRelate::getJudgeStatus, MatchUserJudgeStatusEnum.WAITTING.getCode())
+                .eq(MatchUserRelate::getStatus, MatchUserStatusEnum.NORMAL.getCode()));
         if (matchUserRelate == null) {
-            MatchUserRelate matchUserRelate1 = MatchUserAdapter.buildMatchUserRelate(lastSessionMatch.getId(),
-                    userId, MatchJoinTypeEnum.FORMAT.getCode());
-            matchUserRelateService.save(matchUserRelate1);
+            matchUserRelate = MatchUserAdapter.buildMatchUserRelate(lastSessionMatch.getId(),
+                    userId, joinTypeEnum.getCode());
+            matchUserRelateService.save(matchUserRelate);
         }
-
 
         List<WeekMatchQuestionRelate> list = matchWeekQuestionRelateService.list(new QueryWrapper<WeekMatchQuestionRelate>()
                 .lambda()
@@ -106,6 +119,10 @@ public class MatchAppServiceImpl implements MatchAppService {
         WeekMatchStartVO weekMatchStartVO = new WeekMatchStartVO();
         BeanUtils.copyProperties(lastSessionMatch, weekMatchStartVO);
         weekMatchStartVO.setQuestions(questionVOs);
+        if (matchId != null) {
+            //模拟
+            weekMatchStartVO.setSimulateStartTime(matchUserRelate.getStartTime());
+        }
         return weekMatchStartVO;
     }
 
@@ -117,7 +134,9 @@ public class MatchAppServiceImpl implements MatchAppService {
     @Override
     public Long submitSingle(MatchSubmitSingleRequest matchSubmitSingleRequest) {
         User user = AuthInterceptor.userThreadLocal.get();
-        Long submitId = saveOrUpdateSubmit(matchSubmitSingleRequest, matchSubmitSingleRequest.getMatchId(), user.getId());
+        // 查出参加id
+        MatchUserRelate matchUserRelate = matchUserRelateService.getLastJoinRecord(matchSubmitSingleRequest.getMatchId(), user.getId());
+        Long submitId = saveOrUpdateSubmit(matchSubmitSingleRequest, matchSubmitSingleRequest.getMatchId(), user.getId(), matchUserRelate.getId());
         if (submitId != -1) {
             rabbitTemplate.convertAndSend(MyMqConfig.JUDGE_EXCHANGE, MyMqConfig.WAITTING_JUDGE_ROUTINGKEY,
                     submitId, new CorrelationData(submitId.toString()));
@@ -135,17 +154,17 @@ public class MatchAppServiceImpl implements MatchAppService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long saveOrUpdateSubmit(QuestionSubmitDoRequest request, Long matchId, Long userId) {
+    public Long saveOrUpdateSubmit(QuestionSubmitDoRequest request, Long matchId, Long userId, Long joinRecordId) {
         MatchSubmitRelate submitRelate = matchSubmitRelateService.getOne(new QueryWrapper<MatchSubmitRelate>().lambda()
                 .eq(MatchSubmitRelate::getMatchId, matchId)
-                .eq(MatchSubmitRelate::getQuestionId, request.getQuestionId()));
+                .eq(MatchSubmitRelate::getQuestionId, request.getQuestionId())
+                .eq(MatchSubmitRelate::getJoinRecordId, joinRecordId));
         QuestionSubmit questionSubmit = MatchSubmitAdapter.buildQuestionSubmit(request, userId);
         Long submitId = -1L;
         if (Objects.isNull(submitRelate)) {
             questionSubmitService.save(questionSubmit);
             // 查出参与id
-            MatchUserRelate matchUserRelate = matchUserRelateService
-                    .getByMatchIdAndUserId(matchId, userId);
+            MatchUserRelate matchUserRelate = matchUserRelateService.getById(joinRecordId);
             // 还未提交过
             MatchSubmitRelate matchSubmitRelate = MatchSubmitRelate.builder()
                     .matchId(matchId)
@@ -179,10 +198,12 @@ public class MatchAppServiceImpl implements MatchAppService {
     @Override
     @Transactional
     public void submitAll(MatchSubmitBatchRequest request) {
+        // 查出参加id
+        MatchUserRelate matchUserRelate = matchUserRelateService.getLastJoinRecord(request.getMatchId(), request.getUserId());
         // 保存作答 收集需要执行判题的submitId
         List<Long> needJudgeSubmitIds = new ArrayList<>();
         for (QuestionSubmitDoRequest submitDoRequest : request.getSubmits()) {
-            Long submitId = saveOrUpdateSubmit(submitDoRequest, request.getMatchId(), request.getUserId());
+            Long submitId = saveOrUpdateSubmit(submitDoRequest, request.getMatchId(), request.getUserId(), matchUserRelate.getId());
             if (submitId != -1) {
                 needJudgeSubmitIds.add(submitId);
             }
@@ -191,8 +212,6 @@ public class MatchAppServiceImpl implements MatchAppService {
         for (Long needJudgeSubmitId : needJudgeSubmitIds) {
             judgeService.doJudge(needJudgeSubmitId);
         }
-        // 查出参加id
-        MatchUserRelate matchUserRelate = matchUserRelateService.getLastJoinRecord(request.getMatchId(), request.getUserId());
         // 查出所有submit
         List<QuestionSubmit> submitList = matchSubmitRelateMapper.getSubmitsOfUser(request.getMatchId(), matchUserRelate.getId());
         // 获取当前用户ac题目数
@@ -215,22 +234,24 @@ public class MatchAppServiceImpl implements MatchAppService {
                 .set(MatchUserRelate::getJudgeStatus, MatchUserJudgeStatusEnum.FINISHED.getCode())
                 .set(MatchUserRelate::getAcCount, acCount)
                 .set(MatchUserRelate::getUnAcRateSum, unAcRateCount));
-        // 判断是否本次周赛是否所有用户作答都已处理完毕 并且 比赛已结束 如果是 则计算参赛用户排名
-        WeekMatch weekMatch = matchWeekService.getById(request.getMatchId());
-        if (weekMatch.getEndTime().compareTo(new Date()) <= 0) {
-            int count = matchUserRelateService.count(new QueryWrapper<MatchUserRelate>().lambda()
-                    .eq(MatchUserRelate::getMatchId, request.getMatchId())
-                    .eq(MatchUserRelate::getJudgeStatus, MatchUserJudgeStatusEnum.WAITTING.getCode()));
-            if (count == 0) {
-                // 开始计算用户排名
-                computeMatchRank(request.getMatchId());
-                // 更改本周比赛状态
-                boolean update1 = matchWeekService.update(new UpdateWrapper<WeekMatch>().lambda()
-                        .eq(WeekMatch::getId, request.getMatchId())
-                        .set(WeekMatch::getStatus, MatchStatusEnum.JUDGE_FINISHED.getCode()));
+        if (MatchJoinTypeEnum.FORMAT.getCode().equals(matchUserRelate.getJoinType())) {
+            // 判断是否本次周赛是否所有用户作答都已处理完毕 并且 比赛已结束 如果是 则计算参赛用户排名
+            WeekMatch weekMatch = matchWeekService.getById(request.getMatchId());
+            if (weekMatch.getEndTime().compareTo(new Date()) <= 0) {
+                int count = matchUserRelateService.count(new QueryWrapper<MatchUserRelate>().lambda()
+                        .eq(MatchUserRelate::getMatchId, request.getMatchId())
+                        .eq(MatchUserRelate::getJudgeStatus, MatchUserJudgeStatusEnum.WAITTING.getCode())
+                        .eq(MatchUserRelate::getStatus, MatchUserStatusEnum.NORMAL.getCode()));
+                if (count == 0) {
+                    // 开始计算用户排名
+                    computeMatchRank(request.getMatchId());
+                    // 更改本周比赛状态
+                    boolean update1 = matchWeekService.update(new UpdateWrapper<WeekMatch>().lambda()
+                            .eq(WeekMatch::getId, request.getMatchId())
+                            .set(WeekMatch::getStatus, MatchStatusEnum.JUDGE_FINISHED.getCode()));
+                }
             }
         }
-
         // TODO 如果执行失败进行重试
     }
 
@@ -239,11 +260,13 @@ public class MatchAppServiceImpl implements MatchAppService {
      *
      * @param matchId
      */
+    @Override
     public void computeMatchRank(Long matchId) {
         QueryWrapper<MatchUserRelate> wrapper = new QueryWrapper<>();
         wrapper.lambda()
                 .eq(MatchUserRelate::getMatchId, matchId)
                 .eq(MatchUserRelate::getJoinType, MatchJoinTypeEnum.FORMAT.getCode())
+                .eq(MatchUserRelate::getStatus, MatchUserStatusEnum.NORMAL.getCode())
                 .orderByDesc(MatchUserRelate::getAcCount, MatchUserRelate::getUnAcRateSum);
         List<MatchUserRelate> list = matchUserRelateService.list(wrapper);
         List<WeekMatchRankItemVO> rankCacheList = new ArrayList<>();

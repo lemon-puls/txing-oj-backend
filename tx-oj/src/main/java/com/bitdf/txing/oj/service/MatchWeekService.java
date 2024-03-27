@@ -18,6 +18,8 @@ public interface MatchWeekService extends IService<WeekMatch> {
 
     List<WeekMatchVO> getHistoryMatch();
 
+    WeekMatchVO getLastWeekMatch();
+
 //    PageUtils queryPage(Map<String, Object> params);
 }
 

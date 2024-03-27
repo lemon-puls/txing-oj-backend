@@ -3,6 +3,7 @@ package com.bitdf.txing.oj.model.vo.match;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.bitdf.txing.oj.model.vo.question.QuestionVO;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -49,4 +50,10 @@ public class WeekMatchStartVO {
      * 题目集合
      */
     private List<QuestionVO> questions;
+
+    /**
+     * 当前用户开始作答时间（模拟赛时需要）
+     */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
+    private Date simulateStartTime;
 }

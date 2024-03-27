@@ -1,18 +1,23 @@
-package com.bitdf.txing.oj.utils;
+package com.bitdf.txing.oj.config;
 
 import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
+import java.util.Random;
 
 @Data
-public class VodUtils {
+@Configuration
+@ConfigurationProperties(prefix = "vod.sign")
+public class VodSigner {
     private String secretId;
     private String secretKey;
-    private long currentTime;
-    private int random;
-    private int signValidDuration;
+    private long currentTime = System.currentTimeMillis() / 1000;
+    private int random = new Random().nextInt(Integer.MAX_VALUE);
+    private int validDuration;
 
 
     private static final String HMAC_ALGORITHM = "HmacSHA1"; //签名算法
@@ -34,7 +39,7 @@ public class VodUtils {
 
 
         // 生成原始参数字符串
-        long endTime = (currentTime + signValidDuration);
+        long endTime = (currentTime + validDuration);
         contextStr += "secretId=" + java.net.URLEncoder.encode(secretId, "utf8");
         contextStr += "&currentTimeStamp=" + currentTime;
         contextStr += "&expireTime=" + endTime;

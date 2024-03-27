@@ -9,6 +9,7 @@ import com.bitdf.txing.oj.manager.CosManager;
 import com.bitdf.txing.oj.model.dto.question.JudgeConfig;
 import com.bitdf.txing.oj.model.entity.chat.Message;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.config.VodSigner;
 import com.google.gson.Gson;
 import com.lemon.util.service.TableGenerator;
 import com.qcloud.cos.COSClient;
@@ -43,6 +44,7 @@ public class CommonTest {
 
     @Autowired
     MessageService messageService;
+
     @Test
     void testGetMessage() {
         Message byId = messageService.getById(150);
@@ -142,5 +144,21 @@ public class CommonTest {
             }
             return null;
         });
+    }
+
+
+    @Autowired
+    VodSigner vodUtils;
+
+    @Test
+    void getVodSignTest() {
+
+        try {
+            String signature = vodUtils.getUploadSignature();
+            System.out.println("signature : " + signature);
+        } catch (Exception e) {
+            System.out.print("获取签名失败");
+            e.printStackTrace();
+        }
     }
 }

@@ -16,4 +16,6 @@ public class UserShowVO {
     private String userName;
 
     private String userAvatar;
+
+    private String personSign;
 }

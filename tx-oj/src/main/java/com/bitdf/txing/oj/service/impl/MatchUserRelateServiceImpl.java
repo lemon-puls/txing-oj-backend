@@ -1,10 +1,15 @@
 package com.bitdf.txing.oj.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bitdf.txing.oj.mapper.MatchUserRelateMapper;
 import com.bitdf.txing.oj.model.entity.match.MatchUserRelate;
+import com.bitdf.txing.oj.model.enume.match.MatchJoinTypeEnum;
+import com.bitdf.txing.oj.model.enume.match.MatchUserJudgeStatusEnum;
+import com.bitdf.txing.oj.model.enume.match.MatchUserStatusEnum;
 import com.bitdf.txing.oj.service.MatchUserRelateService;
 import org.springframework.stereotype.Service;
 
@@ -37,18 +42,47 @@ public class MatchUserRelateServiceImpl extends ServiceImpl<MatchUserRelateMappe
         MatchUserRelate matchUserRelate = this.getOne(new QueryWrapper<MatchUserRelate>().lambda()
                 .eq(MatchUserRelate::getMatchId, matchId)
                 .eq(MatchUserRelate::getUserId, userId)
-                .select(MatchUserRelate::getId)
                 .orderByDesc(MatchUserRelate::getCreateTime)
                 .last("limit 1"));
         return matchUserRelate;
     }
 
     @Override
-    public void saveEndTime(Long matchId, Long userId) {
-        boolean update = this.update(new UpdateWrapper<MatchUserRelate>().lambda()
+    public Long saveEndTime(Long matchId, Long userId) {
+        LambdaQueryWrapper<MatchUserRelate> wrapper = new QueryWrapper<MatchUserRelate>().lambda()
                 .eq(MatchUserRelate::getMatchId, matchId)
                 .eq(MatchUserRelate::getUserId, userId)
-                .eq(MatchUserRelate::getEndTime, null)
-                .set(MatchUserRelate::getEndTime, new Date()));
+                .eq(MatchUserRelate::getStatus, MatchUserStatusEnum.NORMAL.getCode())
+                .isNull(MatchUserRelate::getEndTime);
+        MatchUserRelate matchUserRelate = this.getOne(wrapper);
+        MatchUserRelate update = new MatchUserRelate();
+        update.setId(matchUserRelate.getId());
+        update.setEndTime(new Date());
+        boolean b = this.updateById(update);
+        return matchUserRelate.getId();
+    }
+
+    @Override
+    public MatchUserRelate getSimulateMatchRunning(Long userId) {
+        QueryWrapper<MatchUserRelate> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .eq(MatchUserRelate::getUserId, userId)
+                .eq(MatchUserRelate::getJudgeStatus, MatchUserJudgeStatusEnum.WAITTING.getCode())
+                .eq(MatchUserRelate::getJoinType, MatchJoinTypeEnum.SIMULATE.getCode())
+                .eq(MatchUserRelate::getStatus, MatchUserStatusEnum.NORMAL.getCode())
+                .orderByDesc(MatchUserRelate::getStartTime)
+                .last("limit 1");
+        return this.getOne(wrapper);
+    }
+
+    @Override
+    public void updateUserStatus(Integer code, Long userId, Long matchId) {
+        LambdaUpdateWrapper<MatchUserRelate> wrapper = new UpdateWrapper<MatchUserRelate>().lambda()
+                .eq(MatchUserRelate::getUserId, userId)
+                .eq(MatchUserRelate::getMatchId, matchId)
+                .isNull(MatchUserRelate::getEndTime)
+                .eq(MatchUserRelate::getStatus, MatchUserStatusEnum.NORMAL.getCode())
+                .set(MatchUserRelate::getStatus, MatchUserStatusEnum.GIVEUP.getCode());
+        this.update(wrapper);
     }
 }

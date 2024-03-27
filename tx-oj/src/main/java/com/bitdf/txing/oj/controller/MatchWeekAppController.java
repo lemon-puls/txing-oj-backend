@@ -1,5 +1,6 @@
 package com.bitdf.txing.oj.controller;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
@@ -8,6 +9,7 @@ import com.bitdf.txing.oj.constant.RedisKeyConstant;
 import com.bitdf.txing.oj.model.dto.match.MatchSubmitBatchRequest;
 import com.bitdf.txing.oj.model.dto.match.MatchSubmitSingleRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.match.MatchUserStatusEnum;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchRankItemVO;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchStartVO;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchVO;
@@ -40,8 +42,8 @@ public class MatchWeekAppController {
      */
     @GetMapping("/start")
     @AuthCheck(mustRole = "login")
-    public R startMatch() {
-        WeekMatchStartVO weekMatchStartVO = matchAppService.startMatch();
+    public R startMatch(@RequestParam(name = "matchId", required = false) Long matchId) {
+        WeekMatchStartVO weekMatchStartVO = matchAppService.startMatch(matchId);
         return R.ok(weekMatchStartVO);
     }
 
@@ -65,24 +67,30 @@ public class MatchWeekAppController {
 //        matchAppService.submitAll(request, user.getId());
 //        String jsonStr = JSON.toJSONString(request);
         // 保存提交时间
-        matchUserRelateService.saveEndTime(request.getMatchId(), user.getId());
+        Long userRelateId = matchUserRelateService.saveEndTime(request.getMatchId(), user.getId());
 
         request.setUserId(user.getId());
         rabbitTemplate.convertAndSend(MyMqConfig.JUDGE_EXCHANGE, MyMqConfig.MATCH_HANDLE_ROUTTINGKEY,
                 request, new CorrelationData(request.getMatchId() + "" + user.getId()));
-        return R.ok();
+        return R.ok(userRelateId);
     }
 
     /**
      * 获取周赛结果 个人结果 及 排行榜
      */
     @GetMapping("/rank/get")
-    @AuthCheck(mustRole = "login")
+//    @AuthCheck(mustRole = "login")
     public R getMatchRank() {
         String str = RedisUtils.get(RedisKeyConstant.MATCH_WEEK_RANK);
 //        List<WeekMatchRankVO> collect = strings.stream().map(str -> JSON.parseObject(str, WeekMatchRankVO.class))
 //                .collect(Collectors.toList());
+        if (ObjectUtil.isNull(str) || "[]".equals(str)) {
+            WeekMatchVO lastWeekMatch = matchWeekService.getLastWeekMatch();
+            matchAppService.computeMatchRank(lastWeekMatch.getId());
+        }
+        str = RedisUtils.get(RedisKeyConstant.MATCH_WEEK_RANK);
         List<WeekMatchRankItemVO> weekMatchRankItemVOS = JSON.parseArray(str, WeekMatchRankItemVO.class);
+
         return R.ok(weekMatchRankItemVOS);
     }
 
@@ -96,6 +104,15 @@ public class MatchWeekAppController {
     }
 
     /**
+     * 获取上周的周赛信息
+     */
+    @GetMapping("/last/get")
+    public R getLastWeekMatch() {
+        WeekMatchVO weekMatchVO = matchWeekService.getLastWeekMatch();
+        return R.ok(weekMatchVO);
+    }
+
+    /**
      * 获取历史周赛数据
      */
     @GetMapping("/history/get")
@@ -104,4 +121,14 @@ public class MatchWeekAppController {
         return R.ok(list);
     }
 
+    /**
+     * 放弃比赛
+     */
+    @GetMapping("/giveup")
+    @AuthCheck(mustRole = "login")
+    public R giveUpMatch(@RequestParam("matchId") Long matchId) {
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        matchUserRelateService.updateUserStatus(MatchUserStatusEnum.GIVEUP.getCode(), userId, matchId);
+        return R.ok();
+    }
 }

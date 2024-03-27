@@ -30,5 +30,10 @@ public class ExecCodeController {
         return R.ok(execCodeResponse);
     }
 
+    @PostMapping("/python/exec")
+    public R execPythonCode(@RequestBody ExecCodeRequest request) {
+
+    }
+
 
 }
