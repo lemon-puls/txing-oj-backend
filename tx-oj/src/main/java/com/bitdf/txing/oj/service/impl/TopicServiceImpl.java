@@ -38,8 +38,11 @@ public class TopicServiceImpl extends ServiceImpl<TopicMapper, Topic> implements
     }
 
     @Override
-    public CursorPageBaseVO<Topic> getTopicPageByCursor(CursorPageBaseRequest pageRequest) {
+    public CursorPageBaseVO<Topic> getTopicPageByCursor(CursorPageBaseRequest pageRequest, String keyWord) {
         CursorPageBaseVO<Topic> cursorPageByMysql = CursorUtils.getCursorPageByMysql(this, pageRequest, wrapper -> {
+            wrapper.like(Topic::getTitle, keyWord)
+                    .or()
+                    .like(Topic::getContent, keyWord);
         }, Topic::getCreateTime);
         return cursorPageByMysql;
     }

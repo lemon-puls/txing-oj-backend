@@ -3,16 +3,21 @@ package com.bitdf.txing.oj.controller.forum;
 import cn.hutool.core.collection.CollectionUtil;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
-import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
+import com.bitdf.txing.oj.model.dto.forum.ForumCursorPageRequest;
 import com.bitdf.txing.oj.model.dto.forum.TopicCommentRequest;
 import com.bitdf.txing.oj.model.dto.forum.TopicPublishRequest;
+import com.bitdf.txing.oj.model.dto.postfavour.PostFavourAddRequest;
+import com.bitdf.txing.oj.model.dto.question.postthumb.PostThumbAddRequest;
 import com.bitdf.txing.oj.model.entity.forum.Topic;
+import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.model.vo.forum.TopicCommentVO;
 import com.bitdf.txing.oj.model.vo.forum.TopicDetailVO;
 import com.bitdf.txing.oj.model.vo.forum.TopicVO;
 import com.bitdf.txing.oj.service.TopicAppService;
+import com.bitdf.txing.oj.service.TopicFavourService;
 import com.bitdf.txing.oj.service.TopicService;
+import com.bitdf.txing.oj.service.TopicThumbService;
 import com.bitdf.txing.oj.service.adapter.TopicAdapter;
 import com.bitdf.txing.oj.utils.R;
 import com.bitdf.txing.oj.utils.page.PageUtils;
@@ -34,6 +39,10 @@ public class TopicAppController {
     TopicService topicService;
     @Autowired
     TopicAdapter topicAdapter;
+    @Autowired
+    TopicThumbService topicThumbService;
+    @Autowired
+    TopicFavourService topicFavourService;
 
     /**
      * 发布话题
@@ -97,7 +106,7 @@ public class TopicAppController {
      */
     @PostMapping("/list/cursor")
     @ApiOperation("查询（游标翻页）")
-    public R getTopicListByCursor(@RequestBody CursorPageBaseRequest pageRequest) {
+    public R getTopicListByCursor(@RequestBody ForumCursorPageRequest pageRequest) {
         CursorPageBaseVO<TopicVO> cursorPageBaseVO = topicAppService.getTopicPageByCursor(pageRequest);
         return R.ok(cursorPageBaseVO);
     }
@@ -114,5 +123,45 @@ public class TopicAppController {
         return R.ok(build);
     }
 
+    /**
+     * 删除评论
+     * @param commentId
+     * @return
+     */
+    @PostMapping("comment/delete/{id}")
+    @AuthCheck(mustRole = "login")
+    public R deleteComment(@PathVariable("id") Long commentId) {
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        topicAppService.deleteComment(commentId, userId);
+        return R.ok();
+    }
+
+    /**
+     * 帖子点赞与取消
+     * @param postThumbAddRequest
+     * @return
+     */
+    @PostMapping("/thumb")
+    @AuthCheck(mustRole = "login")
+    public R doThumb(@RequestBody PostThumbAddRequest postThumbAddRequest) {
+        // 登录才能点赞
+        User loginUser = AuthInterceptor.userThreadLocal.get();
+        long topicId = postThumbAddRequest.getPostId();
+        int result = topicThumbService.doPostThumb(topicId, loginUser);
+        return R.ok(result);
+    }
+
+    /**
+     * 收藏 / 取消收藏
+     */
+    @PostMapping("/favour")
+    @AuthCheck(mustRole = "login")
+    public R doFavour(@RequestBody PostFavourAddRequest postFavourAddRequest) {
+        // 登录才能操作
+        final User loginUser = AuthInterceptor.userThreadLocal.get();
+        long topicId = postFavourAddRequest.getPostId();
+        int result = topicFavourService.doFavour(topicId, loginUser);
+        return R.ok(result);
+    }
 
 }

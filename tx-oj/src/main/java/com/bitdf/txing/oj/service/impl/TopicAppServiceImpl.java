@@ -1,7 +1,9 @@
 package com.bitdf.txing.oj.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.bitdf.txing.oj.exception.ThrowUtils;
+import com.bitdf.txing.oj.model.dto.forum.ForumCursorPageRequest;
 import com.bitdf.txing.oj.model.dto.forum.TopicCommentRequest;
 import com.bitdf.txing.oj.model.dto.forum.TopicPublishRequest;
 import com.bitdf.txing.oj.model.entity.forum.Topic;
@@ -17,7 +19,10 @@ import com.bitdf.txing.oj.service.adapter.TopicAdapter;
 import com.bitdf.txing.oj.service.cache.UserCache;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -41,9 +46,16 @@ public class TopicAppServiceImpl implements TopicAppService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Long commentTopic(TopicCommentRequest request, Long userId) {
         TopicComment topicComment = TopicAdapter.buildTopicCommentByTopicCommentRequest(request, userId);
         topicCommentService.save(topicComment);
+        // 更新该话题评论数
+        UpdateWrapper<Topic> wrapper = new UpdateWrapper<>();
+        wrapper.lambda()
+                .eq(Topic::getId, request.getTopicId())
+                .setSql("comment_num = comment_num + 1");
+        boolean update = topicService.update(wrapper);
         return topicComment.getId();
     }
 
@@ -62,22 +74,46 @@ public class TopicAppServiceImpl implements TopicAppService {
                 .collect(Collectors.toList());
         List<TopicCommentVO> commentVOS = firstComments.stream().map(comment -> {
             User replyUser = userCache.get(comment.getUserId());
-            // 查出当前评论的所有回复
-            List<TopicCommentVO> commentVOList = secondComments.stream().map(item -> {
-                        if (comment.getId().equals(item.getReplyId())) {
-                            User commentUser = userCache.get(item.getUserId());
-                            TopicCommentVO topicCommentVO = TopicAdapter.buildCommentVOByComment(item, null, commentUser, replyUser);
-                            return topicCommentVO;
-                        } else {
-                            return null;
-                        }
-                    }).filter(item -> ObjectUtil.isNotNull(item))
-                    .collect(Collectors.toList());
+
+            List<TopicCommentVO> replyCommentVOs = getReplyCommentDfs(secondComments, comment);
+            // 使用自定义的Comparator对List进行排序
+            Collections.sort(replyCommentVOs, (a, b) -> a.getCreateTime().compareTo(b.getCreateTime()));
             // 封装当前评论
-            TopicCommentVO topicCommentVO = TopicAdapter.buildCommentVOByComment(comment, commentVOList, replyUser, null);
+            TopicCommentVO topicCommentVO = TopicAdapter.buildCommentVOByComment(comment, replyCommentVOs, replyUser, null);
             return topicCommentVO;
         }).collect(Collectors.toList());
         return commentVOS;
+    }
+
+
+    public List<TopicCommentVO> getReplyCommentDfs(List<TopicComment> comments, TopicComment parentComment) {
+        User replyUser = userCache.get(parentComment.getUserId());
+        // 查出当前评论的所有回复
+        List<List<TopicCommentVO>> collect = comments.stream().map(item -> {
+                    if (parentComment.getId().equals(item.getReplyId())) {
+                        User commentUser = userCache.get(item.getUserId());
+                        List<TopicCommentVO> replyCommentVos = getReplyCommentDfs(comments, item);
+                        TopicCommentVO topicCommentVO = TopicAdapter.buildCommentVOByComment(item, null, commentUser, replyUser);
+                        replyCommentVos.add(topicCommentVO);
+                        return replyCommentVos;
+                    } else {
+                        return null;
+                    }
+                }).filter(item1 -> ObjectUtil.isNotNull(item1))
+                .collect(Collectors.toList());
+        if (collect == null || collect.isEmpty()) {
+            return new ArrayList<TopicCommentVO>();
+        }
+        // 创建一个新的 List 用于存放所有元素
+        List<TopicCommentVO> commentVOList = new ArrayList<>();
+        // 遍历 collect1 中的每个 List
+        for (List<TopicCommentVO> list1 : collect) {
+            // 遍历每个内部 List 中的元素，并将它们添加到 allElements 中
+            for (TopicCommentVO element : list1) {
+                commentVOList.add(element);
+            }
+        }
+        return commentVOList;
     }
 
     /**
@@ -87,11 +123,28 @@ public class TopicAppServiceImpl implements TopicAppService {
      * @return
      */
     @Override
-    public CursorPageBaseVO<TopicVO> getTopicPageByCursor(CursorPageBaseRequest pageRequest) {
-        CursorPageBaseVO<Topic> cursorPageBaseVO = topicService.getTopicPageByCursor(pageRequest);
+    public CursorPageBaseVO<TopicVO> getTopicPageByCursor(ForumCursorPageRequest pageRequest) {
+        CursorPageBaseVO<Topic> cursorPageBaseVO = topicService.getTopicPageByCursor(pageRequest, pageRequest.getKeyWord());
         if (cursorPageBaseVO.isEmpty()) {
             return CursorPageBaseVO.empty();
         }
         return CursorPageBaseVO.init(cursorPageBaseVO, topicAdapter.buildTopicVOsByTopics(cursorPageBaseVO.getList()));
+    }
+
+    /**
+     * 删除评论
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void deleteComment(Long commentId, Long userId) {
+        TopicComment comment = topicCommentService.getById(commentId);
+        ThrowUtils.throwIf(!comment.getUserId().equals(userId), "无权限进行该操作");
+        boolean b = topicCommentService.removeById(commentId);
+        // 更新该话题评论数
+        UpdateWrapper<Topic> wrapper = new UpdateWrapper<>();
+        wrapper.lambda()
+                .eq(Topic::getId, comment.getTopicId())
+                .setSql("comment_num = comment_num - 1");
+        boolean update = topicService.update(wrapper);
     }
 }

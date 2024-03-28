@@ -63,4 +63,12 @@ public class TopicVO {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
+    /**
+     * 当前用户是否点赞
+     */
+    private boolean isThumb;
+    /**
+     * 当前用户是否收藏
+     */
+    private boolean isFavour;
 }

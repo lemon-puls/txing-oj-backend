@@ -17,7 +17,7 @@ import com.bitdf.txing.oj.utils.page.PageVO;
 public interface TopicService extends IService<Topic> {
     PageUtils queryPage(PageVO queryVO);
 
-    CursorPageBaseVO<Topic> getTopicPageByCursor(CursorPageBaseRequest pageRequest);
+    CursorPageBaseVO<Topic> getTopicPageByCursor(CursorPageBaseRequest pageRequest, String keyWord);
 
 //    PageUtils queryPage(Map<String, Object> params);
 }

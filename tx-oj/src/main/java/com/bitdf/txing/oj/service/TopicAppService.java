@@ -1,6 +1,6 @@
 package com.bitdf.txing.oj.service;
 
-import com.bitdf.txing.oj.model.dto.cursor.CursorPageBaseRequest;
+import com.bitdf.txing.oj.model.dto.forum.ForumCursorPageRequest;
 import com.bitdf.txing.oj.model.dto.forum.TopicCommentRequest;
 import com.bitdf.txing.oj.model.dto.forum.TopicPublishRequest;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
@@ -16,5 +16,7 @@ public interface TopicAppService {
 
     List<TopicCommentVO> getCommentsByTopicId(Long topicId);
 
-    CursorPageBaseVO<TopicVO> getTopicPageByCursor(CursorPageBaseRequest pageRequest);
+    CursorPageBaseVO<TopicVO> getTopicPageByCursor(ForumCursorPageRequest pageRequest);
+
+    void deleteComment(Long commentId, Long userId);
 }
