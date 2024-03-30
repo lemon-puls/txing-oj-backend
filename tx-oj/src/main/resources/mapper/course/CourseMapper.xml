@@ -29,6 +29,15 @@
             nodule_count = nodule_count + #{ noduleCount }
         WHERE id = #{ courseId }
     </update>
+    <select id="getUserFavourPage" resultType="com.bitdf.txing.oj.model.entity.course.Course">
+        SELECT c.*
+        FROM txing_oj_course_course c
+                 JOIN txing_oj_course_favour f
+                      ON c.id = f.course_id
+        WHERE f.user_id = #{ userId }
+          and c.is_delete = 0
+        ORDER BY f.create_time
+    </select>
 
 
 </mapper>

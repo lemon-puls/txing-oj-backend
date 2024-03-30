@@ -5,10 +5,12 @@ import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
+import com.bitdf.txing.oj.common.PageRequest;
 import com.bitdf.txing.oj.config.VodSigner;
 import com.bitdf.txing.oj.model.dto.course.CourseAddRequest;
 import com.bitdf.txing.oj.model.dto.course.CourseBaseUpdateRequest;
 import com.bitdf.txing.oj.model.dto.course.CourseVideoUpdateOrAddRequest;
+import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.course.CourseSearchItemVO;
 import com.bitdf.txing.oj.model.vo.course.CourseVideoPlayVO;
 import com.bitdf.txing.oj.service.CourseAppService;
@@ -153,9 +155,39 @@ public class CourseAppController {
      */
     @PostMapping("/video/delete/batch")
     @AuthCheck(mustRole = "login")
-    public R deleteVideoBatch(@RequestBody Long[] videoIds, @RequestParam("courseId") Long courseId){
+    public R deleteVideoBatch(@RequestBody Long[] videoIds, @RequestParam("courseId") Long courseId) {
         Long userId = AuthInterceptor.userThreadLocal.get().getId();
         courseAppService.deleteVideoBatch(courseId, videoIds, userId);
         return R.ok();
     }
+
+
+    /**
+     * 收藏、取消课程
+     * @param courseId
+     * @return
+     */
+    @PostMapping("/favour/do/{courseId}")
+    @AuthCheck(mustRole = "login")
+    public R favourCourse(@PathVariable("courseId") Long courseId) {
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        int result = courseAppService.doFavour(courseId, userId);
+        return R.ok(result);
+    }
+
+    /**
+     * 获取当前用户收藏的视频
+     */
+    @PostMapping("/favour/user/get")
+    @AuthCheck(mustRole = "login")
+    public R getUserFavour(@RequestBody PageRequest pageRequest) {
+        // 登录才能操作
+        final User loginUser = AuthInterceptor.userThreadLocal.get();
+        PageUtils pageUtils = courseAppService.getUserFavour(loginUser.getId(), pageRequest);
+        return R.ok(pageUtils);
+    }
+
+
+
+
 }

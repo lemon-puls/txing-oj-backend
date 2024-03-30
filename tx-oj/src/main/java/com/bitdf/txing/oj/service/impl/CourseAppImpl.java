@@ -3,24 +3,33 @@ package com.bitdf.txing.oj.service.impl;
 import cn.hutool.core.collection.CollectionUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.bitdf.txing.oj.common.PageRequest;
+import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.exception.ThrowUtils;
+import com.bitdf.txing.oj.mapper.CourseMapper;
 import com.bitdf.txing.oj.model.dto.course.CourseAddRequest;
 import com.bitdf.txing.oj.model.dto.course.CourseBaseUpdateRequest;
 import com.bitdf.txing.oj.model.dto.course.CourseVideoUpdateOrAddRequest;
 import com.bitdf.txing.oj.model.entity.course.Course;
+import com.bitdf.txing.oj.model.entity.course.CourseFavour;
 import com.bitdf.txing.oj.model.entity.course.CourseVideo;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.model.vo.course.CourseSearchItemVO;
 import com.bitdf.txing.oj.model.vo.course.CourseVO;
 import com.bitdf.txing.oj.model.vo.course.CourseVideoPlayVO;
 import com.bitdf.txing.oj.model.vo.course.CourseVideoVO;
 import com.bitdf.txing.oj.service.CourseAppService;
+import com.bitdf.txing.oj.service.CourseFavourService;
 import com.bitdf.txing.oj.service.CourseService;
 import com.bitdf.txing.oj.service.CourseVideoService;
 import com.bitdf.txing.oj.service.adapter.CourseAdapter;
 import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.bitdf.txing.oj.utils.page.PageVO;
 import com.bitdf.txing.oj.utils.page.Query;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,6 +47,12 @@ public class CourseAppImpl implements CourseAppService {
     CourseService courseService;
     @Autowired
     CourseVideoService courseVideoService;
+    @Autowired
+    CourseFavourService courseFavourService;
+    @Autowired
+    CourseMapper courseMapper;
+    @Autowired
+    CourseAdapter courseAdapter;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -176,5 +191,69 @@ public class CourseAppImpl implements CourseAppService {
         }
     }
 
+    @Override
+    public int doFavour(Long courseId, Long userId) {
+        // 判断是否存在
+        Course course = courseService.getById(courseId);
+        if (course == null) {
+            throw new BusinessException(TxCodeEnume.COMMON_TARGET_NOT_EXIST_EXCEPTION);
+        }
+        // 是否已帖子收藏
+        // 每个用户串行帖子收藏
+        // 锁必须要包裹住事务方法
+        CourseAppService courseAppService = (CourseAppService) AopContext.currentProxy();
+        synchronized (String.valueOf(userId).intern()) {
+            return courseAppService.doFavourInner(userId, courseId);
+        }
+    }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int doFavourInner(long userId, long courseId) {
+        CourseFavour courseFavour = new CourseFavour();
+        courseFavour.setCourseId(courseId);
+        courseFavour.setUserId(userId);
+
+        QueryWrapper<CourseFavour> wrapper = new QueryWrapper<>(courseFavour);
+
+        boolean result;
+        CourseFavour oldCourseFavour = courseFavourService.getOne(wrapper);
+        // 已收藏
+        if (oldCourseFavour != null) {
+            result = courseFavourService.remove(wrapper);
+            if (result) {
+                // 帖子收藏数 - 1
+                result = courseService.update(new UpdateWrapper<Course>().lambda()
+                        .eq(Course::getId, courseId)
+                        .gt(Course::getFavourCount, 0)
+                        .setSql("favour_count = favour_count - 1, update_time = NOW()"));
+                return result ? -1 : 0;
+            } else {
+                throw new BusinessException(TxCodeEnume.COMMON_SYSTEM_UNKNOWN_EXCEPTION);
+            }
+        } else {
+            // 未帖子收藏
+            result = courseFavourService.save(courseFavour);
+            if (result) {
+                // 帖子收藏数 + 1
+                result = courseService.update()
+                        .eq("id", courseId)
+                        .setSql("favour_count = favour_count + 1, update_time = NOW()")
+                        .update();
+                return result ? 1 : 0;
+            } else {
+                throw new BusinessException(TxCodeEnume.COMMON_SYSTEM_UNKNOWN_EXCEPTION);
+            }
+        }
+    }
+
+    @Override
+    public PageUtils getUserFavour(Long userId, PageRequest pageRequest) {
+        Page<Course> page = new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize());
+        Page<Course> page1 = courseMapper.getUserFavourPage(page, userId, pageRequest);
+        List<CourseSearchItemVO> itemVOS = courseAdapter.buildCourseSearchItemVOsByCourses(page1.getRecords());
+        PageUtils pageUtils = new PageUtils(page1);
+        pageUtils.setList(itemVOS);
+        return pageUtils;
+    }
 }

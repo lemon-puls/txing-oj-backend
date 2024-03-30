@@ -23,5 +23,9 @@ public class OnlinePKResultVO {
 
     private Double score2;
 
+    private Long useSeconds1;
+
+    private Long useSeconds2;
+
     private Long winnerId;
 }

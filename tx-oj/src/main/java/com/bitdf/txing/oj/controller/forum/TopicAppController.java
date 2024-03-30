@@ -3,6 +3,8 @@ package com.bitdf.txing.oj.controller.forum;
 import cn.hutool.core.collection.CollectionUtil;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
+import com.bitdf.txing.oj.common.PageRequest;
+import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.model.dto.forum.ForumCursorPageRequest;
 import com.bitdf.txing.oj.model.dto.forum.TopicCommentRequest;
 import com.bitdf.txing.oj.model.dto.forum.TopicPublishRequest;
@@ -55,6 +57,17 @@ public class TopicAppController {
     public R publishTopic(@RequestBody TopicPublishRequest request) {
         Long userId = AuthInterceptor.userThreadLocal.get().getId();
         Long topicId = topicAppService.addTopic(request, userId);
+        return R.ok(topicId);
+    }
+
+    /**
+     * 更新话题
+     */
+    @PostMapping("/update")
+    @AuthCheck(mustRole = "login")
+    public R updateTopic(@RequestBody TopicPublishRequest request) {
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        Long topicId = topicAppService.updateTopic(request, userId);
         return R.ok(topicId);
     }
 
@@ -111,9 +124,16 @@ public class TopicAppController {
         return R.ok(cursorPageBaseVO);
     }
 
+    /**
+     * 获取帖子详情 用于展示
+     *
+     * @param id
+     * @return
+     */
     @GetMapping("/detail/get")
     public R getTopicById(@RequestParam("id") Long id) {
         Topic topic = topicService.getById(id);
+        ThrowUtils.throwIf(topic == null, "该帖子不存在！");
         TopicVO topicVO = CollectionUtil.getFirst(topicAdapter.buildTopicVOsByTopics(Arrays.asList(topic)));
         List<TopicCommentVO> commentVOS = topicAppService.getCommentsByTopicId(id);
         TopicDetailVO build = TopicDetailVO.builder()
@@ -125,6 +145,7 @@ public class TopicAppController {
 
     /**
      * 删除评论
+     *
      * @param commentId
      * @return
      */
@@ -138,6 +159,7 @@ public class TopicAppController {
 
     /**
      * 帖子点赞与取消
+     *
      * @param postThumbAddRequest
      * @return
      */
@@ -164,4 +186,40 @@ public class TopicAppController {
         return R.ok(result);
     }
 
+    /**
+     * 查出当前用户的收藏帖子
+     */
+    @PostMapping("/favour/user/get")
+    @AuthCheck(mustRole = "login")
+    public R getUserFavour(@RequestBody PageRequest pageRequest) {
+        // 登录才能操作
+        final User loginUser = AuthInterceptor.userThreadLocal.get();
+        PageUtils pageUtils = topicAppService.getUserFavour(loginUser.getId(), pageRequest);
+        return R.ok(pageUtils);
+    }
+
+    /**
+     * 删除贴子
+     */
+    @PostMapping("/delete")
+    @AuthCheck(mustRole = "login")
+    public R deleteTopic(@RequestBody Long[] topicIds) {
+        // 登录才能操作
+        final User loginUser = AuthInterceptor.userThreadLocal.get();
+        topicAppService.deleteTopicBatch(topicIds, loginUser.getId());
+        return R.ok();
+    }
+
+    /**
+     * 获取topic基础信息
+     */
+    @GetMapping("/vo/get/id")
+    @AuthCheck(mustRole = "login")
+    public R getTopicVOById(@RequestParam("topicId") Long topicId) {
+        // 登录才能操作
+        final User loginUser = AuthInterceptor.userThreadLocal.get();
+        Topic topic = topicService.getById(topicId);
+        TopicVO topicVO = CollectionUtil.getFirst(topicAdapter.buildTopicVOsByTopics(Arrays.asList(topic)));
+        return R.ok(topicVO);
+    }
 }

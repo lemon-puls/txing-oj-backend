@@ -55,4 +55,8 @@ public class CourseSearchItemVO {
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+8")
     private Date createTime;
+    /**
+     * 当前用户是否已收藏
+     */
+    private boolean favour;
 }

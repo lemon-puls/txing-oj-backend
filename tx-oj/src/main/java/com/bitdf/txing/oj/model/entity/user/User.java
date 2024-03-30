@@ -137,4 +137,9 @@ public class User implements Serializable {
      * 最近一次上下线时间
      */
     private Date lastOpsTime;
+    /**
+     * 竞赛积分
+     */
+    @MysqlColumn(defaultValue = "0")
+    private Integer matchScore;
 }

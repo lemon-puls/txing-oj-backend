@@ -1,8 +1,12 @@
 package com.bitdf.txing.oj.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.bitdf.txing.oj.common.PageRequest;
 import com.bitdf.txing.oj.exception.ThrowUtils;
+import com.bitdf.txing.oj.mapper.TopicMapper;
 import com.bitdf.txing.oj.model.dto.forum.ForumCursorPageRequest;
 import com.bitdf.txing.oj.model.dto.forum.TopicCommentRequest;
 import com.bitdf.txing.oj.model.dto.forum.TopicPublishRequest;
@@ -14,9 +18,11 @@ import com.bitdf.txing.oj.model.vo.forum.TopicCommentVO;
 import com.bitdf.txing.oj.model.vo.forum.TopicVO;
 import com.bitdf.txing.oj.service.TopicAppService;
 import com.bitdf.txing.oj.service.TopicCommentService;
+import com.bitdf.txing.oj.service.TopicFavourService;
 import com.bitdf.txing.oj.service.TopicService;
 import com.bitdf.txing.oj.service.adapter.TopicAdapter;
 import com.bitdf.txing.oj.service.cache.UserCache;
+import com.bitdf.txing.oj.utils.page.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +43,10 @@ public class TopicAppServiceImpl implements TopicAppService {
     UserCache userCache;
     @Autowired
     TopicAdapter topicAdapter;
+    @Autowired
+    TopicFavourService topicFavourService;
+    @Autowired
+    TopicMapper topicMapper;
 
     @Override
     public Long addTopic(TopicPublishRequest request, Long userId) {
@@ -125,7 +135,7 @@ public class TopicAppServiceImpl implements TopicAppService {
     @Override
     public CursorPageBaseVO<TopicVO> getTopicPageByCursor(ForumCursorPageRequest pageRequest) {
         CursorPageBaseVO<Topic> cursorPageBaseVO = topicService.getTopicPageByCursor(pageRequest, pageRequest.getKeyWord());
-        if (cursorPageBaseVO.isEmpty()) {
+        if (cursorPageBaseVO.getList().isEmpty()) {
             return CursorPageBaseVO.empty();
         }
         return CursorPageBaseVO.init(cursorPageBaseVO, topicAdapter.buildTopicVOsByTopics(cursorPageBaseVO.getList()));
@@ -146,5 +156,75 @@ public class TopicAppServiceImpl implements TopicAppService {
                 .eq(Topic::getId, comment.getTopicId())
                 .setSql("comment_num = comment_num - 1");
         boolean update = topicService.update(wrapper);
+    }
+
+    /**
+     * 获取当前用户收藏的帖子
+     *
+     * @param userId
+     * @param pageRequest
+     * @return
+     */
+    @Override
+    public PageUtils getUserFavour(Long userId, PageRequest pageRequest) {
+        Page<Topic> page = new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize());
+        Page<Topic> page1 = topicMapper.getUserFavourPage(page, userId, pageRequest);
+        List<TopicVO> topicVOS = topicAdapter.buildTopicVOsByTopics(page1.getRecords());
+        PageUtils pageUtils = new PageUtils(page1);
+        pageUtils.setList(topicVOS);
+        return pageUtils;
+    }
+
+    /**
+     * 删除帖子
+     *
+     * @param topicIds
+     * @param userId
+     */
+    @Override
+    public void deleteTopicBatch(Long[] topicIds, Long userId) {
+        // 删除贴子
+        QueryWrapper<Topic> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .in(Topic::getId, topicIds)
+                .eq(Topic::getUserId, userId);
+        boolean remove = topicService.remove(wrapper);
+        //  TODO 删除帖子评论
+
+        // TODO 删除收藏关联
+
+        // TODO 删除点赞关联
+
+    }
+
+    /**
+     * 更新话题
+     *
+     * @param request
+     * @param userId
+     * @return
+     */
+    @Override
+    public Long updateTopic(TopicPublishRequest request, Long userId) {
+        Topic oldTopic = topicService.getById(request.getId());
+        ThrowUtils.throwIf(oldTopic == null, "帖子不存在！");
+        ThrowUtils.throwIf(!oldTopic.getUserId().equals(userId), "无操作权限");
+        Topic topic = Topic.builder()
+                .id(request.getId())
+                .title(request.getTitle())
+                .content(request.getContent())
+                .imgs(request.getImgs())
+                .build();
+        // 不可以使用如下方法 因为imgs字段需要mybatis-plus完成自动JSON转换 使用如下方法好像没有自动转换 会报错
+//        UpdateWrapper<Topic> wrapper = new UpdateWrapper<>();
+//        wrapper.lambda().eq(Topic::getUserId, userId)
+//                .eq(Topic::getId, request.getId())
+//                .set(Topic::getTitle, request.getTitle())
+//                .set(Topic::getContent, request.getContent())
+//                .set(Topic::getImgs, request.getImgs());
+//        boolean update = topicService.update(wrapper);
+        boolean update = topicService.updateById(topic);
+        ThrowUtils.throwIf(!update, "更新失败");
+        return request.getId();
     }
 }

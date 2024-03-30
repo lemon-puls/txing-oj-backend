@@ -13,7 +13,7 @@ public class MatchUserAdapter {
                 .userId(userId)
                 .joinType(joinType)
                 .acCount(-1)
-                .score(-1)
+                .score(0)
                 .startTime(new Date())
                 .gradeRank(-1)
                 .judgeStatus(MatchUserJudgeStatusEnum.WAITTING.getCode())

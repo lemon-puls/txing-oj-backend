@@ -10,6 +10,7 @@ import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.model.dto.user.*;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.enume.TxCodeEnume;
+import com.bitdf.txing.oj.model.vo.match.WeekMatchRankItemVO;
 import com.bitdf.txing.oj.model.vo.user.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.user.UserVO;
 import com.bitdf.txing.oj.service.LoginService;
@@ -358,5 +359,14 @@ public class UserController {
     public R getUserVoBatch(@RequestBody UserVOBatchRequest request) {
         List<UserVO> userVOS = userService.getUserVOBatch(request);
         return R.ok(userVOS);
+    }
+
+    /**
+     * 查询用户竞赛积分排名
+     */
+    @GetMapping("/match/score/rank")
+    public R getUserScoreRank() {
+        List<WeekMatchRankItemVO> ranks = userService.getUserScoreRank();
+        return R.ok(ranks);
     }
 }

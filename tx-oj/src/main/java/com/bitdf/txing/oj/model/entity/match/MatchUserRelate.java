@@ -66,6 +66,10 @@ public class MatchUserRelate {
     @MysqlColumn(defaultValue = "0")
     private Integer status;
     /**
+     * ac题目得分总分
+     */
+    private Integer acScore;
+    /**
      * 创建时间
      */
     @TableField(value = "create_time", fill = FieldFill.INSERT)

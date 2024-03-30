@@ -10,6 +10,7 @@ import com.bitdf.txing.oj.model.dto.question.JudgeConfig;
 import com.bitdf.txing.oj.model.entity.chat.Message;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.config.VodSigner;
+import com.bitdf.txing.oj.service.business.impl.MatchAppServiceImpl;
 import com.google.gson.Gson;
 import com.lemon.util.service.TableGenerator;
 import com.qcloud.cos.COSClient;
@@ -160,5 +161,12 @@ public class CommonTest {
             System.out.print("获取签名失败");
             e.printStackTrace();
         }
+    }
+
+    @Autowired
+    MatchAppServiceImpl matchAppService;
+    @Test
+    void testComputeRank() {
+        matchAppService.computeMatchRank(1L);
     }
 }

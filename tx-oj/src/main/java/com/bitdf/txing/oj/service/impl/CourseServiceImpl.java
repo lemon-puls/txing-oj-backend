@@ -2,10 +2,13 @@ package com.bitdf.txing.oj.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.mapper.CourseMapper;
 import com.bitdf.txing.oj.model.entity.course.Course;
+import com.bitdf.txing.oj.model.entity.course.CourseFavour;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.course.CourseSearchItemVO;
+import com.bitdf.txing.oj.service.CourseFavourService;
 import com.bitdf.txing.oj.service.CourseService;
 import com.bitdf.txing.oj.service.adapter.CourseAdapter;
 import com.bitdf.txing.oj.service.cache.UserCache;
@@ -23,6 +26,8 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
     UserCache userCache;
     @Autowired
     CourseMapper courseMapper;
+    @Autowired
+    CourseFavourService courseFavourService;
 
 //    @Override
 //    public PageUtils queryPage(Map<String, Object> params) {
@@ -37,10 +42,16 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
 
     @Override
     public List<CourseSearchItemVO> getCourseSearchItemVOsByCourse(List<?> list) {
+        User loginUser = AuthInterceptor.userThreadLocal.get();
         List<CourseSearchItemVO> collect = list.stream().map(item -> {
             Course course = (Course) item;
             User user = userCache.get(course.getUserId());
-            CourseSearchItemVO courseSearchItemVO = CourseAdapter.buildCourseSearchItemVOByCourse(course, user);
+            // 判断是否已收藏
+            int count = courseFavourService.count(new QueryWrapper<CourseFavour>().lambda()
+                    .eq(CourseFavour::getCourseId, course.getId())
+                    .eq(CourseFavour::getUserId, loginUser.getId()));
+            boolean isFavour = count > 0 ? true : false;
+            CourseSearchItemVO courseSearchItemVO = CourseAdapter.buildCourseSearchItemVOByCourse(course, user, isFavour);
             return courseSearchItemVO;
         }).collect(Collectors.toList());
         return collect;

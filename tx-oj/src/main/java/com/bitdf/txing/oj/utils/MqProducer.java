@@ -39,4 +39,16 @@ public class MqProducer {
     public void sendMsg(String exchange, String routingKey, Object messageBody) {
         rabbitTemplate.convertAndSend(exchange, routingKey, messageBody);
     }
+
+    /**
+     * 发送消息 并且指定延时时间 适用于延时交换机（使用延时插件实现的延时）
+     *
+     * @param delay 单位：毫秒
+     */
+    public void sendMsgWithDelay(String exchange, String routingKey, Object messageBody, Long delay) {
+        rabbitTemplate.convertAndSend(exchange, routingKey, messageBody, correlationData -> {
+            correlationData.getMessageProperties().setDelay(delay.intValue());
+            return correlationData;
+        });
+    }
 }

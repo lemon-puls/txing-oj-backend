@@ -4,6 +4,7 @@ import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.chat.service.adapter.WsAdapter;
 import com.bitdf.txing.oj.chat.service.business.PushService;
+import com.bitdf.txing.oj.common.PageRequest;
 import com.bitdf.txing.oj.model.dto.match.MatchSubmitSingleRequest;
 import com.bitdf.txing.oj.model.entity.match.OnlinePkMatch;
 import com.bitdf.txing.oj.model.vo.match.OnlinePKResultVO;
@@ -12,6 +13,7 @@ import com.bitdf.txing.oj.model.vo.match.WsOnlinePkTeamUpVO;
 import com.bitdf.txing.oj.service.MatchOnlinepkAppService;
 import com.bitdf.txing.oj.service.MatchOnlinepkService;
 import com.bitdf.txing.oj.utils.R;
+import com.bitdf.txing.oj.utils.page.PageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -110,6 +112,17 @@ public class MatchOnlinepkAppController {
                 WsAdapter.buildPKTeamUpNotifyVO(new WsOnlinePkTeamUpVO(1L)),
                 Arrays.asList(1L), new Date().getTime());
         return R.ok();
+    }
+
+    /**
+     * 查询当前用户pk记录
+     */
+    @PostMapping("/user/record/get")
+    @AuthCheck(mustRole = "login")
+    public R getPkRecordByUser(@RequestBody PageRequest pageRequest) {
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        PageUtils pageUtils =  matchOnlinepkAppService.getPkRecordByUser(pageRequest, userId);
+        return R.ok(pageUtils);
     }
 
 }

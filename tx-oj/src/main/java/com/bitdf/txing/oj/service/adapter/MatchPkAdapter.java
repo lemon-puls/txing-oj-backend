@@ -42,6 +42,7 @@ public class MatchPkAdapter {
                 .startTime(startTime)
                 .endTime(endTime)
                 .questionId(questionId)
+                .winnerId(-1L)
                 .status(MatchStatusEnum.RUNNING.getCode())
                 .build();
         return onlinePkMatch;

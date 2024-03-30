@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSON;
 import com.bitdf.txing.oj.annotation.AuthCheck;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
+import com.bitdf.txing.oj.common.PageRequest;
 import com.bitdf.txing.oj.config.MyMqConfig;
 import com.bitdf.txing.oj.constant.RedisKeyConstant;
 import com.bitdf.txing.oj.model.dto.match.MatchSubmitBatchRequest;
@@ -18,6 +19,7 @@ import com.bitdf.txing.oj.service.MatchWeekService;
 import com.bitdf.txing.oj.service.business.MatchAppService;
 import com.bitdf.txing.oj.utils.R;
 import com.bitdf.txing.oj.utils.RedisUtils;
+import com.bitdf.txing.oj.utils.page.PageUtils;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,4 +133,26 @@ public class MatchWeekAppController {
         matchUserRelateService.updateUserStatus(MatchUserStatusEnum.GIVEUP.getCode(), userId, matchId);
         return R.ok();
     }
+
+    /**
+     * 查询当前用户周赛参赛记录
+     */
+    @PostMapping("/user/record/get")
+    @AuthCheck(mustRole = "login")
+    public R getWeekMatchRecordByUserId(@RequestBody PageRequest pageRequest) {
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        PageUtils pageUtils = matchAppService.getWeekMatchRecordByUserId(pageRequest, userId);
+        return R.ok(pageUtils);
+    }
+
+    @GetMapping("/ceshi")
+    public R cehsi() {
+        rabbitTemplate.convertAndSend(MyMqConfig.DELAYED_EXCHANGE, MyMqConfig.MATCH_WEEK_CHECK_ROUTTINGKEY, 4L,
+                correlationData -> {
+                    correlationData.getMessageProperties().setDelay(1000 * 10);
+                    return correlationData;
+                });
+        return R.ok();
+    }
+
 }

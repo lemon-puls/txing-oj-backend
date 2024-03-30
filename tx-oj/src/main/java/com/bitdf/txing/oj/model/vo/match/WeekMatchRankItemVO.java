@@ -5,11 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class WeekMatchRankItemVO {
+public class WeekMatchRankItemVO implements Serializable {
     /**
      * 用户id
      */
@@ -26,4 +28,8 @@ public class WeekMatchRankItemVO {
      * 用户排名
      */
     private Integer rank;
+    /**
+     * 本场获得积分
+     */
+    private Integer score;
 }

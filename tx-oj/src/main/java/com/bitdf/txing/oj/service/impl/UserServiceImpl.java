@@ -17,6 +17,7 @@ import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.model.enume.UserActiveStatusEnum;
 import com.bitdf.txing.oj.model.enume.UserRoleEnum;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
+import com.bitdf.txing.oj.model.vo.match.WeekMatchRankItemVO;
 import com.bitdf.txing.oj.model.vo.user.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.user.UserVO;
 import com.bitdf.txing.oj.service.LoginService;
@@ -417,5 +418,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }
         }
         return needSyncUserIds;
+    }
+
+    /**
+     * 获取用户比赛积分排行
+     *
+     * @return
+     */
+    @Override
+//    @Cacheable(cacheNames = "oj:user:match", key = "'rank'")
+    public List<WeekMatchRankItemVO> getUserScoreRank() {
+        QueryWrapper<User> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .orderByDesc(User::getMatchScore)
+                .last("limit 30");
+        List<User> list = this.list(wrapper);
+        List<WeekMatchRankItemVO> res = new ArrayList<>();
+        for (int i = 0; i < list.size(); i++) {
+            User user = list.get(i);
+            WeekMatchRankItemVO rankItemVO = WeekMatchRankItemVO.builder()
+                    .userId(user.getId())
+                    .userName(user.getUserName())
+                    .avatar(user.getUserAvatar())
+                    .rank(i + 1)
+                    .score(user.getMatchScore())
+                    .build();
+            res.add(rankItemVO);
+        }
+        return res;
     }
 }

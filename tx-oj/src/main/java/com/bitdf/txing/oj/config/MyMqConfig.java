@@ -1,14 +1,14 @@
 package com.bitdf.txing.oj.config;
 
 import com.bitdf.txing.oj.chat.constant.ChatMqConstant;
-import org.springframework.amqp.core.Binding;
-import org.springframework.amqp.core.Exchange;
-import org.springframework.amqp.core.Queue;
-import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.core.*;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Lizhiwei
@@ -22,6 +22,7 @@ public class MyMqConfig {
     private static String profile = "dev";
 
     public static final String JUDGE_EXCHANGE = genName("judge.exchange");
+    public static final String DELAYED_EXCHANGE = genName("delay.exchange");
     public static final String WAITTING_JUDGE_QUEUE = genName("waitting.judge.queue");
     public static final String WAITTING_JUDGE_ROUTINGKEY = genName("submit.and.judge");
 
@@ -29,6 +30,11 @@ public class MyMqConfig {
     public static final String MATCH_HANDLE_ROUTTINGKEY = genName("match.and.handle");
 
     public static final String WEBSOCKET_PUSH_QUEUE = "websocket_push_queue.dev";
+
+    public static final String Match_WEEK_CHECK_QUEUE = "match.week.check.queue.dev";
+    public static final String Match_PK_CHECK_QUEUE = "match.pk.check.queue.dev";
+    public static final String MATCH_PK_CHECK_ROUTTINGKEY = genName("match.pk.check");
+    public static final String MATCH_WEEK_CHECK_ROUTTINGKEY = genName("match.week.check");
 
 
     @Bean
@@ -182,6 +188,65 @@ public class MyMqConfig {
         return binding;
     }
 
+    // ---------------------------------比赛状态检查（延时）------------------------------------
+
+    /**
+     * 延时交换机
+     * 检查/统计比较结果
+     */
+    @Bean
+    public Exchange delayExchange() {
+        /*
+         *   String name,
+         *   boolean durable,
+         *   boolean autoDelete,
+         *   Map<String, Object> arguments
+         * */
+        Map<String, Object> args = new HashMap<>();
+        //自定义交换机的类型
+        args.put("x-delayed-type", "direct");
+        return new CustomExchange(DELAYED_EXCHANGE, "x-delayed-message", true, false,
+                args);
+    }
+
+    /**
+     * 周赛状态检查/结果统计队列
+     */
+    @Bean
+    public Queue matchWeekCheckQueue() {
+        Queue queue = new Queue(Match_WEEK_CHECK_QUEUE, true, false, false);
+        return queue;
+    }
+
+    @Bean
+    public Binding matchWeekCheckBinding() {
+        Binding binding = new Binding(
+                Match_WEEK_CHECK_QUEUE,
+                Binding.DestinationType.QUEUE,
+                DELAYED_EXCHANGE,
+                MATCH_WEEK_CHECK_ROUTTINGKEY,
+                null);
+        return binding;
+    }
+
+    /**
+     * PK赛状态检查队列
+     */
+    @Bean
+    public Queue matchPkCheckQueue() {
+        Queue queue = new Queue(Match_PK_CHECK_QUEUE, true, false, false);
+        return queue;
+    }
+    @Bean
+    public Binding matchPkCheckBinding() {
+        Binding binding = new Binding(
+                Match_PK_CHECK_QUEUE,
+                Binding.DestinationType.QUEUE,
+                DELAYED_EXCHANGE,
+                MATCH_PK_CHECK_ROUTTINGKEY,
+                null);
+        return binding;
+    }
 
     public static String genName(String base) {
         return base + "." + profile;

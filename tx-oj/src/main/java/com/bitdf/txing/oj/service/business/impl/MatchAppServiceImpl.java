@@ -4,7 +4,9 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
+import com.bitdf.txing.oj.common.PageRequest;
 import com.bitdf.txing.oj.config.MyMqConfig;
 import com.bitdf.txing.oj.constant.RedisKeyConstant;
 import com.bitdf.txing.oj.exception.ThrowUtils;
@@ -13,7 +15,9 @@ import com.bitdf.txing.oj.judge.JudgeService;
 import com.bitdf.txing.oj.mapper.MatchSubmitRelateMapper;
 import com.bitdf.txing.oj.model.dto.match.MatchSubmitBatchRequest;
 import com.bitdf.txing.oj.model.dto.match.MatchSubmitSingleRequest;
+import com.bitdf.txing.oj.model.dto.question.JudgeConfig;
 import com.bitdf.txing.oj.model.dto.submit.QuestionSubmitDoRequest;
+import com.bitdf.txing.oj.model.entity.Question;
 import com.bitdf.txing.oj.model.entity.QuestionSubmit;
 import com.bitdf.txing.oj.model.entity.match.MatchSubmitRelate;
 import com.bitdf.txing.oj.model.entity.match.MatchUserRelate;
@@ -24,13 +28,16 @@ import com.bitdf.txing.oj.model.enume.JudgeStatusEnum;
 import com.bitdf.txing.oj.model.enume.match.*;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchRankItemVO;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchStartVO;
+import com.bitdf.txing.oj.model.vo.match.WeekMatchUserRecordVO;
 import com.bitdf.txing.oj.model.vo.question.QuestionVO;
 import com.bitdf.txing.oj.service.*;
 import com.bitdf.txing.oj.service.adapter.MatchSubmitAdapter;
 import com.bitdf.txing.oj.service.adapter.MatchUserAdapter;
+import com.bitdf.txing.oj.service.adapter.MatchWeekAdapter;
 import com.bitdf.txing.oj.service.business.MatchAppService;
 import com.bitdf.txing.oj.service.cache.UserCache;
 import com.bitdf.txing.oj.utils.RedisUtils;
+import com.bitdf.txing.oj.utils.page.PageUtils;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
@@ -66,7 +73,13 @@ public class MatchAppServiceImpl implements MatchAppService {
     @Autowired
     MatchSubmitRelateMapper matchSubmitRelateMapper;
     @Autowired
+    MatchOnlinepkAppService matchOnlinepkAppService;
+    @Autowired
     UserCache userCache;
+    @Autowired
+    UserService userService;
+    @Autowired
+    MatchWeekAdapter matchWeekAdapter;
 
     /**
      * 开始周赛
@@ -74,6 +87,7 @@ public class MatchAppServiceImpl implements MatchAppService {
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public WeekMatchStartVO startMatch(Long matchId) {
         Long userId = AuthInterceptor.userThreadLocal.get().getId();
         WeekMatch lastSessionMatch;
@@ -104,9 +118,16 @@ public class MatchAppServiceImpl implements MatchAppService {
                 .eq(MatchUserRelate::getJudgeStatus, MatchUserJudgeStatusEnum.WAITTING.getCode())
                 .eq(MatchUserRelate::getStatus, MatchUserStatusEnum.NORMAL.getCode()));
         if (matchUserRelate == null) {
+            // 用户首次进入本场比赛
             matchUserRelate = MatchUserAdapter.buildMatchUserRelate(lastSessionMatch.getId(),
                     userId, joinTypeEnum.getCode());
             matchUserRelateService.save(matchUserRelate);
+            // 更新比赛参加人数
+            UpdateWrapper<WeekMatch> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda()
+                    .eq(WeekMatch::getId, matchId)
+                    .setSql("join_count = join_count + 1");
+            boolean update = matchWeekService.update(updateWrapper);
         }
 
         List<WeekMatchQuestionRelate> list = matchWeekQuestionRelateService.list(new QueryWrapper<WeekMatchQuestionRelate>()
@@ -218,12 +239,16 @@ public class MatchAppServiceImpl implements MatchAppService {
         // 获取当前用户未AC题目通过用例和
         int acCount = 0;
         int unAcRateCount = 0;
+        double acScore = 0;
         for (QuestionSubmit questionSubmit : submitList) {
+            JudgeInfo judgeInfo = JSONUtil.toBean(questionSubmit.getJudgeInfo(), JudgeInfo.class);
             if (ObjectUtil.isNotNull(questionSubmit.getExceedPercent()) && questionSubmit.getExceedPercent() != -1) {
                 // 本题ac
                 acCount++;
+                Question question = questionService.getById(questionSubmit.getQuestionId());
+                JudgeConfig judgeConfig = JSONUtil.toBean(question.getJudgeConfig(), JudgeConfig.class);
+                acScore += matchOnlinepkAppService.computeSubmitScore(judgeInfo, questionSubmit, judgeConfig, null, null);
             } else {
-                JudgeInfo judgeInfo = JSONUtil.toBean(questionSubmit.getJudgeInfo(), JudgeInfo.class);
                 unAcRateCount += judgeInfo.getAcceptedRate();
             }
         }
@@ -233,26 +258,58 @@ public class MatchAppServiceImpl implements MatchAppService {
                 .eq(MatchUserRelate::getUserId, request.getUserId())
                 .set(MatchUserRelate::getJudgeStatus, MatchUserJudgeStatusEnum.FINISHED.getCode())
                 .set(MatchUserRelate::getAcCount, acCount)
+                .set(MatchUserRelate::getAcScore, (int) Math.round(acScore))
                 .set(MatchUserRelate::getUnAcRateSum, unAcRateCount));
         if (MatchJoinTypeEnum.FORMAT.getCode().equals(matchUserRelate.getJoinType())) {
-            // 判断是否本次周赛是否所有用户作答都已处理完毕 并且 比赛已结束 如果是 则计算参赛用户排名
-            WeekMatch weekMatch = matchWeekService.getById(request.getMatchId());
-            if (weekMatch.getEndTime().compareTo(new Date()) <= 0) {
-                int count = matchUserRelateService.count(new QueryWrapper<MatchUserRelate>().lambda()
-                        .eq(MatchUserRelate::getMatchId, request.getMatchId())
-                        .eq(MatchUserRelate::getJudgeStatus, MatchUserJudgeStatusEnum.WAITTING.getCode())
-                        .eq(MatchUserRelate::getStatus, MatchUserStatusEnum.NORMAL.getCode()));
-                if (count == 0) {
-                    // 开始计算用户排名
-                    computeMatchRank(request.getMatchId());
-                    // 更改本周比赛状态
-                    boolean update1 = matchWeekService.update(new UpdateWrapper<WeekMatch>().lambda()
-                            .eq(WeekMatch::getId, request.getMatchId())
-                            .set(WeekMatch::getStatus, MatchStatusEnum.JUDGE_FINISHED.getCode()));
-                }
-            }
+            buildMatchResult(request.getMatchId());
         }
         // TODO 如果执行失败进行重试
+    }
+
+    /**
+     * 统计比赛结果
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean buildMatchResult(Long matchId) {
+        // 判断是否本次周赛是否所有用户作答都已处理完毕 并且 比赛已结束 如果是 则计算参赛用户排名
+        WeekMatch weekMatch = matchWeekService.getById(matchId);
+        if (weekMatch.getEndTime().compareTo(new Date()) <= 0) {
+            // 比赛已结束
+            if (!MatchStatusEnum.JUDGE_FINISHED.getCode().equals(weekMatch.getStatus())) {
+                synchronized (this) {
+                    WeekMatch weekMatch1 = matchWeekService.getById(matchId);
+                    boolean isFinished = MatchStatusEnum.JUDGE_FINISHED.getCode().equals(weekMatch1.getStatus());
+                    int count = matchUserRelateService.count(new QueryWrapper<MatchUserRelate>().lambda()
+                            .eq(MatchUserRelate::getMatchId, matchId)
+                            .eq(MatchUserRelate::getJudgeStatus, MatchUserJudgeStatusEnum.WAITTING.getCode())
+                            .isNotNull(MatchUserRelate::getEndTime)
+                            .eq(MatchUserRelate::getStatus, MatchUserStatusEnum.NORMAL.getCode())
+                            .eq(MatchUserRelate::getJoinType, MatchJoinTypeEnum.FORMAT.getCode()));
+                    if (!isFinished && count == 0) {
+                        // 开始计算用户排名
+                        computeMatchRank(matchId);
+                        // 更改本周比赛状态
+                        boolean update1 = matchWeekService.update(new UpdateWrapper<WeekMatch>().lambda()
+                                .eq(WeekMatch::getId, matchId)
+                                .set(WeekMatch::getStatus, MatchStatusEnum.JUDGE_FINISHED.getCode()));
+                        return true;
+                    } else if (isFinished) {
+                        // 其他线程已经统计完结果了
+                        return true;
+                    } else {
+                        // 还有用户的作答未处理完成
+                        return false;
+                    }
+                }
+            } else {
+                // 已统计完成
+                return true;
+            }
+        } else {
+            // 比赛未结束
+            return false;
+        }
     }
 
     /**
@@ -261,30 +318,103 @@ public class MatchAppServiceImpl implements MatchAppService {
      * @param matchId
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void computeMatchRank(Long matchId) {
         QueryWrapper<MatchUserRelate> wrapper = new QueryWrapper<>();
         wrapper.lambda()
                 .eq(MatchUserRelate::getMatchId, matchId)
                 .eq(MatchUserRelate::getJoinType, MatchJoinTypeEnum.FORMAT.getCode())
                 .eq(MatchUserRelate::getStatus, MatchUserStatusEnum.NORMAL.getCode())
-                .orderByDesc(MatchUserRelate::getAcCount, MatchUserRelate::getUnAcRateSum);
+                .isNotNull(MatchUserRelate::getEndTime)
+                .orderByDesc(MatchUserRelate::getAcCount, MatchUserRelate::getAcScore,
+                        MatchUserRelate::getUnAcRateSum)
+                .last(",end_time - start_time ASC");
         List<MatchUserRelate> list = matchUserRelateService.list(wrapper);
         List<WeekMatchRankItemVO> rankCacheList = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
+            Integer winScore = computeWinScore(i + 1);
             MatchUserRelate matchUserRelate = list.get(i);
+            // 更新用户总积分
+            UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.lambda()
+                    .eq(User::getId, matchUserRelate.getUserId())
+                    .setSql("match_score = match_score + " + winScore);
+            boolean update = userService.update(updateWrapper);
             matchUserRelate.setGradeRank(i + 1);
+            matchUserRelate.setScore(winScore);
             User user = userCache.get(matchUserRelate.getUserId());
-            WeekMatchRankItemVO rankVO = WeekMatchRankItemVO.builder()
-                    .userId(user.getId())
-                    .rank(i + 1)
-                    .avatar(user.getUserAvatar())
-                    .userName(user.getUserName())
-                    .build();
-            rankCacheList.add(rankVO);
+            if (rankCacheList.size() < 100) {
+                WeekMatchRankItemVO rankVO = WeekMatchRankItemVO.builder()
+                        .userId(user.getId())
+                        .rank(i + 1)
+                        .avatar(user.getUserAvatar())
+                        .userName(user.getUserName())
+                        .score(winScore)
+                        .build();
+                rankCacheList.add(rankVO);
+            }
         }
         // 将排名更新到数据库
         boolean batchById = matchUserRelateService.updateBatchById(list);
         // 将排名信息保存到redis 有效期为一周
         Boolean b = RedisUtils.set(RedisKeyConstant.MATCH_WEEK_RANK, rankCacheList, 60 * 60 * 24 * 7);
+    }
+
+    /**
+     * 计算获得的积分
+     */
+    public Integer computeWinScore(int rank) {
+        Integer ans;
+        switch (rank) {
+            case 1:
+                ans = 5000;
+                break;
+            case 2:
+                ans = 2500;
+                break;
+            case 3:
+                ans = 1500;
+                break;
+            default:
+                if (4 <= rank && rank <= 10) {
+                    ans = 800;
+                } else if (11 <= rank && rank <= 50) {
+                    ans = 300;
+                } else if (51 <= rank && rank <= 100) {
+                    ans = 100;
+                } else if (101 <= rank && rank <= 200) {
+                    ans = 50;
+                } else {
+                    ans = 10;
+                }
+                break;
+        }
+        return ans;
+    }
+
+    /**
+     * 获取到当前用户周赛参赛记录
+     *
+     * @param pageRequest
+     * @param userId
+     * @return
+     */
+    @Override
+    public PageUtils getWeekMatchRecordByUserId(PageRequest pageRequest, Long userId) {
+        Page<MatchUserRelate> page = new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize());
+        QueryWrapper<MatchUserRelate> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .eq(MatchUserRelate::getUserId, userId)
+                .eq(MatchUserRelate::getJoinType, MatchJoinTypeEnum.FORMAT.getCode())
+                .eq(MatchUserRelate::getJudgeStatus, MatchUserJudgeStatusEnum.FINISHED.getCode())
+                .eq(MatchUserRelate::getStatus, MatchUserStatusEnum.NORMAL.getCode())
+                .isNotNull(MatchUserRelate::getEndTime)
+                .orderByDesc(MatchUserRelate::getCreateTime);
+        Page<MatchUserRelate> page1 = matchUserRelateService.page(page, wrapper);
+        List<MatchUserRelate> records = page1.getRecords();
+        List<WeekMatchUserRecordVO> weekMatchUserRecordVOS = matchWeekAdapter.buildMatchUserRecordVOByRelates(records);
+        PageUtils pageUtils = new PageUtils(page1);
+        pageUtils.setList(weekMatchUserRecordVOS);
+        return pageUtils;
     }
 }

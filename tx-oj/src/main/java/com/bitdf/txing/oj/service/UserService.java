@@ -8,6 +8,7 @@ import com.bitdf.txing.oj.model.dto.user.UserQueryRequest;
 import com.bitdf.txing.oj.model.dto.user.UserVOBatchRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
+import com.bitdf.txing.oj.model.vo.match.WeekMatchRankItemVO;
 import com.bitdf.txing.oj.model.vo.user.LoginUserVO;
 import com.bitdf.txing.oj.model.vo.user.UserVO;
 import me.chanjar.weixin.common.bean.WxOAuth2UserInfo;
@@ -134,4 +135,6 @@ public interface UserService extends IService<User> {
     CursorPageBaseVO<User> getMemberPageByCursor(List<Long> memberIdList, CursorPageBaseRequest cursorPageBaseRequest);
 
     List<UserVO> getUserVOBatch(UserVOBatchRequest request);
+
+    List<WeekMatchRankItemVO> getUserScoreRank();
 }

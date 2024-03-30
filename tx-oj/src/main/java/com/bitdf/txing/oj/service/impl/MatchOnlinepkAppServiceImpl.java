@@ -2,9 +2,14 @@ package com.bitdf.txing.oj.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.json.JSONUtil;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.chat.service.adapter.WsAdapter;
 import com.bitdf.txing.oj.chat.service.business.PushService;
+import com.bitdf.txing.oj.common.PageRequest;
+import com.bitdf.txing.oj.config.MyMqConfig;
 import com.bitdf.txing.oj.constant.RedisKeyConstant;
 import com.bitdf.txing.oj.exception.ThrowUtils;
 import com.bitdf.txing.oj.judge.JudgeInfo;
@@ -18,22 +23,17 @@ import com.bitdf.txing.oj.model.entity.match.OnlinePkMatch;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.enume.JudgeStatusEnum;
 import com.bitdf.txing.oj.model.enume.match.MatchStatusEnum;
-import com.bitdf.txing.oj.model.vo.match.OnlinePKResultVO;
-import com.bitdf.txing.oj.model.vo.match.OnlinePkMatchVO;
-import com.bitdf.txing.oj.model.vo.match.PkMatchStartVO;
-import com.bitdf.txing.oj.model.vo.match.WsOnlinePkTeamUpVO;
+import com.bitdf.txing.oj.model.vo.match.*;
 import com.bitdf.txing.oj.model.vo.question.QuestionVO;
 import com.bitdf.txing.oj.model.vo.user.UserShowVO;
-import com.bitdf.txing.oj.service.MatchOnlinepkAppService;
-import com.bitdf.txing.oj.service.MatchOnlinepkService;
-import com.bitdf.txing.oj.service.QuestionService;
-import com.bitdf.txing.oj.service.QuestionSubmitService;
+import com.bitdf.txing.oj.service.*;
 import com.bitdf.txing.oj.service.adapter.MatchPkAdapter;
 import com.bitdf.txing.oj.service.adapter.MatchSubmitAdapter;
 import com.bitdf.txing.oj.service.adapter.UserAdapter;
 import com.bitdf.txing.oj.service.cache.UserCache;
 import com.bitdf.txing.oj.utils.MqProducer;
 import com.bitdf.txing.oj.utils.RedisUtils;
+import com.bitdf.txing.oj.utils.page.PageUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -65,6 +65,8 @@ public class MatchOnlinepkAppServiceImpl implements MatchOnlinepkAppService {
     QuestionService questionService;
     @Autowired
     UserCache userCache;
+    @Autowired
+    UserService userService;
 
     /**
      * 匹配对手
@@ -96,6 +98,10 @@ public class MatchOnlinepkAppServiceImpl implements MatchOnlinepkAppService {
         pushService.sendPushMsg(
                 WsAdapter.buildPKTeamUpNotifyVO(new WsOnlinePkTeamUpVO(onlinePkMatch.getId())),
                 Arrays.asList(Long.valueOf(targetId)), new Date().getTime());
+        // 发送消息到 延时交换机 用于比赛结束后检查比赛状态以及统计比赛结果
+        long delayTimes = onlinePkMatch.getEndTime().getTime() - System.currentTimeMillis();
+        mqProducer.sendMsgWithDelay(MyMqConfig.DELAYED_EXCHANGE, MyMqConfig.MATCH_WEEK_CHECK_ROUTTINGKEY,
+                onlinePkMatch.getId(), delayTimes + (1000 * 10));
         return onlinePkMatch.getId();
     }
 
@@ -114,26 +120,44 @@ public class MatchOnlinepkAppServiceImpl implements MatchOnlinepkAppService {
         if (request.isFinished()) {
             // 更新结束时间
             matchOnlinepkService.finishMatch(request.getMatchId(), user.getId());
-            synchronized (String.valueOf(request.getMatchId()).intern()) {
-                OnlinePkMatch onlinePkMatch = matchOnlinepkService.isFinished(request.getMatchId());
-                if (onlinePkMatch != null) {
-                    // 已结束
-                    // 更新比赛状态
-                    matchOnlinepkService.updateMatchStatus(request.getMatchId(), MatchStatusEnum.FINISHED.getCode());
-                    // 计算比赛结果（通过率 60% 运行时间 + 内存 20% 答题用时 20%）
-                    OnlinePKResultVO onlinePKResultVO = computeMatchResult(request.getMatchId(),
-                            onlinePkMatch.getSubmitId1(), onlinePkMatch.getSubmitId2());
-                    // 更新获胜者
-                    OnlinePkMatch update = new OnlinePkMatch();
-                    update.setId(onlinePkMatch.getId());
-                    update.setWinnerId(onlinePKResultVO.getWinnerId());
-                    update.setScore1(onlinePKResultVO.getScore1());
-                    update.setScore2(onlinePKResultVO.getScore2());
-                    matchOnlinepkService.updateById(update);
-                }
-            }
+            checkAndBuildPkMatchResult(request.getMatchId());
         }
         return submitId;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean checkAndBuildPkMatchResult(Long matchId) {
+        synchronized (String.valueOf(matchId).intern()) {
+            OnlinePkMatch onlinePkMatch = matchOnlinepkService.isFinished(matchId);
+            if (onlinePkMatch != null) {
+                // TODO 可以检查一下双方的提交是否都已处理完成（是否有提交）
+                // 已结束
+                // 更新比赛状态
+                matchOnlinepkService.updateMatchStatus(matchId, MatchStatusEnum.FINISHED.getCode());
+                // 计算比赛结果（通过率 60% 运行时间 + 内存 20% 答题用时 20%）
+                OnlinePKResultVO onlinePKResultVO = computeMatchResult(matchId,
+                        onlinePkMatch.getSubmitId1(), onlinePkMatch.getSubmitId2());
+                // 更新获胜者
+                OnlinePkMatch update = new OnlinePkMatch();
+                update.setId(onlinePkMatch.getId());
+                update.setWinnerId(onlinePKResultVO.getWinnerId());
+                update.setScore1(onlinePKResultVO.getScore1());
+                update.setScore2(onlinePKResultVO.getScore2());
+                matchOnlinepkService.updateById(update);
+                // 更新获胜者竞赛总积分（+20分）
+                if (onlinePKResultVO.getWinnerId() != 0) {
+                    UpdateWrapper<User> updateWrapper = new UpdateWrapper<>();
+                    updateWrapper.lambda()
+                            .eq(User::getId, onlinePKResultVO.getWinnerId())
+                            .setSql("match_score = match_score + 20");
+                    boolean update1 = userService.update(updateWrapper);
+                }
+                return true;
+            } else {
+                return true;
+            }
+        }
     }
 
     /**
@@ -146,18 +170,36 @@ public class MatchOnlinepkAppServiceImpl implements MatchOnlinepkAppService {
      */
     private OnlinePKResultVO computeMatchResult(Long matchId, Long submitId1, Long submitId2) {
         OnlinePkMatch onlinePkMatch = matchOnlinepkService.getById(matchId);
-        QuestionSubmit questionSubmit1 = questionSubmitService.getById(submitId1);
-        QuestionSubmit questionSubmit2 = questionSubmitService.getById(submitId2);
+        Double score1;
+        Double score2;
         Question question = questionService.getById(onlinePkMatch.getQuestionId());
         JudgeConfig judgeConfig = JSONUtil.toBean(question.getJudgeConfig(), JudgeConfig.class);
-        JudgeInfo judgeInfo1 = JSONUtil.toBean(questionSubmit1.getJudgeInfo(), JudgeInfo.class);
-        JudgeInfo judgeInfo2 = JSONUtil.toBean(questionSubmit2.getJudgeInfo(), JudgeInfo.class);
-        // 答题用时
-        Long useSecond1 = (onlinePkMatch.getSubmitTime1().getTime() - onlinePkMatch.getStartTime().getTime()) / 1000;
-        Long useSecond2 = (onlinePkMatch.getSubmitTime2().getTime() - onlinePkMatch.getStartTime().getTime()) / 1000;
         Long totalSecond = (onlinePkMatch.getEndTime().getTime() - onlinePkMatch.getStartTime().getTime()) / 1000;
-        Double score1 = computeSubmitScore(judgeInfo1, questionSubmit1, judgeConfig, useSecond1, totalSecond);
-        Double score2 = computeSubmitScore(judgeInfo2, questionSubmit2, judgeConfig, useSecond2, totalSecond);
+        JudgeInfo judgeInfo1 = null;
+        JudgeInfo judgeInfo2 = null;
+        Long useSeconds1 = null;
+        Long useSeconds2 = null;
+        if (submitId1 == null) {
+            score1 = 0d;
+        } else {
+            QuestionSubmit questionSubmit1 = questionSubmitService.getById(submitId1);
+            judgeInfo1 = JSONUtil.toBean(questionSubmit1.getJudgeInfo(), JudgeInfo.class);
+            // 答题用时
+            useSeconds1 = ((onlinePkMatch.getSubmitTime1() == null
+                    ? onlinePkMatch.getEndTime().getTime() : onlinePkMatch.getSubmitTime1().getTime())
+                    - onlinePkMatch.getStartTime().getTime()) / 1000;
+            score1 = computeSubmitScore(judgeInfo1, questionSubmit1, judgeConfig, useSeconds1, totalSecond);
+        }
+        if (submitId2 == null) {
+            score2 = 0d;
+        } else {
+            QuestionSubmit questionSubmit2 = questionSubmitService.getById(submitId2);
+            judgeInfo2 = JSONUtil.toBean(questionSubmit2.getJudgeInfo(), JudgeInfo.class);
+            useSeconds2 = ((onlinePkMatch.getSubmitTime2() == null
+                    ? onlinePkMatch.getEndTime().getTime() : onlinePkMatch.getSubmitTime2().getTime())
+                    - onlinePkMatch.getStartTime().getTime()) / 1000;
+            score2 = computeSubmitScore(judgeInfo2, questionSubmit2, judgeConfig, useSeconds2, totalSecond);
+        }
         OnlinePKResultVO resultVO = new OnlinePKResultVO();
         resultVO.setUserId1(onlinePkMatch.getUserId1());
         resultVO.setUserId2(onlinePkMatch.getUserId2());
@@ -168,17 +210,18 @@ public class MatchOnlinepkAppServiceImpl implements MatchOnlinepkAppService {
             winnerId = resultVO.getUserId1();
         } else if (score1 < score2) {
             winnerId = resultVO.getUserId2();
+        } else if (score1 == 0) {
+            winnerId = 0L;
         } else if (score1 < 60) {
             long l = (judgeInfo1.getTime() + judgeInfo1.getMemory()) - (judgeInfo2.getTime() + judgeInfo2.getMemory());
             if (l < 0) {
                 winnerId = resultVO.getUserId1();
-                ;
             } else if (l > 0) {
                 winnerId = resultVO.getUserId2();
             } else {
-                if (useSecond1 < useSecond2) {
+                if (useSeconds1 < useSeconds2) {
                     winnerId = resultVO.getUserId1();
-                } else if (useSecond1 > useSecond2) {
+                } else if (useSeconds1 > useSeconds2) {
                     winnerId = resultVO.getUserId2();
                 }
             }
@@ -193,6 +236,7 @@ public class MatchOnlinepkAppServiceImpl implements MatchOnlinepkAppService {
      * @param judgeInfo
      * @return
      */
+    @Override
     public Double computeSubmitScore(JudgeInfo judgeInfo, QuestionSubmit questionSubmit,
                                      JudgeConfig judgeConfig, Long useSeconds, Long totalSeconds) {
         double score = 0;
@@ -278,6 +322,11 @@ public class MatchOnlinepkAppServiceImpl implements MatchOnlinepkAppService {
             // 比赛尚未结束
             return null;
         }
+        return buildOnlinePKResultVO(onlinePkMatch);
+    }
+
+    @Override
+    public OnlinePKResultVO buildOnlinePKResultVO(OnlinePkMatch onlinePkMatch) {
         OnlinePKResultVO resultVO = new OnlinePKResultVO();
         BeanUtils.copyProperties(onlinePkMatch, resultVO);
         UserShowVO userVO1 = new UserShowVO();
@@ -288,6 +337,14 @@ public class MatchOnlinepkAppServiceImpl implements MatchOnlinepkAppService {
         BeanUtils.copyProperties(user2, userVO2);
         resultVO.setUserVo1(userVO1);
         resultVO.setUserVo2(userVO2);
+        // 计算用时
+        Long useSeconds1 = ((onlinePkMatch.getSubmitTime1() == null
+                ? onlinePkMatch.getEndTime().getTime() : onlinePkMatch.getSubmitTime1().getTime())
+                - onlinePkMatch.getStartTime().getTime()) / 1000;
+        Long useSeconds2 = ((onlinePkMatch.getSubmitTime2() == null
+                ? onlinePkMatch.getEndTime().getTime() : onlinePkMatch.getSubmitTime2().getTime()) - onlinePkMatch.getStartTime().getTime()) / 1000;
+        resultVO.setUseSeconds1(useSeconds1);
+        resultVO.setUseSeconds2(useSeconds2);
         return resultVO;
     }
 
@@ -340,5 +397,33 @@ public class MatchOnlinepkAppServiceImpl implements MatchOnlinepkAppService {
         String key = RedisKeyConstant.getKey(RedisKeyConstant.MATCH_PK_FIND_SET);
         Long aLong = RedisUtils.setRemove(key, userId);
         return true;
+    }
+
+    @Override
+    public PageUtils getPkRecordByUser(PageRequest pageRequest, Long userId) {
+        Page<OnlinePkMatch> page = new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize());
+        QueryWrapper<OnlinePkMatch> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .and(we -> {
+                    we.eq(OnlinePkMatch::getUserId1, userId)
+                            .or()
+                            .eq(OnlinePkMatch::getUserId2, userId);
+                })
+                .eq(OnlinePkMatch::getStatus, MatchStatusEnum.FINISHED.getCode())
+                .orderByDesc(OnlinePkMatch::getCreateTime);
+        Page<OnlinePkMatch> page1 = matchOnlinepkService.page(page, wrapper);
+        List<OnlinePkMatch> records = page1.getRecords();
+        List<PkRecordVO> collect = records.stream().map(item -> {
+            OnlinePKResultVO onlinePKResultVO = buildOnlinePKResultVO(item);
+            Question question = questionService.getById(item.getQuestionId());
+            PkRecordVO pkRecordVO = new PkRecordVO();
+            pkRecordVO.setResultVO(onlinePKResultVO);
+            pkRecordVO.setStartTime(item.getStartTime());
+            pkRecordVO.setQuestionName(question.getTitle());
+            return pkRecordVO;
+        }).collect(Collectors.toList());
+        PageUtils pageUtils = new PageUtils(page1);
+        pageUtils.setList(collect);
+        return pageUtils;
     }
 }
