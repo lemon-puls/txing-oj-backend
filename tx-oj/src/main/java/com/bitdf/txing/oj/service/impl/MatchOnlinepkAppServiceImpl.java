@@ -100,7 +100,7 @@ public class MatchOnlinepkAppServiceImpl implements MatchOnlinepkAppService {
                 Arrays.asList(Long.valueOf(targetId)), new Date().getTime());
         // 发送消息到 延时交换机 用于比赛结束后检查比赛状态以及统计比赛结果
         long delayTimes = onlinePkMatch.getEndTime().getTime() - System.currentTimeMillis();
-        mqProducer.sendMsgWithDelay(MyMqConfig.DELAYED_EXCHANGE, MyMqConfig.MATCH_WEEK_CHECK_ROUTTINGKEY,
+        mqProducer.sendMsgWithDelay(MyMqConfig.DELAYED_EXCHANGE, MyMqConfig.MATCH_PK_CHECK_ROUTTINGKEY,
                 onlinePkMatch.getId(), delayTimes + (1000 * 10));
         return onlinePkMatch.getId();
     }

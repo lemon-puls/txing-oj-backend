@@ -96,7 +96,7 @@ public class CosManager {
             //config.put("host", "sts.internal.tencentcloudapi.com");
 
             // 临时密钥有效时长，单位是秒，默认 1800 秒，目前主账号最长 2 小时（即 7200 秒），子账号最长 36 小时（即 129600）秒
-            config.put("durationSeconds", 1800);
+            config.put("durationSeconds", 60 * 10);
             // 换成您的 bucket
             config.put("bucket", cosClientConfig.getBucket());
             // 换成 bucket 所在地区

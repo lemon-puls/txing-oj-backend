@@ -22,7 +22,7 @@ public class MatchMqListener {
     @Autowired
     MatchOnlinepkAppService matchOnlinepkAppService;
 
-    @RabbitListener(queues = "match.handle.queue.dev")
+    @RabbitListener(queues = "match.handle.queue.prod")
     @RabbitHandler
     public void matchHandleListener(MatchSubmitBatchRequest request, Channel channel, Message message) throws IOException {
         log.info("收到比赛作答提交： {}, 开始处理", request);

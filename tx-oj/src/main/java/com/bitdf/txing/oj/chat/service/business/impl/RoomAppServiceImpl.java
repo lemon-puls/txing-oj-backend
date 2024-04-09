@@ -175,8 +175,8 @@ public class RoomAppServiceImpl implements RoomAppService {
             roomBaseInfo.setRoomId(room.getId());
             roomBaseInfo.setType(room.getType());
             roomBaseInfo.setHotFlag(room.getHotFlag());
-            roomBaseInfo.setActiveTime(contact.getActiveTime());
-            roomBaseInfo.setLastMsgId(contact.getMsgId());
+            roomBaseInfo.setActiveTime(contact == null ? new Date() : contact.getActiveTime());
+            roomBaseInfo.setLastMsgId(contact == null ? null : contact.getMsgId());
             roomBaseInfo.setStatus(room.getStatus());
             if (RoomTypeEnum.FRIEND.getCode().equals(room.getType())) {
                 User user = friendRoomMap.get(room.getId());
