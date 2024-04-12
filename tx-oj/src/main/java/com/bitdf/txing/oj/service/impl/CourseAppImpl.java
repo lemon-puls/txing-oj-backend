@@ -16,6 +16,7 @@ import com.bitdf.txing.oj.model.dto.course.CourseVideoUpdateOrAddRequest;
 import com.bitdf.txing.oj.model.entity.course.Course;
 import com.bitdf.txing.oj.model.entity.course.CourseFavour;
 import com.bitdf.txing.oj.model.entity.course.CourseVideo;
+import com.bitdf.txing.oj.model.enume.CheckStatusEnum;
 import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.model.vo.course.CourseSearchItemVO;
 import com.bitdf.txing.oj.model.vo.course.CourseVO;
@@ -91,6 +92,7 @@ public class CourseAppImpl implements CourseAppService {
     public PageUtils queryPage(PageVO queryVO) {
         QueryWrapper<Course> wrapper = new QueryWrapper<>();
         IPage<Course> iPage = new Query<Course>().buildWrapperAndPage(wrapper, queryVO, null);
+        wrapper.lambda().eq(Course::getStatus, CheckStatusEnum.ACCEPTED.getCode());
         IPage<Course> page = courseService.page(iPage, wrapper);
         return new PageUtils(page);
     }

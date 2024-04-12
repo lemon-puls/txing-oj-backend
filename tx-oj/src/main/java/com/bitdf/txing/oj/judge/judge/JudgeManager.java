@@ -16,7 +16,7 @@ public class JudgeManager {
      * @return
      */
     public static JudgeInfo doJudge(JudgeContext judgeContext) {
-        JudgeStrategy judgeStrategy = (JudgeStrategy) SpringContextUtils.getBean("defaultJudgeStrategy");
+        JudgeStrategy judgeStrategy = (JudgeStrategy) SpringContextUtils.getBean("javaJudgeStrategy");
         if (judgeContext.getQuestionSubmit().getLanguage()
                 .equals(LanguageEnum.JAVA.getValue())) {
             judgeStrategy = (JudgeStrategy) SpringContextUtils.getBean("javaJudgeStrategy");

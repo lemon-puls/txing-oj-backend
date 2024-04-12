@@ -13,7 +13,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("txing_oj_match_week")
+@TableName("tx_oj_match_week")
 public class WeekMatch {
     /**
      * id

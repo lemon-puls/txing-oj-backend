@@ -13,7 +13,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("txing_oj_match_user_relate")
+@TableName("tx_oj_match_user_relate")
 public class MatchUserRelate {
     /**
      * id

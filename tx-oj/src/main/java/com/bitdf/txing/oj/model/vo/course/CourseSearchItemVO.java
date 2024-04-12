@@ -59,4 +59,8 @@ public class CourseSearchItemVO {
      * 当前用户是否已收藏
      */
     private boolean favour;
+
+    private Integer status;
+
+    private String remark;
 }

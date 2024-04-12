@@ -13,7 +13,7 @@ public enum JudgeStatusEnum {
 
     WAITTING("等待中", 0),
     JUDGEING("判题中", 1),
-    SUCCESS("成功", 2),
+    SUCCESS("完成", 2),
     FAILURE("失败", 3),
     EMIT_MQ_FAILURE("系统异常", 4);
 

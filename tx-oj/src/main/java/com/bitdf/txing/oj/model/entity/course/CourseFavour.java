@@ -12,7 +12,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("txing_oj_course_favour")
+@TableName("tx_oj_course_favour")
 public class CourseFavour {
     /**
      * id

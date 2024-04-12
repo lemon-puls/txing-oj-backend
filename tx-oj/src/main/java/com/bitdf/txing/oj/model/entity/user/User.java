@@ -142,4 +142,9 @@ public class User implements Serializable {
      */
     @MysqlColumn(defaultValue = "0")
     private Integer matchScore;
+
+    @MysqlColumn(defaultValue = "0")
+    private Integer status;
+
+    private String remark;
 }

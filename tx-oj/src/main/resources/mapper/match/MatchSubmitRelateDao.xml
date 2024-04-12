@@ -26,7 +26,7 @@
                q.question_id,
                q.`status`,
                q.update_time
-        from txing_oj_match_submit_relate s
+        from tx_oj_match_submit_relate s
                  left join tx_oj_question_submit q on s.submit_id = q.id
         WHERE s.match_id = #{ matchId }
           and s.join_record_id = #{ joinRecordId };

@@ -13,7 +13,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("txing_oj_course_video")
+@TableName("tx_oj_course_video")
 public class CourseVideo {
     /**
      * id
@@ -67,4 +67,9 @@ public class CourseVideo {
     @TableField("is_delete")
     @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
+
+    @MysqlColumn(defaultValue = "0")
+    private Integer status;
+
+    private String remark;
 }

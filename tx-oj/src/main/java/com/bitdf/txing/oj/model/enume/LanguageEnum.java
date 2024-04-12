@@ -12,8 +12,11 @@ import java.util.stream.Collectors;
 public enum LanguageEnum {
 
     JAVA("java", "java"),
-    CPLUSPLUS("cpp", "cpp"),
-    GOLANG("go", "go");
+    CPLUSPLUS("c", "c"),
+    GOLANG("go", "go"),
+    JAVASCRIPT("javascript", "javascript"),
+    PYTHON("python", "python");
+
 
     private final String text;
 

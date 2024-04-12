@@ -88,6 +88,11 @@ public class Post implements Serializable {
     @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
 
+    @MysqlColumn(defaultValue = "0")
+    private Integer status;
+
+    private String remark;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

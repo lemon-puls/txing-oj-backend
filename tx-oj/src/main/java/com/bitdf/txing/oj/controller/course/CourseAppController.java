@@ -63,6 +63,7 @@ public class CourseAppController {
      * 课程分页查询
      */
     @PostMapping("/page/search")
+    @AuthCheck(mustRole = "login")
     public R searchCourseByPage(@RequestBody PageVO queryVO) {
         PageUtils page = courseAppService.queryPage(queryVO);
         if (!page.getList().isEmpty()) {
@@ -164,6 +165,7 @@ public class CourseAppController {
 
     /**
      * 收藏、取消课程
+     *
      * @param courseId
      * @return
      */
@@ -186,8 +188,6 @@ public class CourseAppController {
         PageUtils pageUtils = courseAppService.getUserFavour(loginUser.getId(), pageRequest);
         return R.ok(pageUtils);
     }
-
-
 
 
 }

@@ -74,4 +74,6 @@ public class Room {
     @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
 
+    private String remark;
+
 }

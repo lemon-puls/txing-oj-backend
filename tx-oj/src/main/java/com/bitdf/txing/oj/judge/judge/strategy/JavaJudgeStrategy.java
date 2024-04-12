@@ -1,6 +1,8 @@
 package com.bitdf.txing.oj.judge.judge.strategy;
 
 import cn.hutool.json.JSONUtil;
+import com.bitdf.txing.oj.judge.judge.LastExecCase;
+import com.bitdf.txing.oj.model.enume.CodeExecStatusEnum;
 import com.bitdf.txing.oj.model.enume.JudgeMessageEnum;
 import com.bitdf.txing.oj.judge.JudgeInfo;
 import com.bitdf.txing.oj.judge.judge.JudgeContext;
@@ -25,6 +27,15 @@ import java.util.Optional;
 public class JavaJudgeStrategy implements JudgeStrategy {
     @Override
     public JudgeInfo doJudge(JudgeContext judgeContext) {
+        if (CodeExecStatusEnum.COMPLIE_ERROR.getCode().equals(judgeContext.getStatus())) {
+            // 编译错误
+            JudgeInfo build = JudgeInfo.builder()
+                    .acceptedRate(0f)
+                    .message(judgeContext.getErrorMsg())
+                    .build();
+            return build;
+        }
+
         JudgeInfo judgeInfo = judgeContext.getJudgeInfo();
         List<JudgeCase> judgeCaseList = judgeContext.getJudgeCaseList();
         QuestionSubmit questionSubmit = judgeContext.getQuestionSubmit();
@@ -40,6 +51,8 @@ public class JavaJudgeStrategy implements JudgeStrategy {
         for (int i = 0; i < outputs.size(); i++) {
             if (!outputs.get(i).trim().equals(judgeCaseList.get(i).getOutput())) {
                 judgeInfo.setMessage(JudgeMessageEnum.WRONG_ANSWER.getValue());
+                LastExecCase lastExecCase = new LastExecCase(judgeCaseList.get(i).getInput(), judgeCaseList.get(i).getOutput(), outputs.get(i));
+                judgeInfo.setLastExecCase(lastExecCase);
                 // 计算通过用例比例
                 Float acceptedRate = (float) i / inputs.size();
                 BigDecimal roundedResult = new BigDecimal(acceptedRate).setScale(2, BigDecimal.ROUND_HALF_UP);
@@ -51,6 +64,13 @@ public class JavaJudgeStrategy implements JudgeStrategy {
         }
         // 判断沙箱执行的结果输出数量是否和预期输出数量相等
         if (inputs.size() != outputs.size()) {
+            // 获取最后一个执行的用例
+            JudgeCase lastJudgeCase = judgeCaseList.get(outputs.size());
+            LastExecCase execCase = new LastExecCase(lastJudgeCase.getInput(), lastJudgeCase.getOutput(), "");
+            judgeInfo.setLastExecCase(execCase);
+            // 设置错误消息
+            judgeInfo.setErrorMsg(judgeContext.getErrorMsg());
+
             judgeInfo.setMessage(JudgeMessageEnum.RUNTIME_ERROR.getValue());
             // 计算通过用例比例
             Float acceptedRate = (float) outputs.size() / inputs.size();

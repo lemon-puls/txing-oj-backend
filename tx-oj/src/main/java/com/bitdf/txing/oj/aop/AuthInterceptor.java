@@ -59,7 +59,7 @@ public class AuthInterceptor {
         }
         Long userId = loginService.getValidUserId(token);
         if (userId == null) {
-            throw new BusinessException(TxCodeEnume.COMMON_CUSTOM_EXCEPTION, "未登录异常");
+            throw new BusinessException(TxCodeEnume.COMMON_CUSTOM_EXCEPTION, "请先登录！");
         }
         // 当前登录用户
 //        User loginUser = userService.getLoginUser(request);

@@ -13,7 +13,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("txing_oj_match_onlinepk")
+@TableName("tx_oj_match_onlinepk")
 public class OnlinePkMatch {
     /**
      * id

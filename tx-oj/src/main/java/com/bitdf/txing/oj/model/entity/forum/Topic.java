@@ -81,4 +81,9 @@ public class Topic implements Serializable {
     @TableField("is_delete")
     @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
+
+    @MysqlColumn(defaultValue = "0")
+    private Integer status;
+
+    private String remark;
 }

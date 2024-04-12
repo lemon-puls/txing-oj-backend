@@ -20,7 +20,7 @@
         <result property="isDelete" column="is_delete"/>
     </resultMap>
     <update id="finishMatch">
-        UPDATE txing_oj_match_onlinepk
+        UPDATE tx_oj_match_onlinepk
         SET submit_time1 = CASE
                                WHEN user_id1 = #{ userId } THEN
                                    NOW()
@@ -38,7 +38,7 @@
 
     <select id="getMatchsByUserId" resultType="com.bitdf.txing.oj.model.entity.match.OnlinePkMatch">
         SELECT *
-        FROM txing_oj_match_onlinepk
+        FROM tx_oj_match_onlinepk
         WHERE user_id1 = #{ userId }
            OR user_id2 = #{ userId };
     </select>

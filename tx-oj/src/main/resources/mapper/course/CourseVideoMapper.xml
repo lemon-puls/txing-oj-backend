@@ -16,6 +16,8 @@
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
         <result property="isDelete" column="is_delete"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
     </resultMap>
 
 

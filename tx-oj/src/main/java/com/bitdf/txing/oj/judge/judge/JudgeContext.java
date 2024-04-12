@@ -31,5 +31,11 @@ public class JudgeContext {
 
     private JudgeInfo judgeInfo;
 
+    private String errorMsg;
+
     private List<JudgeCase> judgeCaseList;
+    /**
+     * 代码执行状态码 0 编译错误 1：通过 3：不通过
+     */
+    private Integer status;
 }

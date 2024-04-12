@@ -13,7 +13,7 @@ import java.util.Date;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("txing_oj_course_course")
+@TableName("tx_oj_course_course")
 public class Course {
     /**
      * id
@@ -65,4 +65,8 @@ public class Course {
     @TableField("is_delete")
     @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
+    @MysqlColumn(defaultValue = "0")
+    private Integer status;
+
+    private String remark;
 }

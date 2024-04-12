@@ -103,6 +103,8 @@ public class JudgeServiceImpl implements JudgeService {
                 .outputs(execCodeResponse.getOutputs())
                 .inputs(inputs)
                 .questionSubmit(questionSubmit)
+                .errorMsg(execCodeResponse.getMessage())
+                .status(execCodeResponse.getStatus())
                 .question(question).build();
         JudgeInfo judgeInfo = JudgeManager.doJudge(judgeContext);
         // 6) 计算超过百分之多少的人

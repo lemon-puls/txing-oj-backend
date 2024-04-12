@@ -14,6 +14,8 @@
         <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
         <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
         <result property="isDelete" column="isDelete" jdbcType="TINYINT"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
     </resultMap>
 
     <sql id="Base_Column_List">

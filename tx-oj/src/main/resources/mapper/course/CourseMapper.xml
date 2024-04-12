@@ -16,23 +16,25 @@
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
         <result property="isDelete" column="is_delete"/>
+        <result property="status" column="status"/>
+        <result property="remark" column="remark"/>
     </resultMap>
     <update id="reduceCourseTimeAndNoduleCount">
-        UPDATE txing_oj_course_course
+        UPDATE tx_oj_course_course
         SET times        = times - #{ times },
             nodule_count = nodule_count - #{ noduleCount }
         WHERE id = #{ courseId }
     </update>
     <update id="increaseCourseTimeAndNoduleCount">
-        UPDATE txing_oj_course_course
+        UPDATE tx_oj_course_course
         SET times        = times + #{ times },
             nodule_count = nodule_count + #{ noduleCount }
         WHERE id = #{ courseId }
     </update>
     <select id="getUserFavourPage" resultType="com.bitdf.txing.oj.model.entity.course.Course">
         SELECT c.*
-        FROM txing_oj_course_course c
-                 JOIN txing_oj_course_favour f
+        FROM tx_oj_course_course c
+                 JOIN tx_oj_course_favour f
                       ON c.id = f.course_id
         WHERE f.user_id = #{ userId }
           and c.is_delete = 0
