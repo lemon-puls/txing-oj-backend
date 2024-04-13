@@ -13,7 +13,9 @@ import lombok.Getter;
 public enum RoomStatusEnum {
     ACTIVE(0, "正常"),
 
-    FORBIDDEN(1, "禁用");
+    DISSOLVE(1, "解散"),
+    FORBIDDEN(2, "封禁");
+
 
     private final Integer code;
     private final String msg;

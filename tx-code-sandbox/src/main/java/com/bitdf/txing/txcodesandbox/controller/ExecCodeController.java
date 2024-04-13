@@ -1,5 +1,6 @@
 package com.bitdf.txing.txcodesandbox.controller;
 
+import com.bitdf.txing.txcodesandbox.CodeSandBoxManager;
 import com.bitdf.txing.txcodesandbox.JavaDockerCodeSandBox;
 import com.bitdf.txing.txcodesandbox.dto.ExecCodeRequest;
 import com.bitdf.txing.txcodesandbox.dto.ExecCodeResponse;
@@ -26,14 +27,15 @@ public class ExecCodeController {
      */
     @PostMapping("/exec")
     public R execCode(@RequestBody ExecCodeRequest execCodeRequest) {
-        ExecCodeResponse execCodeResponse = javaDockerCodeSandBox.execCode(execCodeRequest);
+//        ExecCodeResponse execCodeResponse = javaDockerCodeSandBox.execCode(execCodeRequest);
+        ExecCodeResponse execCodeResponse = CodeSandBoxManager.doExec(execCodeRequest);
         return R.ok(execCodeResponse);
     }
 
-    @PostMapping("/python/exec")
-    public R execPythonCode(@RequestBody ExecCodeRequest request) {
-
-    }
+//    @PostMapping("/python/exec")
+//    public R execPythonCode(@RequestBody ExecCodeRequest request) {
+//
+//    }
 
 
 }

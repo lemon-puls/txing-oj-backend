@@ -16,6 +16,7 @@ import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.model.enume.UserActiveStatusEnum;
 import com.bitdf.txing.oj.model.enume.UserRoleEnum;
+import com.bitdf.txing.oj.model.enume.UserStatusEnum;
 import com.bitdf.txing.oj.model.vo.cursor.CursorPageBaseVO;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchRankItemVO;
 import com.bitdf.txing.oj.model.vo.user.LoginUserVO;
@@ -143,6 +144,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (user == null) {
             log.info("user login failed, userAccount cannot match userPassword");
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION, "用户不存在或密码错误");
+        }
+        // 判断是否已被封禁
+        if (UserStatusEnum.FORBIDDEN.getCode().equals(user.getStatus())) {
+            throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION, "该账号已被封禁！");
         }
         // 3. 记录用户的登录态
 //        request.getSession().setAttribute(USER_LOGIN_STATE, user);

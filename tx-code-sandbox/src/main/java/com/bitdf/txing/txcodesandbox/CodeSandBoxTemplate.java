@@ -30,7 +30,15 @@ public abstract class CodeSandBoxTemplate implements CodeSandBox {
 
     public static final String JAVA_CLASS_NAME = "Main.java";
 
-    public static final Long TIME_OUT = 5000L;
+    public static final String TIME_FLAG_START = "time&&&";
+
+    public static final String TIME_FLAG_END = "&&&time";
+
+    public static final String MEMORY_FLAG_START = "memory&&&";
+
+    public static final String MEMORY_FLAG_END = "&&&memory";
+
+    public static final Long TIME_OUT = 1000L;
 
 //    public static void main(String[] args) {
 //        String code = "import java.util.Scanner;\n" +
@@ -63,8 +71,14 @@ public abstract class CodeSandBoxTemplate implements CodeSandBox {
         File file = saveCode(execCodeRequest.getCode());
         // 2. 编译：将.java文件编译为.class文件
         ExecMessage execMessage = compileCode(file);
+        if (execMessage != null && execMessage.getExitCode() != 0) {
+            return buildComplieErrResponse();
+        }
         // 3、执行：执行编译后的字节码文件 拿到执行结果
         List<ExecMessage> execMessageList = RunCode(file, execCodeRequest.getInputs());
+        if (execMessageList == null) {
+            return buildComplieErrResponse();
+        }
         // 4、整理结果
         ExecCodeResponse execCodeResponse = buildExecResult(execMessageList);
         // 5、删除文件：避免造成不必要的空间浪费
@@ -122,8 +136,8 @@ public abstract class CodeSandBoxTemplate implements CodeSandBox {
         }
         execCodeResponse.setOutputs(outputs);
         JudgeInfo judgeInfo = new JudgeInfo();
-        judgeInfo.setTime(maxTimes);
-        judgeInfo.setMemory(maxMemory);
+        judgeInfo.setTime(maxTimes == 0 ? 1 : maxTimes);
+        judgeInfo.setMemory(maxMemory == 0 ? 1024 : maxMemory);
         execCodeResponse.setJudgeInfo(judgeInfo);
         return execCodeResponse;
     }
@@ -194,6 +208,13 @@ public abstract class CodeSandBoxTemplate implements CodeSandBox {
         codePath = codePath + File.separator + UUID.randomUUID() + File.separator + JAVA_CLASS_NAME;
         File file = FileUtil.writeString(code, codePath, StandardCharsets.UTF_8);
         return file;
+    }
+
+    public static ExecCodeResponse buildComplieErrResponse() {
+        ExecCodeResponse response = new ExecCodeResponse();
+        response.setStatus(0);
+        response.setMessage("编译错误");
+        return response;
     }
 
 

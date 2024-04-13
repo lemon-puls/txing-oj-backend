@@ -65,11 +65,14 @@ public class MatchUserRelateServiceImpl extends ServiceImpl<MatchUserRelateMappe
     @Override
     public MatchUserRelate getSimulateMatchRunning(Long userId) {
         QueryWrapper<MatchUserRelate> wrapper = new QueryWrapper<>();
+        Date date = new Date();
         wrapper.lambda()
                 .eq(MatchUserRelate::getUserId, userId)
                 .eq(MatchUserRelate::getJudgeStatus, MatchUserJudgeStatusEnum.WAITTING.getCode())
                 .eq(MatchUserRelate::getJoinType, MatchJoinTypeEnum.SIMULATE.getCode())
                 .eq(MatchUserRelate::getStatus, MatchUserStatusEnum.NORMAL.getCode())
+                .le(MatchUserRelate::getEndTime, date)
+                .ge(MatchUserRelate::getStartTime, date)
                 .orderByDesc(MatchUserRelate::getStartTime)
                 .last("limit 1");
         return this.getOne(wrapper);
@@ -82,7 +85,8 @@ public class MatchUserRelateServiceImpl extends ServiceImpl<MatchUserRelateMappe
                 .eq(MatchUserRelate::getMatchId, matchId)
                 .isNull(MatchUserRelate::getEndTime)
                 .eq(MatchUserRelate::getStatus, MatchUserStatusEnum.NORMAL.getCode())
-                .set(MatchUserRelate::getStatus, MatchUserStatusEnum.GIVEUP.getCode());
+                .set(MatchUserRelate::getStatus, MatchUserStatusEnum.GIVEUP.getCode())
+                .set(MatchUserRelate::getEndTime, new Date());
         this.update(wrapper);
     }
 }

@@ -29,6 +29,7 @@ import com.bitdf.txing.oj.model.enume.match.*;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchRankItemVO;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchStartVO;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchUserRecordVO;
+import com.bitdf.txing.oj.model.vo.match.WeekSimulateRecordVO;
 import com.bitdf.txing.oj.model.vo.question.QuestionVO;
 import com.bitdf.txing.oj.service.*;
 import com.bitdf.txing.oj.service.adapter.MatchSubmitAdapter;
@@ -38,6 +39,7 @@ import com.bitdf.txing.oj.service.business.MatchAppService;
 import com.bitdf.txing.oj.service.cache.UserCache;
 import com.bitdf.txing.oj.utils.RedisUtils;
 import com.bitdf.txing.oj.utils.page.PageUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
@@ -52,6 +54,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 public class MatchAppServiceImpl implements MatchAppService {
 
     @Autowired
@@ -125,7 +128,7 @@ public class MatchAppServiceImpl implements MatchAppService {
             // 更新比赛参加人数
             UpdateWrapper<WeekMatch> updateWrapper = new UpdateWrapper<>();
             updateWrapper.lambda()
-                    .eq(WeekMatch::getId, matchId)
+                    .eq(WeekMatch::getId, matchUserRelate.getMatchId())
                     .setSql("join_count = join_count + 1");
             boolean update = matchWeekService.update(updateWrapper);
         }
@@ -274,6 +277,10 @@ public class MatchAppServiceImpl implements MatchAppService {
     public boolean buildMatchResult(Long matchId) {
         // 判断是否本次周赛是否所有用户作答都已处理完毕 并且 比赛已结束 如果是 则计算参赛用户排名
         WeekMatch weekMatch = matchWeekService.getById(matchId);
+        if (weekMatch == null) {
+            log.info("[统计比赛结果]：比赛id:{} 已被删除，无需统计", matchId);
+            return true;
+        }
         if (weekMatch.getEndTime().compareTo(new Date()) <= 0) {
             // 比赛已结束
             if (!MatchStatusEnum.JUDGE_FINISHED.getCode().equals(weekMatch.getStatus())) {
@@ -307,8 +314,8 @@ public class MatchAppServiceImpl implements MatchAppService {
                 return true;
             }
         } else {
-            // 比赛未结束
-            return false;
+            // 比赛未结束(应该是已经被修改了比赛时间 否则应该是已经结束了的)
+            return true;
         }
     }
 
@@ -416,5 +423,36 @@ public class MatchAppServiceImpl implements MatchAppService {
         PageUtils pageUtils = new PageUtils(page1);
         pageUtils.setList(weekMatchUserRecordVOS);
         return pageUtils;
+    }
+
+    @Override
+    public PageUtils getWeekSimulateRecordByUserId(PageRequest pageRequest, Long userId) {
+        Page<MatchUserRelate> page = new Page<>(pageRequest.getCurrent(), pageRequest.getPageSize());
+        QueryWrapper<MatchUserRelate> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .eq(MatchUserRelate::getUserId, userId)
+                .eq(MatchUserRelate::getJoinType, MatchJoinTypeEnum.SIMULATE.getCode())
+                .eq(MatchUserRelate::getJudgeStatus, MatchUserJudgeStatusEnum.FINISHED.getCode())
+                .eq(MatchUserRelate::getStatus, MatchUserStatusEnum.NORMAL.getCode())
+                .isNotNull(MatchUserRelate::getEndTime)
+                .orderByDesc(MatchUserRelate::getCreateTime);
+        Page<MatchUserRelate> page1 = matchUserRelateService.page(page, wrapper);
+        List<MatchUserRelate> records = page1.getRecords();
+        List<WeekSimulateRecordVO> weekSimulateRecordVOS = matchWeekAdapter.buildWeekSimulateRecordVOByRelates(records);
+        PageUtils pageUtils = new PageUtils(page1);
+        pageUtils.setList(weekSimulateRecordVOS);
+        return pageUtils;
+    }
+
+    @Override
+    public Boolean isRepeatJoin(Long matchId, Long userId) {
+        // 判断是否已参加过
+        int count = matchUserRelateService.count(new QueryWrapper<MatchUserRelate>().lambda()
+                .eq(MatchUserRelate::getMatchId, matchId)
+                .eq(MatchUserRelate::getUserId, userId)
+                .eq(MatchUserRelate::getJoinType, MatchJoinTypeEnum.FORMAT.getCode())
+                .isNotNull(MatchUserRelate::getEndTime));
+//        ThrowUtils.throwIf(count > 0, "你已参加过本场比赛，不得重复参加！");
+        return count > 0 ? true : false;
     }
 }

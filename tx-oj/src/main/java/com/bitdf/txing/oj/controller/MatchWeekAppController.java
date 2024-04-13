@@ -7,6 +7,7 @@ import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.common.PageRequest;
 import com.bitdf.txing.oj.config.MyMqConfig;
 import com.bitdf.txing.oj.constant.RedisKeyConstant;
+import com.bitdf.txing.oj.job.match.MatchJob;
 import com.bitdf.txing.oj.model.dto.match.MatchSubmitBatchRequest;
 import com.bitdf.txing.oj.model.dto.match.MatchSubmitSingleRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
@@ -38,6 +39,8 @@ public class MatchWeekAppController {
     MatchUserRelateService matchUserRelateService;
     @Autowired
     MatchWeekService matchWeekService;
+    @Autowired
+    MatchJob matchJob;
 
     /**
      * 开始周赛
@@ -145,6 +148,18 @@ public class MatchWeekAppController {
         return R.ok(pageUtils);
     }
 
+    /**
+     * 查询当前用户模拟记录
+     */
+    @PostMapping("/user/simulate/record/get")
+    @AuthCheck(mustRole = "login")
+    public R getWeekSimulateRecordByUserId(@RequestBody PageRequest pageRequest) {
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        PageUtils pageUtils = matchAppService.getWeekSimulateRecordByUserId(pageRequest, userId);
+        return R.ok(pageUtils);
+    }
+
+
     @GetMapping("/ceshi")
     public R cehsi() {
         rabbitTemplate.convertAndSend(MyMqConfig.DELAYED_EXCHANGE, MyMqConfig.MATCH_WEEK_CHECK_ROUTTINGKEY, 4L,
@@ -153,6 +168,21 @@ public class MatchWeekAppController {
                     return correlationData;
                 });
         return R.ok();
+    }
+
+    @GetMapping("/create")
+    public R createWeekMatch() {
+        R match = matchJob.createMatch();
+        return match;
+    }
+
+
+    @GetMapping("/repeat/join/is")
+    @AuthCheck(mustRole = "login")
+    public R isRepeatJoin(@RequestParam("matchId") Long matchId) {
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        Boolean b = matchAppService.isRepeatJoin(matchId, userId);
+        return R.ok(b);
     }
 
 }

@@ -23,4 +23,8 @@ public interface MatchAppService {
     void computeMatchRank(Long matchId);
 
     PageUtils getWeekMatchRecordByUserId(PageRequest pageRequest, Long userId);
+
+    PageUtils getWeekSimulateRecordByUserId(PageRequest pageRequest, Long userId);
+
+    Boolean isRepeatJoin(Long matchId, Long userId);
 }

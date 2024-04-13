@@ -25,7 +25,7 @@ public class ExecCodeResponse {
      */
     private String message;
     /**
-     * 执行状态（1：通过 3：不通过）
+     * 执行状态（0: 编译错误 1：通过 3：不通过）
      */
     private Integer status;
     /**

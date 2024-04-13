@@ -23,25 +23,25 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
-@Component("pythonDockerCodeSandBox")
-public class PythonDockerCodeSandBox extends CodeSandBoxTemplate {
+@Component("jsDockerCodeSandBox")
+public class JsDockerCodeSandBox extends CodeSandBoxTemplate {
 
     @Autowired
     DockerClient dockerClient;
 
     @Override
     public File saveCode(String code) {
-        code = "# -*- coding: utf-8 -*-\n" +
-                "\n" +
-                "import time\n" +
-                "from typing import List\n" +
-                "        \n" + code + "\n" +
-                "if __name__ == \"__main__\":\n" +
-                "    start_time = time.time()\n" +
-                "    solution = Solution()\n" +
-                "    solution.answer()\n" +
-                "    end_time = time.time()\n" +
-                "    print(\"time&&&\" + str(round(float(end_time - start_time) * 1000.0, 2)) + \"&&&time\")";
+        code = code + "\n" +
+                "function Main() {\n" +
+                "        // 记录开始时间\n" +
+                "        const startTime = new Date().getTime();\n" +
+                "        answer();\n" +
+                "        // 记录结束时间\n" +
+                "        const endTime = new Date().getTime();\n" +
+                "        // 输出函数执行时间\n" +
+                "        console.log('time&&&' + (endTime - startTime) + '&&&time');\n" +
+                "}\n" +
+                "Main();";
 
         String property = System.getProperty("user.dir");
         String codePath = property + File.separator + CODE_DIR_NAME;
@@ -51,7 +51,7 @@ public class PythonDockerCodeSandBox extends CodeSandBoxTemplate {
         if (!FileUtil.exist(codePath)) {
             FileUtil.mkdir(codePath);
         }
-        codePath = codePath + File.separator + UUID.randomUUID() + File.separator + "Main.py";
+        codePath = codePath + File.separator + UUID.randomUUID() + File.separator + "Main.js";
         File file = FileUtil.writeString(code, codePath, StandardCharsets.UTF_8);
         return file;
     }
@@ -65,7 +65,7 @@ public class PythonDockerCodeSandBox extends CodeSandBoxTemplate {
     public List<ExecMessage> RunCode(File file, List<String> inputs) {
         String absolutePath = file.getParentFile().getAbsolutePath();
         // 2、创建容器
-        String pythonImage = "my_python_app:1.0";
+        String pythonImage = "my_js_app:1.0";
         CreateContainerCmd containerCmd = dockerClient.createContainerCmd(pythonImage);
         // 容器配置
         HostConfig hostConfig = new HostConfig();
@@ -105,7 +105,7 @@ public class PythonDockerCodeSandBox extends CodeSandBoxTemplate {
 //                    .exec();
             String cmd = String.format("'%s'", input);
             ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(containerId)
-                    .withCmd("/sh/run_py.sh", input, "/app")
+                    .withCmd("/sh/run_js.sh", input, "/app")
                     .withAttachStderr(true)
                     .withAttachStdin(true)
                     .withAttachStdout(true)
@@ -179,11 +179,12 @@ public class PythonDockerCodeSandBox extends CodeSandBoxTemplate {
             execMessage.setTime((long) Math.ceil(times[0]));
             execMessage.setMemory(maxMemorry[0]);
             execMessage.setMessage(message[0]);
-            // 简化错误信息 仅保留最后一行
-            String[] lines = errorMessage[0].split("\n");
-            // 如果字符串只有一行，则直接取该行
-            String lastLine = lines.length == 0 ? "" : lines[lines.length - 1];
-            execMessage.setErrorMessage(lastLine);
+
+            if (errorMessage[0] != "") {
+                int start = errorMessage[0].indexOf("\n");
+                int end = errorMessage[0].indexOf("\n    at ");
+                execMessage.setErrorMessage(errorMessage[0].substring(start, end));
+            }
 //            execMessage.setExitCode();
             execMessageList.add(execMessage);
         }

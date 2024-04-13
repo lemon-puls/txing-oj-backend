@@ -69,12 +69,16 @@ public class ChatServiceImpl implements ChatService {
         // TODO 检查合法性
         // 检查Room是否可用
         Room room = roomService.getById(chatMessageRequest.getRoomId());
-        if (RoomStatusEnum.FORBIDDEN.getCode().equals(room.getStatus())) {
+        if (RoomStatusEnum.DISSOLVE.getCode().equals(room.getStatus())) {
             if (RoomTypeEnum.FRIEND.getCode().equals(room.getType())) {
                 throw new BusinessException(TxCodeEnume.COMMON_CUSTOM_EXCEPTION, "你们不是好友关系 无法发送消息");
             } else {
                 throw new BusinessException(TxCodeEnume.COMMON_CUSTOM_EXCEPTION, "该群聊已解散 无法发送消息");
             }
+        }
+        if (RoomStatusEnum.FORBIDDEN.getCode().equals(room.getStatus())) {
+            // 房间已被封禁
+            throw new BusinessException(TxCodeEnume.COMMON_CUSTOM_EXCEPTION, "该房间已被封禁 无法发送消息");
         }
         // 如果是群聊 检查当前用户是否是群聊成员
         if (RoomTypeEnum.GROUP.getCode().equals(room.getType()) && !Room.HOT_ROOM_ID.equals(room.getId())) {

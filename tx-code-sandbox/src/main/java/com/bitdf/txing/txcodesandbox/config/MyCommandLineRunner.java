@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,7 +41,7 @@ public class MyCommandLineRunner implements CommandLineRunner {
         if (images != null) {
             boolean isExist = false;
             for (Image image : images) {
-                if (image.getRepoTags()[0].equals(javaImage)) {
+                if (image.getRepoTags().length > 0 && image.getRepoTags()[0].equals(javaImage)) {
                     isExist = true;
                 }
             }

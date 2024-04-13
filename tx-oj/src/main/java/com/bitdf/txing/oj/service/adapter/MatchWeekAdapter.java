@@ -2,8 +2,10 @@ package com.bitdf.txing.oj.service.adapter;
 
 import com.bitdf.txing.oj.model.entity.match.MatchUserRelate;
 import com.bitdf.txing.oj.model.entity.match.WeekMatch;
+import com.bitdf.txing.oj.model.enume.match.MatchStatusEnum;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchUserRecordVO;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchVO;
+import com.bitdf.txing.oj.model.vo.match.WeekSimulateRecordVO;
 import com.bitdf.txing.oj.service.MatchWeekService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,10 +43,31 @@ public class MatchWeekAdapter {
                     .joinCount(weekMatch.getJoinCount())
                     .score(matchUserRelate.getScore())
                     .useSeconds(useSeconds)
+                    .hasResult(MatchStatusEnum.JUDGE_FINISHED.getCode().equals(weekMatch.getStatus()))
                     .build();
             return userRecordVO;
         }).collect(Collectors.toList());
         return collect;
     }
+
+
+    public List<WeekSimulateRecordVO> buildWeekSimulateRecordVOByRelates(List<MatchUserRelate> matchUserRelates) {
+        List<WeekSimulateRecordVO> collect = matchUserRelates.stream().map(matchUserRelate -> {
+            WeekMatch weekMatch = matchWeekService.getById(matchUserRelate.getMatchId());
+            // 计算该用户比赛用时 以秒为单位
+            Long useSeconds = ((matchUserRelate.getEndTime().getTime() - matchUserRelate.getStartTime().getTime()) / 1000);
+            WeekSimulateRecordVO weekSimulateRecordVO = WeekSimulateRecordVO.builder()
+                    .matchId(weekMatch.getId())
+                    .name(weekMatch.getName())
+                    .joinId(matchUserRelate.getId())
+                    .startTime(matchUserRelate.getStartTime())
+                    .acCount(matchUserRelate.getAcCount())
+                    .useSeconds(useSeconds)
+                    .build();
+            return weekSimulateRecordVO;
+        }).collect(Collectors.toList());
+        return collect;
+    }
+
 
 }

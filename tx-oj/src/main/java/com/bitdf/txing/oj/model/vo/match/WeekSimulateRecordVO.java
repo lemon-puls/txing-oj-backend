@@ -8,11 +8,17 @@ import lombok.NoArgsConstructor;
 
 import java.util.Date;
 
+/**
+ * @author lizhiwei
+ * @date 2024/4/12 21:46
+ * 注释：
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class WeekMatchUserRecordVO {
+public class WeekSimulateRecordVO {
+
     private Long matchId;
     private Long joinId;
     /**
@@ -32,20 +38,4 @@ public class WeekMatchUserRecordVO {
      * ac题目数
      */
     private Integer acCount;
-    /**
-     * 乘积排行
-     */
-    private Integer gradeRank;
-    /**
-     * 参赛总人数
-     */
-    private Integer joinCount;
-    /**
-     * 本场比赛赢得积分
-     */
-    private Integer score;
-    /**
-     * 本场比赛是否是统计出结果了
-     */
-    private boolean hasResult;
 }

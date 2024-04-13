@@ -10,6 +10,7 @@ import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.model.*;
 import com.github.dockerjava.core.command.ExecStartResultCallback;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -23,25 +24,42 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Slf4j
-@Component("pythonDockerCodeSandBox")
-public class PythonDockerCodeSandBox extends CodeSandBoxTemplate {
+@Component("gccDockerCodeSandBox")
+public class GccDockerCodeSandBox extends CodeSandBoxTemplate {
 
     @Autowired
     DockerClient dockerClient;
 
     @Override
     public File saveCode(String code) {
-        code = "# -*- coding: utf-8 -*-\n" +
+        code = "#include <stdio.h>\n" +
+                "#include <stdlib.h>\n" +
+                "#include <time.h>\n" +
+                "#include <string.h>\n" +
+                "#include <ctype.h>\n" +
+                "#include <math.h>\n" +
+                "#include <stdbool.h>\n" +
+                "#include <assert.h>\n" +
+                "#include <unistd.h>\n" + code + "\n" +
                 "\n" +
-                "import time\n" +
-                "from typing import List\n" +
-                "        \n" + code + "\n" +
-                "if __name__ == \"__main__\":\n" +
-                "    start_time = time.time()\n" +
-                "    solution = Solution()\n" +
-                "    solution.answer()\n" +
-                "    end_time = time.time()\n" +
-                "    print(\"time&&&\" + str(round(float(end_time - start_time) * 1000.0, 2)) + \"&&&time\")";
+                "int main() {\n" +
+                "    // 记录程序开始执行的时间\n" +
+                "    clock_t start = clock();\n" +
+                "\n" +
+                "    // 计算数组元素和并输出\n" +
+                "    answer();\n" +
+                "\n" +
+                "    //sleep(1);\n" +
+                "\n" +
+                "    // 记录程序执行完毕的时间\n" +
+                "    clock_t end = clock();\n" +
+                "\n" +
+                "    // 计算程序执行的时间（毫秒）\n" +
+                "    double time_spent = ((double)(end - start)) / CLOCKS_PER_SEC * 1000;\n" +
+                "    printf(\"time&&&%.2f&&&time\\n\", time_spent);\n" +
+                "\n" +
+                "    return 0;\n" +
+                "}";
 
         String property = System.getProperty("user.dir");
         String codePath = property + File.separator + CODE_DIR_NAME;
@@ -51,7 +69,7 @@ public class PythonDockerCodeSandBox extends CodeSandBoxTemplate {
         if (!FileUtil.exist(codePath)) {
             FileUtil.mkdir(codePath);
         }
-        codePath = codePath + File.separator + UUID.randomUUID() + File.separator + "Main.py";
+        codePath = codePath + File.separator + UUID.randomUUID() + File.separator + "Main.c";
         File file = FileUtil.writeString(code, codePath, StandardCharsets.UTF_8);
         return file;
     }
@@ -65,7 +83,7 @@ public class PythonDockerCodeSandBox extends CodeSandBoxTemplate {
     public List<ExecMessage> RunCode(File file, List<String> inputs) {
         String absolutePath = file.getParentFile().getAbsolutePath();
         // 2、创建容器
-        String pythonImage = "my_python_app:1.0";
+        String pythonImage = "my_c_app:1.0";
         CreateContainerCmd containerCmd = dockerClient.createContainerCmd(pythonImage);
         // 容器配置
         HostConfig hostConfig = new HostConfig();
@@ -92,6 +110,44 @@ public class PythonDockerCodeSandBox extends CodeSandBoxTemplate {
         startContainerCmd.exec();
         log.info("容器启动了");
 
+        // 编译源代码文件
+        ExecCreateCmdResponse response = dockerClient.execCreateCmd(containerId)
+                // 使用以下这个命令不生效 没能生产编译文件来 但是也不报错
+//                .withCmd("sh", "-c", "'gcc /app/Main.c -o /app/Main'")
+                .withCmd("gcc", "/app/Main.c", "-o", "/app/Main")
+                .withAttachStderr(true)
+                .withAttachStdin(true)
+                .withAttachStdout(true)
+                .exec();
+        String[] errorComplieMsg = new String[1];
+        try {
+            dockerClient.execStartCmd(response.getId())
+                    .exec(new ExecStartResultCallback() {
+                        @Override
+                        public void onNext(Frame frame) {
+                            StreamType streamType = frame.getStreamType();
+                            String outputStr = new String(frame.getPayload());
+                            if (StreamType.STDERR.equals(streamType)) {
+                                errorComplieMsg[0] = new String(frame.getPayload());
+                                log.info("编译错误信息：", outputStr);
+                            }
+                            super.onNext(frame);
+                        }
+
+                        @Override
+                        public void onComplete() {
+                            log.info("编译完成");
+                            super.onComplete();
+                        }
+                    })
+                    .awaitCompletion(TIME_OUT, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        if(StringUtils.isNotBlank(errorComplieMsg[0])) {
+            return null;
+        }
+
         // 4、执行代码 获取结果
         List<ExecMessage> execMessageList = new ArrayList<>();
         for (String input : inputs) {
@@ -105,7 +161,7 @@ public class PythonDockerCodeSandBox extends CodeSandBoxTemplate {
 //                    .exec();
             String cmd = String.format("'%s'", input);
             ExecCreateCmdResponse execCreateCmdResponse = dockerClient.execCreateCmd(containerId)
-                    .withCmd("/sh/run_py.sh", input, "/app")
+                    .withCmd("/sh/run_gcc.sh", input, "/app")
                     .withAttachStderr(true)
                     .withAttachStdin(true)
                     .withAttachStdout(true)
@@ -130,8 +186,8 @@ public class PythonDockerCodeSandBox extends CodeSandBoxTemplate {
                 public void onNext(Frame frame) {
                     StreamType streamType = frame.getStreamType();
                     if (StreamType.STDERR.equals(streamType)) {
-                        errorMessage[0] = errorMessage[0] + new String(frame.getPayload());
-                        log.info("错误信息：{}", errorMessage);
+//                        errorMessage[0] = errorMessage[0] + new String(frame.getPayload());
+//                        log.info("错误信息：{}", errorMessage);
                     } else {
                         String outputStr = new String(frame.getPayload());
                         outputStr = outputStr.trim();
@@ -179,11 +235,7 @@ public class PythonDockerCodeSandBox extends CodeSandBoxTemplate {
             execMessage.setTime((long) Math.ceil(times[0]));
             execMessage.setMemory(maxMemorry[0]);
             execMessage.setMessage(message[0]);
-            // 简化错误信息 仅保留最后一行
-            String[] lines = errorMessage[0].split("\n");
-            // 如果字符串只有一行，则直接取该行
-            String lastLine = lines.length == 0 ? "" : lines[lines.length - 1];
-            execMessage.setErrorMessage(lastLine);
+            execMessage.setErrorMessage(errorMessage[0]);
 //            execMessage.setExitCode();
             execMessageList.add(execMessage);
         }
@@ -193,51 +245,4 @@ public class PythonDockerCodeSandBox extends CodeSandBoxTemplate {
                 .exec();
         return execMessageList;
     }
-
-    /**
-     * 执行python代码
-     *
-     * @return
-     */
-//    public String execPythonCode(ExecCodeRequest request) {
-//        try {
-//            // 创建一个临时文件来保存 Python 代码
-//            File tempFile = File.createTempFile("python_code", ".py");
-//            String pythonCode = "# 输入两个整数\n" +
-//                    "a = int(input(\"请输入第一个整数：\"))\n" +
-//                    "b = int(input(\"请输入第二个整数：\"))\n" +
-//                    "# 计算它们的和\n" +
-//                    "result = a + b\n" +
-//                    "# 输出结果\n" +
-//                    "print(f\"{a} + {b} = {result}\")";
-//            try (FileOutputStream fileOutputStream = new FileOutputStream(tempFile)) {
-//                fileOutputStream.write(pythonCode.getBytes());
-//            }
-//
-//            // 创建 Docker 容器执行 Python 代码
-//            CreateContainerResponse container = dockerClient.createContainerCmd("python")
-//                    .withHostConfig(HostConfig.newHostConfig().withBinds(new Bind(tempFile.getAbsolutePath(), new Volume("/app.py"))))
-//                    .withCmd("python", "/app.py")
-//                    .exec();
-//
-//            dockerClient.startContainerCmd(container.getId()).exec();
-//
-//            // 等待容器执行完毕
-//            dockerClient.waitContainerCmd(container.getId())
-//                    .exec(new WaitContainerResultCallback())
-//                    .awaitCompletion(30, TimeUnit.SECONDS);
-//
-//            // 获取容器的日志
-//            String logs = dockerClient.logContainerCmd(container.getId())
-//                    .withStdOut(true)
-//                    .withStdErr(true)
-//                    .exec(new LogContainerResultCallback())
-//                    .awaitCompletion(30, TimeUnit.SECONDS);
-//
-//            System.out.println("执行结果：\n" + logs);
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return "";
-//    }
 }

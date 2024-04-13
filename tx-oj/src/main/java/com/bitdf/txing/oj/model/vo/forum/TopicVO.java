@@ -71,4 +71,8 @@ public class TopicVO {
      * 当前用户是否收藏
      */
     private boolean isFavour;
+
+    private Integer status;
+
+    private String remark;
 }

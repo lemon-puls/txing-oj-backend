@@ -15,6 +15,7 @@ import com.bitdf.txing.oj.model.entity.Post;
 import com.bitdf.txing.oj.model.entity.PostFavour;
 import com.bitdf.txing.oj.model.entity.PostThumb;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.CheckStatusEnum;
 import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.model.vo.post.PostVO;
 import com.bitdf.txing.oj.model.vo.user.UserVO;
@@ -166,7 +167,11 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         }
         if (userId != null) {
             boolQueryBuilder.filter(QueryBuilders.termQuery("userId", userId));
+        } else {
+            // 只查出审核通过的
+            boolQueryBuilder.filter(QueryBuilders.termQuery("status", CheckStatusEnum.ACCEPTED.getCode()));
         }
+
         // 必须包含所有标签
 //        if (CollectionUtils.isNotEmpty(tagList)) {
 //            for (String tag : tagList) {
@@ -259,8 +264,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
                             }
                         }
                         resourceList.add(esDTO);
-                    }
-                    else {
+                    } else {
                         // 从 es 清空 db 已物理删除的数据
                         String delete = elasticsearchRestTemplate.delete(String.valueOf(searchHit.getContent().getId()), PostEsDTO.class);
                         log.info("delete post {}", delete);
