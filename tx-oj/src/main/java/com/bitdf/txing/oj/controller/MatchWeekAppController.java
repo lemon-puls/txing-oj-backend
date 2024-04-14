@@ -12,6 +12,7 @@ import com.bitdf.txing.oj.model.dto.match.MatchSubmitBatchRequest;
 import com.bitdf.txing.oj.model.dto.match.MatchSubmitSingleRequest;
 import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.model.enume.match.MatchUserStatusEnum;
+import com.bitdf.txing.oj.model.vo.match.MatchResultVO;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchRankItemVO;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchStartVO;
 import com.bitdf.txing.oj.model.vo.match.WeekMatchVO;
@@ -78,6 +79,14 @@ public class MatchWeekAppController {
         rabbitTemplate.convertAndSend(MyMqConfig.JUDGE_EXCHANGE, MyMqConfig.MATCH_HANDLE_ROUTTINGKEY,
                 request, new CorrelationData(request.getMatchId() + "" + user.getId()));
         return R.ok(userRelateId);
+    }
+
+    @GetMapping("/simulate/result/get")
+    @AuthCheck(mustRole = "login")
+    public R getSimulateResult(@RequestParam("joinId") Long joinId) {
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        MatchResultVO resultVO = matchAppService.getSimulateResult(joinId, userId);
+        return R.ok(resultVO);
     }
 
     /**

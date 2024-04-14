@@ -80,6 +80,10 @@ public class LoginUserVO implements Serializable {
      * token
      */
     private String token;
+    /**
+     * 竞赛积分
+     */
+    private Integer matchScore;
 
     private static final long serialVersionUID = 1L;
 }

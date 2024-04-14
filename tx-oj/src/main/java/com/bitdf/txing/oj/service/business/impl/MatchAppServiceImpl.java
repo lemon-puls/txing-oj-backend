@@ -24,12 +24,10 @@ import com.bitdf.txing.oj.model.entity.match.MatchUserRelate;
 import com.bitdf.txing.oj.model.entity.match.WeekMatch;
 import com.bitdf.txing.oj.model.entity.match.WeekMatchQuestionRelate;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.JudgeMessageEnum;
 import com.bitdf.txing.oj.model.enume.JudgeStatusEnum;
 import com.bitdf.txing.oj.model.enume.match.*;
-import com.bitdf.txing.oj.model.vo.match.WeekMatchRankItemVO;
-import com.bitdf.txing.oj.model.vo.match.WeekMatchStartVO;
-import com.bitdf.txing.oj.model.vo.match.WeekMatchUserRecordVO;
-import com.bitdf.txing.oj.model.vo.match.WeekSimulateRecordVO;
+import com.bitdf.txing.oj.model.vo.match.*;
 import com.bitdf.txing.oj.model.vo.question.QuestionVO;
 import com.bitdf.txing.oj.service.*;
 import com.bitdf.txing.oj.service.adapter.MatchSubmitAdapter;
@@ -47,10 +45,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -454,5 +450,64 @@ public class MatchAppServiceImpl implements MatchAppService {
                 .isNotNull(MatchUserRelate::getEndTime));
 //        ThrowUtils.throwIf(count > 0, "你已参加过本场比赛，不得重复参加！");
         return count > 0 ? true : false;
+    }
+
+    @Override
+    public MatchResultVO getSimulateResult(Long joinId, Long userId) {
+        MatchUserRelate userRelate = matchUserRelateService.getById(joinId);
+        if (JudgeStatusEnum.WAITTING.getValue().equals(userRelate.getJudgeStatus())) {
+            // 未完成判题
+            return null;
+        }
+        // 查出所有提交记录
+        QueryWrapper<MatchSubmitRelate> wrapper = new QueryWrapper<>();
+        wrapper.lambda()
+                .eq(MatchSubmitRelate::getJoinRecordId, joinId).select(MatchSubmitRelate::getSubmitId);
+        List<MatchSubmitRelate> submitRelateList = matchSubmitRelateService.list(wrapper);
+        List<Long> submitIds = submitRelateList.stream().map(item -> item.getSubmitId()).collect(Collectors.toList());
+        List<QuestionSubmit> submitList = questionSubmitService.list(new QueryWrapper<QuestionSubmit>().lambda()
+                .in(QuestionSubmit::getId, submitIds));
+        Map<Long, QuestionSubmit> submitMap = submitList.stream()
+                .collect(Collectors.toMap(QuestionSubmit::getQuestionId, Function.identity()));
+        // 封装结果项
+        // 获取本场比赛所有题目信息
+        List<Question> questions = getQuestionsByMatchId(userRelate.getMatchId());
+        List<MatchResultVO.ResultItem> resultItems = questions.stream().map(question -> {
+            MatchResultVO.ResultItem resultItem = new MatchResultVO.ResultItem();
+            resultItem.setLabel(question.getTitle());
+            QuestionSubmit submit = submitMap.get(question.getId());
+            if (ObjectUtil.isNull(submit)) {
+                resultItem.setValue(JudgeMessageEnum.RUNTIME_ERROR.getValue());
+                return resultItem;
+            }
+            JudgeInfo judgeInfo = JSONUtil.toBean(submit.getJudgeInfo(), JudgeInfo.class);
+            resultItem.setValue(getShowStrByJudgeInfo(judgeInfo));
+            return resultItem;
+        }).collect(Collectors.toList());
+        // 封装结果
+        MatchResultVO resultVO = new MatchResultVO();
+        resultVO.setResultItems(resultItems);
+        // 获取ac题目数
+        resultVO.setAcCount(userRelate.getAcCount());
+        // 获取作答用时
+        resultVO.setSeconds((userRelate.getEndTime().getTime() - userRelate.getStartTime().getTime()) / 1000);
+        return resultVO;
+    }
+
+    public String getShowStrByJudgeInfo(JudgeInfo judgeInfo) {
+        if (JudgeMessageEnum.RUNTIME_ERROR.getValue().equals(judgeInfo.getMessage())
+                || JudgeMessageEnum.WRONG_ANSWER.getValue().equals(judgeInfo.getMessage())) {
+            return ((int) (judgeInfo.getAcceptedRate() * 100)) + " %";
+        }
+        return judgeInfo.getMessage();
+    }
+
+    @Override
+    public List<Question> getQuestionsByMatchId(Long matchId) {
+        List<WeekMatchQuestionRelate> list = matchWeekQuestionRelateService.list(new QueryWrapper<WeekMatchQuestionRelate>()
+                .lambda()
+                .eq(WeekMatchQuestionRelate::getMatchId, matchId));
+        List<Long> questionIds = list.stream().map(WeekMatchQuestionRelate::getQuestionId).collect(Collectors.toList());
+        return questionService.listByIds(questionIds);
     }
 }
