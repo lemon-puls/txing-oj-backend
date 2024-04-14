@@ -1,23 +1,23 @@
 package com.bitdf.txing.oj.controller;
 
-import java.util.Arrays;
-import java.util.List;
-
-
 import com.bitdf.txing.oj.annotation.AuthCheck;
+import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.model.dto.submit.QuestionSubmitDoRequest;
 import com.bitdf.txing.oj.model.entity.Question;
 import com.bitdf.txing.oj.model.entity.QuestionSubmit;
+import com.bitdf.txing.oj.model.vo.question.ChartDataVO;
 import com.bitdf.txing.oj.model.vo.question.QuestionSubmitDetailVO;
 import com.bitdf.txing.oj.model.vo.question.QuestionSubmitSimpleVO;
 import com.bitdf.txing.oj.service.QuestionService;
+import com.bitdf.txing.oj.service.QuestionSubmitService;
+import com.bitdf.txing.oj.utils.R;
+import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.bitdf.txing.oj.utils.page.PageVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import com.bitdf.txing.oj.service.QuestionSubmitService;
-import com.bitdf.txing.oj.utils.R;
-import com.bitdf.txing.oj.utils.page.PageUtils;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
@@ -66,6 +66,19 @@ public class QuestionSubmitController {
         Long aLong = questionSubmitService.doSubmit(questionSubmitDoRequest);
         return R.ok(aLong);
     }
+
+    /**
+     * 获取做题图表数据
+     */
+    @PostMapping("/chart/data/get")
+    @AuthCheck(mustRole = "login")
+    public R getChartData() {
+        Long userId = AuthInterceptor.userThreadLocal.get().getId();
+        ChartDataVO chartDataVO = questionSubmitService.getChartData(userId);
+        return R.ok(chartDataVO);
+    }
+
+
 
 
     /**
