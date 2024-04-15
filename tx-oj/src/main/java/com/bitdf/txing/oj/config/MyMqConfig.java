@@ -19,7 +19,7 @@ import java.util.Map;
 public class MyMqConfig {
 
     //    @Value("${spring.profiles.active}")
-    private static String profile = "dev";
+    private static String profile = "prod";
 
     public static final String JUDGE_EXCHANGE = genName("judge.exchange");
     public static final String DELAYED_EXCHANGE = genName("delay.exchange");
@@ -29,10 +29,10 @@ public class MyMqConfig {
     public static final String MATCH_HANDLE_QUEUE = genName("match.handle.queue");
     public static final String MATCH_HANDLE_ROUTTINGKEY = genName("match.and.handle");
 
-    public static final String WEBSOCKET_PUSH_QUEUE = "websocket_push_queue.dev";
+    public static final String WEBSOCKET_PUSH_QUEUE = "websocket_push_queue.prod";
 
-    public static final String Match_WEEK_CHECK_QUEUE = "match.week.check.queue.dev";
-    public static final String Match_PK_CHECK_QUEUE = "match.pk.check.queue.dev";
+    public static final String Match_WEEK_CHECK_QUEUE = "match.week.check.queue.prod";
+    public static final String Match_PK_CHECK_QUEUE = "match.pk.check.queue.prod";
     public static final String MATCH_PK_CHECK_ROUTTINGKEY = genName("match.pk.check");
     public static final String MATCH_WEEK_CHECK_ROUTTINGKEY = genName("match.week.check");
 

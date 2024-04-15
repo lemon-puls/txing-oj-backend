@@ -60,7 +60,7 @@ public class CourseAppController {
     }
 
     /**
-     * 课程分页查询
+     * 课程分页查询 TODO 需要为用户查看自己的课程添加一个单独的接口
      */
     @PostMapping("/page/search")
     @AuthCheck(mustRole = "login")

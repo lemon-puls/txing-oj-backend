@@ -40,6 +40,11 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
 //    }
 
 
+    /**
+     *
+     * @param list
+     * @return
+     */
     @Override
     public List<CourseSearchItemVO> getCourseSearchItemVOsByCourse(List<?> list) {
         User loginUser = AuthInterceptor.userThreadLocal.get();

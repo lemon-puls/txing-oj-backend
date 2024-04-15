@@ -1,6 +1,7 @@
 package com.bitdf.txing.oj.service.impl;
 
 import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -27,6 +28,7 @@ import com.bitdf.txing.oj.service.CourseFavourService;
 import com.bitdf.txing.oj.service.CourseService;
 import com.bitdf.txing.oj.service.CourseVideoService;
 import com.bitdf.txing.oj.service.adapter.CourseAdapter;
+import com.bitdf.txing.oj.utils.page.FilterVO;
 import com.bitdf.txing.oj.utils.page.PageUtils;
 import com.bitdf.txing.oj.utils.page.PageVO;
 import com.bitdf.txing.oj.utils.page.Query;
@@ -92,7 +94,18 @@ public class CourseAppImpl implements CourseAppService {
     public PageUtils queryPage(PageVO queryVO) {
         QueryWrapper<Course> wrapper = new QueryWrapper<>();
         IPage<Course> iPage = new Query<Course>().buildWrapperAndPage(wrapper, queryVO, null);
-        wrapper.lambda().eq(Course::getStatus, CheckStatusEnum.ACCEPTED.getCode());
+        // 判断是否存在userID的过滤条件 如果是 则表示正在查询用户自己的作品 可以查询出未经审核通过的作品
+        boolean hasUserId = false;
+        List<FilterVO> filter = queryVO.getFilter();
+        if (ObjectUtil.isNotNull(filter) && !filter.isEmpty()) {
+            for (FilterVO filterVO : filter) {
+                if ("userId".equals(filterVO.getFieldName())) {
+                    hasUserId = true;
+                    break;
+                }
+            }
+        }
+        wrapper.lambda().eq(!hasUserId, Course::getStatus, CheckStatusEnum.ACCEPTED.getCode());
         IPage<Course> page = courseService.page(iPage, wrapper);
         return new PageUtils(page);
     }

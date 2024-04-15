@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  * 注释：
  */
 @Service
-@RabbitListener(queues = {"message.send.queue.dev"})
+@RabbitListener(queues = {"message.send.queue.prod"})
 @Slf4j
 public class MessageSendMqListener {
 

@@ -38,6 +38,7 @@
                       ON c.id = f.course_id
         WHERE f.user_id = #{ userId }
           and c.is_delete = 0
+          and c.status = 1
         ORDER BY f.create_time
     </select>
 

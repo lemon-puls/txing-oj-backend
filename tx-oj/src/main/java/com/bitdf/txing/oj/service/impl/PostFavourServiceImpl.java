@@ -6,22 +6,22 @@ import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.exception.BusinessException;
 import com.bitdf.txing.oj.job.cycle.IncSyncPostToEs;
 import com.bitdf.txing.oj.mapper.PostFavourMapper;
 import com.bitdf.txing.oj.model.entity.Post;
 import com.bitdf.txing.oj.model.entity.PostFavour;
 import com.bitdf.txing.oj.model.entity.user.User;
+import com.bitdf.txing.oj.model.enume.CheckStatusEnum;
+import com.bitdf.txing.oj.model.enume.TxCodeEnume;
 import com.bitdf.txing.oj.service.PostFavourService;
 import com.bitdf.txing.oj.service.PostService;
-
-import javax.annotation.Resource;
-
 import org.springframework.aop.framework.AopContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 
 /**
  * 帖子收藏服务实现
@@ -68,6 +68,8 @@ public class PostFavourServiceImpl extends ServiceImpl<PostFavourMapper, PostFav
         if (favourUserId <= 0) {
             return new Page<>();
         }
+        // 只查出审核通过的
+        ((QueryWrapper<Post>) queryWrapper).lambda().eq(Post::getStatus, CheckStatusEnum.ACCEPTED.getCode());
         return baseMapper.listFavourPostByPage(page, queryWrapper, favourUserId);
     }
 

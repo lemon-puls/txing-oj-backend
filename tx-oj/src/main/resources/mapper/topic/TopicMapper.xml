@@ -24,7 +24,7 @@
         FROM `tx_oj_topic` t
         JOIN tx_oj_topic_favour f
         ON t.id = f.topic_id
-        WHERE f.user_id = #{ userId } and t.is_delete = 0
+        WHERE f.user_id = #{ userId } and t.is_delete = 0 and t.status = 1
         ORDER BY f.create_time
         <!--        <if test="pageRequest.sortField != null">-->
         <!--            order by ${pageRequest.sortField} ${pageRequest.sortOrder}-->

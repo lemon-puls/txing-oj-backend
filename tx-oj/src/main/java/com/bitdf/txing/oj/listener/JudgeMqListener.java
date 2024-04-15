@@ -32,7 +32,7 @@ public class JudgeMqListener {
      * @param message
      * @throws IOException
      */
-    @RabbitListener(queues = "waitting.judge.queue.dev")
+    @RabbitListener(queues = "waitting.judge.queue.prod")
     @RabbitHandler
     public void listener(Long submitId, Channel channel, Message message) throws IOException {
         log.info("收到提交请求： {}, 开始执行判题", submitId);
