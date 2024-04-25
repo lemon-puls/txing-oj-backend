@@ -122,7 +122,11 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
 //            }
             // 查询题目
             Question question = questionService.getById(questionSubmit.getQuestionId());
-            questionSubmitSimpleVO.setTitle(question.getTitle());
+            if (ObjectUtil.isNotNull(question)) {
+                questionSubmitSimpleVO.setTitle(question.getTitle());
+            } else {
+                questionSubmitSimpleVO.setTitle("该题目已被删除");
+            }
             return questionSubmitSimpleVO;
         }).collect(Collectors.toList());
         return collect;

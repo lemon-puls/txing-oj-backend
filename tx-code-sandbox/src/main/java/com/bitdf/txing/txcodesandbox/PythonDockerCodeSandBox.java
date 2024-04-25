@@ -34,6 +34,12 @@ public class PythonDockerCodeSandBox extends CodeSandBoxTemplate {
         code = "# -*- coding: utf-8 -*-\n" +
                 "\n" +
                 "import time\n" +
+                "import os\n" +
+                "import sys\n" +
+                "import math\n" +
+                "import random\n" +
+                "import datetime\n"
+                +
                 "from typing import List\n" +
                 "        \n" + code + "\n" +
                 "if __name__ == \"__main__\":\n" +

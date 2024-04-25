@@ -267,6 +267,12 @@ public class JavaDockerCodeSandBox extends CodeSandBoxTemplate {
     @Override
     public File saveCode(String code) {
         code = "import java.util.*;\n" +
+                "import java.util.*; \n" +
+                "import java.io.*; \n" +
+                "import java.net.*; \n" +
+                "import java.sql.*; \n" +
+                "import javax.swing.*; \n"
+                +
                 "\n" +
                 "public class Main {\n" +
                 "\n" +

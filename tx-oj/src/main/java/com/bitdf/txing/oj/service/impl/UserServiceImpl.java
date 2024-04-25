@@ -110,6 +110,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setAcceptedCount(0);
             user.setAcceptedRate(0f);
             user.setSchool("未完善");
+            user.setActiveStatus(UserActiveStatusEnum.OFFLINE.getCode());
             user.setProfession("未完善");
             user.setPersonSign("此用户很懒 什么也没有留下！");
 

@@ -1,5 +1,6 @@
 package com.bitdf.txing.oj.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.bitdf.txing.oj.aop.AuthInterceptor;
 import com.bitdf.txing.oj.model.enume.TxCodeEnume;
@@ -87,6 +88,7 @@ public class QuestionFavourServiceImpl extends ServiceImpl<QuestionFavourMapper,
         QueryWrapper<QuestionFavour> wrapper = new QueryWrapper<>();
         wrapper.lambda().eq(QuestionFavour::getQuestionId, questionId)
                 .eq(QuestionFavour::getUserId, loginUser.getId());
+        // TODO 应该放在
         QuestionFavour favour = this.getOne(wrapper);
         // 每个用户串行操作
         synchronized (String.valueOf(loginUser.getId()).intern()) {
@@ -97,11 +99,17 @@ public class QuestionFavourServiceImpl extends ServiceImpl<QuestionFavourMapper,
                 favour.setUserId(loginUser.getId());
                 boolean save = this.save(favour);
                 ThrowUtils.throwIf(!save, TxCodeEnume.COMMON_OPS_FAILURE_EXCEPTION);
+                // 更新题目收藏数
+                boolean update = questionService.update(new UpdateWrapper<Question>().lambda()
+                        .eq(Question::getId, questionId).setSql("favour_num = favour_num + 1"));
                 return true;
             } else {
                 // 已收藏 此时进行取消收藏操作
                 boolean b = this.removeById(favour.getId());
                 ThrowUtils.throwIf(!b, TxCodeEnume.COMMON_OPS_FAILURE_EXCEPTION);
+                // 更新题目收藏数
+                boolean update = questionService.update(new UpdateWrapper<Question>().lambda()
+                        .eq(Question::getId, questionId).setSql("favour_num = favour_num - 1"));
                 return false;
             }
         }

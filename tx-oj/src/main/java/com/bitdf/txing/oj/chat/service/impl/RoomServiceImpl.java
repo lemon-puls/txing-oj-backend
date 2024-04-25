@@ -107,7 +107,7 @@ public class RoomServiceImpl extends ServiceImpl<RoomMapper, Room> implements Ro
     public void disableRoom(Long roomId) {
         lambdaUpdate()
                 .eq(Room::getId, roomId)
-                .set(Room::getStatus, RoomStatusEnum.FORBIDDEN.getCode())
+                .set(Room::getStatus, RoomStatusEnum.DISSOLVE.getCode())
                 .update();
     }
 }

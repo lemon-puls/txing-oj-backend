@@ -274,7 +274,8 @@ public class RoomAppServiceImpl implements RoomAppService {
                 .avatar(roomGroup.getAvatar())
                 .role(groupRoleEnum.getType())
                 .memberOrNot(!groupRoleEnum.equals(GroupRoleEnum.REMOVE))
-                .forbiddenOrNot(RoomStatusEnum.FORBIDDEN.getCode().equals(room.getStatus()))
+                .forbiddenOrNot(RoomStatusEnum.FORBIDDEN.getCode().equals(room.getStatus())
+                        || RoomStatusEnum.DISSOLVE.getCode().equals(room.getStatus()))
                 .build();
     }
 
@@ -332,6 +333,8 @@ public class RoomAppServiceImpl implements RoomAppService {
     @Override
     @Transactional
     public Long addGroup(GroupAddRequest groupAddRequest, Long userId) {
+        // 判断人数是否合法 群聊人数需要达到3人或3个以上
+        ThrowUtils.throwIf(groupAddRequest.getUserIdList().size() < 2, "群聊人数必须达到3人及以上");
         // 创建Room RoomGroup 添加群主
         RoomGroup roomGroup = cteateGroupRoom(userId, groupAddRequest);
         // 保存其他成员

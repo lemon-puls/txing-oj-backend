@@ -122,6 +122,7 @@ public abstract class CodeSandBoxTemplate implements CodeSandBox {
             if (StringUtils.isNotEmpty(errorMessage) || StringUtils.isEmpty(message)) {
                 // 出错情况
                 execCodeResponse.setStatus(3);
+                // TODO 存在bug
                 execCodeResponse.setMessage(errorMessage);
                 break;
             }
