@@ -66,7 +66,6 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public Long sendMsg(ChatMessageRequest chatMessageRequest, Long userId) {
-        // TODO 检查合法性
         // 检查Room是否可用
         Room room = roomService.getById(chatMessageRequest.getRoomId());
         if (RoomStatusEnum.DISSOLVE.getCode().equals(room.getStatus())) {

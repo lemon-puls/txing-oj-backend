@@ -171,22 +171,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
             // 只查出审核通过的
             boolQueryBuilder.filter(QueryBuilders.termQuery("status", CheckStatusEnum.ACCEPTED.getCode()));
         }
-
-        // 必须包含所有标签
-//        if (CollectionUtils.isNotEmpty(tagList)) {
-//            for (String tag : tagList) {
-//                boolQueryBuilder.filter(QueryBuilders.termQuery("tags", tag));
-//            }
-//        }
-        // 包含任何一个标签即可
-//        if (CollectionUtils.isNotEmpty(orTagList)) {
-//            BoolQueryBuilder orTagBoolQueryBuilder = QueryBuilders.boolQuery();
-//            for (String tag : orTagList) {
-//                orTagBoolQueryBuilder.should(QueryBuilders.termQuery("tags", tag));
-//            }
-//            orTagBoolQueryBuilder.minimumShouldMatch(1);
-//            boolQueryBuilder.filter(orTagBoolQueryBuilder);
-//        }
         // 按关键词检索
         if (StringUtils.isNotBlank(searchText)) {
             boolQueryBuilder.should(QueryBuilders.matchQuery("title", searchText));
@@ -223,7 +207,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         highlightBuilder.field("title");
         highlightBuilder.preTags("<font color='red'>");
         highlightBuilder.postTags("</font>");
-//        highlightBuilder.requireFieldMatch(true);
         // 构造查询
         NativeSearchQuery searchQuery = new NativeSearchQueryBuilder().withQuery(boolQueryBuilder)
                 .withPageable(pageRequest).withSorts(sortBuilder).withHighlightBuilder(highlightBuilder).build();
@@ -270,15 +253,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
                         log.info("delete post {}", delete);
                     }
                 });
-//                postIdList.forEach(postId -> {
-//                    if (idPostMap.containsKey(postId)) {
-//                        resourceList.add(idPostMap.get(postId).get(0));
-//                    } else {
-//                        // 从 es 清空 db 已物理删除的数据
-//                        String delete = elasticsearchRestTemplate.delete(String.valueOf(postId), PostEsDTO.class);
-//                        log.info("delete post {}", delete);
-//                    }
-//                });
             }
         }
         page.setRecords(resourceList);

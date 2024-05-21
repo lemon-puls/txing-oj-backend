@@ -419,7 +419,7 @@ public class MatchOnlinepkAppServiceImpl implements MatchOnlinepkAppService {
             PkRecordVO pkRecordVO = new PkRecordVO();
             pkRecordVO.setResultVO(onlinePKResultVO);
             pkRecordVO.setStartTime(item.getStartTime());
-            pkRecordVO.setQuestionName(question.getTitle());
+            pkRecordVO.setQuestionName(question == null ? "该题目已被删除" : question.getTitle());
             return pkRecordVO;
         }).collect(Collectors.toList());
         PageUtils pageUtils = new PageUtils(page1);
