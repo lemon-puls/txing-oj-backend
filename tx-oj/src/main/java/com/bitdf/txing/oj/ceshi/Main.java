@@ -12,4 +12,14 @@ public class Main {
         int sum = Arrays.stream(nums).sum();
         System.out.print(sum);
     }
+
+    public static void test01() {
+        // 数组
+        int[] nums = {1, 2, 3, 4, 5};
+        for (int i = 0; i < nums.length; i++) {
+            System.out.print(nums[i] + " ");
+        }
+        int i = 10;
+        System.out.println(i);
+    }
 }
