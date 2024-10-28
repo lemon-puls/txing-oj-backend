@@ -50,3 +50,82 @@
     }
   }
 }
+
+PUT /my_post
+{
+  "aliases": {
+    "post": {}
+  },
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "keyword",
+        "index": true
+      },
+      "title": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "content": {
+        "type": "text",
+        "analyzer": "ik_max_word",
+        "search_analyzer": "ik_smart",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "tags": {
+        "type": "keyword"
+      },
+      "thumbNum": {
+        "type": "long",
+        "index": false
+      },
+      "favourNum": {
+        "type": "long",
+        "index": false
+      },
+      "commentNum": {
+        "type": "long",
+        "index": false
+      },
+      "userName": {
+        "type": "text"
+      },
+      "userId": {
+        "type": "keyword"
+      },
+      "userAvatar": {
+        "type": "keyword",
+        "index": false
+      },
+      "intro": {
+        "type": "text",
+        "analyzer": "ik_max_word"
+      },
+      "coverImg": {
+        "type": "keyword",
+        "index": false
+      },
+      "createTime": {
+        "type": "date"
+      },
+      "updateTime": {
+        "type": "date"
+      },
+      "isDelete": {
+        "type": "keyword"
+      }
+    }
+  }
+}
