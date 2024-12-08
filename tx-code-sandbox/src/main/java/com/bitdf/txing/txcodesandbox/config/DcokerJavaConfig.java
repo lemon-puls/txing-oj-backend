@@ -21,7 +21,7 @@ public class DcokerJavaConfig {
     @Bean
     public DockerClient generateDockerClient() {
 //        return DockerClientBuilder.getInstance().build();
-        String host = "tcp://124.71.1.148:2375";
+        String host = "tcp://192.168.0.128:2375";
         String apiVersion = "1.43";
         //创建DefaultDockerClientConfig
         DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()

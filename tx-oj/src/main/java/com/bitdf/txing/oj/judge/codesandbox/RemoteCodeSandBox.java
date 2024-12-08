@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 public class RemoteCodeSandBox implements CodeSandBox {
     @Override
     public ExecCodeResponse execCode(ExecCodeRequest request) {
-        String url = "http://124.71.1.148:8082/codesandbox/exec";
+        String url = "http://192.168.0.128:8082/codesandbox/exec";
         String requestStr = JSONUtil.toJsonStr(request);
         String responseStr = HttpUtil.createPost(url)
                 .body(requestStr)
