@@ -1,7 +1,6 @@
 package com.bitdf.txing.oj.model.entity.chat;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -59,7 +58,6 @@ public class Contact {
      */
     @TableLogic
     @TableField("is_delete")
-    @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
     /**
      * 状态：0：正常 1：移除

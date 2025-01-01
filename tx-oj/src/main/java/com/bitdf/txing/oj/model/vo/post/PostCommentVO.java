@@ -2,7 +2,6 @@ package com.bitdf.txing.oj.model.vo.post;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

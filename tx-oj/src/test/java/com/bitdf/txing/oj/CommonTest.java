@@ -12,7 +12,6 @@ import com.bitdf.txing.oj.model.entity.user.User;
 import com.bitdf.txing.oj.config.VodSigner;
 import com.bitdf.txing.oj.service.business.impl.MatchAppServiceImpl;
 import com.google.gson.Gson;
-import com.lemon.util.service.TableGenerator;
 import com.qcloud.cos.COSClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.amqp.rabbit.connection.CorrelationData;
@@ -34,14 +33,6 @@ public class CommonTest {
 
     @Autowired
     StringRedisTemplate stringRedisTemplate;
-
-    @Autowired
-    TableGenerator tableGenerator;
-
-    @Test
-    void createTable() throws SQLException {
-        tableGenerator.generateTable();
-    }
 
     @Autowired
     MessageService messageService;

@@ -1,6 +1,5 @@
 package com.bitdf.txing.oj.model.vo.user;
 
-import com.lemon.util.anno.MysqlColumn;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -96,7 +95,6 @@ public class UserVO implements Serializable {
     /**
      * 在线状态 0:在线 1: 下线
      */
-    @MysqlColumn(defaultValue = "0")
     private Integer activeStatus;
 
 

@@ -1,7 +1,6 @@
 package com.bitdf.txing.oj.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -85,10 +84,8 @@ public class Post implements Serializable {
      */
     @TableLogic
     @TableField("is_delete")
-    @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
 
-    @MysqlColumn(defaultValue = "0")
     private Integer status;
 
     private String remark;

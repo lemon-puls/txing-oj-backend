@@ -3,7 +3,6 @@ package com.bitdf.txing.oj.model.entity.chat;
 import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.bitdf.txing.oj.model.entity.chat.msg.MessageExtra;
-import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -63,6 +62,5 @@ public class Message {
      */
     @TableLogic
     @TableField("is_delete")
-    @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
 }

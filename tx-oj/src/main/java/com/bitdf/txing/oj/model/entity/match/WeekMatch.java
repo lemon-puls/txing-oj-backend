@@ -1,7 +1,6 @@
 package com.bitdf.txing.oj.model.entity.match;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -61,6 +60,5 @@ public class WeekMatch {
      */
     @TableLogic
     @TableField("is_delete")
-    @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
 }

@@ -2,7 +2,6 @@ package com.bitdf.txing.oj.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -59,6 +58,5 @@ public class QuestionComment {
      */
     @TableLogic
     @TableField("is_delete")
-    @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
 }

@@ -1,7 +1,6 @@
 package com.bitdf.txing.oj.model.entity.user;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.lemon.util.anno.MysqlColumn;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -97,7 +96,6 @@ public class User implements Serializable {
     /**
      * 在线状态 0:在线 1: 下线
      */
-    @MysqlColumn(defaultValue = "0")
     private Integer activeStatus;
 
 
@@ -118,7 +116,6 @@ public class User implements Serializable {
      */
     @TableLogic
     @TableField("is_delete")
-    @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
 
     @TableField(exist = false)
@@ -140,10 +137,8 @@ public class User implements Serializable {
     /**
      * 竞赛积分
      */
-    @MysqlColumn(defaultValue = "0")
     private Integer matchScore;
 
-    @MysqlColumn(defaultValue = "0")
     private Integer status;
 
     private String remark;

@@ -3,7 +3,6 @@ package com.bitdf.txing.oj.model.entity.forum;
 import com.baomidou.mybatisplus.annotation.*;
 import com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -79,10 +78,8 @@ public class Topic implements Serializable {
      */
     @TableLogic
     @TableField("is_delete")
-    @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
 
-    @MysqlColumn(defaultValue = "0")
     private Integer status;
 
     private String remark;

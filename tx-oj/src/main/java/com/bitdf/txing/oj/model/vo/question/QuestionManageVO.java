@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.annotation.*;
 import com.bitdf.txing.oj.model.dto.question.JudgeCase;
 import com.bitdf.txing.oj.model.dto.question.JudgeConfig;
 import com.bitdf.txing.oj.model.entity.Question;
-import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

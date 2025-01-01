@@ -1,7 +1,6 @@
 package com.bitdf.txing.oj.model.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -30,7 +29,6 @@ public class QuestionSubmit {
     /**
      * 用户代码
      */
-    @MysqlColumn(length = "5000")
     private String code;
     /**
      * 判题信息
@@ -69,6 +67,5 @@ public class QuestionSubmit {
      */
     @TableLogic
     @TableField("is_delete")
-    @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
 }

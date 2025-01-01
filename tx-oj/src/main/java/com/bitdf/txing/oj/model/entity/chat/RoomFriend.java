@@ -1,7 +1,6 @@
 package com.bitdf.txing.oj.model.entity.chat;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -38,7 +37,6 @@ public class RoomFriend {
     /**
      * 状态：0：正常 1：禁用
      */
-    @MysqlColumn(defaultValue = "0")
     private Integer status;
     /**
      * 创建时间
@@ -55,7 +53,6 @@ public class RoomFriend {
      */
     @TableLogic
     @TableField("is_delete")
-    @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
 
 }

@@ -1,7 +1,6 @@
 package com.bitdf.txing.oj.model.entity.match;
 
 import com.baomidou.mybatisplus.annotation.*;
-import com.lemon.util.anno.MysqlColumn;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -63,7 +62,6 @@ public class MatchUserRelate {
     /**
      * 状态 0:正常 1：用户放弃 2：成绩无效（被判定为作弊等情况）
      */
-    @MysqlColumn(defaultValue = "0")
     private Integer status;
     /**
      * ac题目得分总分
@@ -84,6 +82,5 @@ public class MatchUserRelate {
      */
     @TableLogic
     @TableField("is_delete")
-    @MysqlColumn(defaultValue = "0")
     private Integer isDelete;
 }
