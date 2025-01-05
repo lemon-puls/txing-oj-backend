@@ -357,4 +357,6 @@ sudo systemctl restart tx-code-sandbox
 
 设置完后可以重启服务器，验证是否已经能够开机自启。
 
-#### 
+## 参考项目
+1. [GitHub - zongzibinbin/MallChat: mallchat](https://github.com/zongzibinbin/MallChat)
+
