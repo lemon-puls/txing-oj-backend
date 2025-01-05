@@ -4,6 +4,16 @@
 
 系统分为客户端以及后台管理端两部分，两部分均采用前后端分离的架构。在前端中，主要使用 Vue3、TypeScript、CSS 等主流技术进行开发，在后端中，主要使用 SpringBoot、Mybatis-Plus 以及 Redis、Rabbitmq 等中间件以及 ElasticSearch 搜索引擎等技术进行开发。此外，代码沙箱基于 Docker、Shell 等技术进行实现。
 
+## 代码仓库
+| 名称 | 仓库地址 |
+| :---: | :---: |
+| 客户端前端 | [GitHub - lemon-puls/txing-oj](https://github.com/lemon-puls/txing-oj) |
+| 客户端后端（包含代码沙箱）（✔） | [GitHub - lemon-puls/txing-oj-backend](https://github.com/lemon-puls/txing-oj-backend?tab=readme-ov-file) |
+| 管理后台前端 | [GitHub - lemon-puls/txing-admin-vue3](https://github.com/lemon-puls/txing-admin-vue3) |
+| 管理后台后端 | [GitHub - lemon-puls/txing-admin-backend](https://github.com/lemon-puls/txing-admin-backend) |
+| 代码沙箱（单独） | [GitHub - lemon-puls/tx-code-sandbox](https://github.com/lemon-puls/tx-code-sandbox) |
+
+
 ## 效果展示
 ### 做题模块
 在题库中心界面，分页展示题目，其中分页查询主要使用了Mybatis-Plus自带的page方法实现，查询结果默认按照创建时间createTime降序排序，在拼接查询条件时，判断用户查询请求是否带上标签参数或者关键字参数，如果有，则在QueryWrapper对象中拼接上对应的参数，最后再到数据库查出目标记录。
@@ -183,13 +193,21 @@
 
 ## 项目部署
 ### 主后端部署
+#### 创建库表
+运行 sql 包下的 sql 脚本创建库表。
+
+#### 创建 ElasticSearch 索引
+项目中使用了 ES 检索文章，所以需要先创建索引。可以把 sql 包下的 es_mapping 文件内容复制到 ES 可视化界面 >  Dev Tools > console 中执行完成创建。
+
 #### 将 tx-oj 项目打成 jar 包
 可以通过 idea 或者 mvn 命令将项目进行打包，打包完将 jar 包上传至服务器（如果是学习使用，也可以使用虚拟机），上传的目录可以自定义。
 
 #### 添加配置
 在 jar 包所在目录下创建 config 文件夹，把代码中 config-sample 包下的配置文件上传至其中，并且修改其中配置，其中必填的包括 MySQL、Redis、ElasticSearch、RabbitMq、腾讯云对象存储 COS，填写完注意保存。
 
-#### 上传 scripts 下的启动脚本 app.sh，目录同上
+#### 上传脚本
+上传 scripts 下的启动脚本 app.sh，目录同上
+
 #### 赋予脚本可执行权限
 ```bash
 chmod +x app.sh
@@ -214,6 +232,7 @@ ln -sf <替换为 jar 包名称> tx-oj.jar
 ./app.sh status
 ```
 
+#### 访问测试
 至此，项目主后端部分已经部署好了，可以访问接口进行验证，注意要开放相关端口，如果使用的是云服务器，还需要登陆控制台在安全组中打开对应端口，否则无法访问。
 
 ### 代码沙箱部署
