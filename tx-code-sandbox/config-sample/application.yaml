@@ -9,3 +9,8 @@ server:
 logging:
   level:
     root: off
+
+
+app:
+  # docker 连接地址 执行代码用到 docker 容器
+  docker-url: tcp://localhost:2375

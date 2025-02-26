@@ -6,6 +6,7 @@ import com.github.dockerjava.core.DockerClientBuilder;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -18,15 +19,18 @@ import java.time.Duration;
  */
 @Configuration
 public class DcokerJavaConfig {
+
+    @Value("${app.docker-url}")
+    private String dockerUrl;
+
     @Bean
     public DockerClient generateDockerClient() {
 //        return DockerClientBuilder.getInstance().build();
-        String host = "tcp://192.168.0.128:2375";
         String apiVersion = "1.43";
         //创建DefaultDockerClientConfig
         DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
                 .withApiVersion(apiVersion)
-                .withDockerHost(host)
+                .withDockerHost(dockerUrl)
                 .build();
         //创建DockerHttpClient
         DockerHttpClient httpClient = new ApacheDockerHttpClient.Builder()

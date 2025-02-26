@@ -26,3 +26,7 @@ mybatis-plus:
   configuration:
     # 生产环境关闭日志
     log-impl: ''
+
+app:
+  #远程代码沙箱接口地址
+  remote-sandbox-url: "http://localhost:8082/codesandbox/exec"

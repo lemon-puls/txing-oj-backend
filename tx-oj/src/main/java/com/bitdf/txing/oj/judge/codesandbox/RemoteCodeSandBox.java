@@ -10,6 +10,7 @@ import com.bitdf.txing.oj.judge.codesandbox.dto.ExecCodeResponse;
 import com.bitdf.txing.oj.utils.R;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,11 +21,14 @@ import org.springframework.stereotype.Component;
 @Component("remoteCodeSandBox")
 @Slf4j
 public class RemoteCodeSandBox implements CodeSandBox {
+
+    @Value("${app.remote-sandbox-url}")
+    private String remoteSandboxUrl;
+
     @Override
     public ExecCodeResponse execCode(ExecCodeRequest request) {
-        String url = "http://192.168.0.128:8082/codesandbox/exec";
         String requestStr = JSONUtil.toJsonStr(request);
-        String responseStr = HttpUtil.createPost(url)
+        String responseStr = HttpUtil.createPost(remoteSandboxUrl)
                 .body(requestStr)
                 .execute()
                 .body();
