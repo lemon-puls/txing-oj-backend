@@ -90,7 +90,7 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements Po
         if (StringUtils.isNotBlank(title) && title.length() > 100) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION, "标题过长");
         }
-        if (StringUtils.isNotBlank(content) && content.length() > 8192) {
+        if (StringUtils.isNotBlank(content) && content.length() > 500000) {
             throw new BusinessException(TxCodeEnume.COMMON_SUBMIT_DATA_EXCEPTION, "内容过长");
         }
     }
