@@ -119,7 +119,7 @@ public abstract class CodeSandBoxTemplate implements CodeSandBox {
         for (ExecMessage execMessage : execMessageList) {
             String errorMessage = execMessage.getErrorMessage();
             String message = execMessage.getMessage();
-            if (StringUtils.isNotEmpty(errorMessage) || StringUtils.isEmpty(message)) {
+            if (StringUtils.isNotEmpty(errorMessage) || message == null) {
                 // 出错情况
                 execCodeResponse.setStatus(3);
                 execCodeResponse.setMessage(errorMessage);

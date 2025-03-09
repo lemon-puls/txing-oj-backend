@@ -130,7 +130,8 @@ public class JavaDockerCodeSandBox extends CodeSandBoxTemplate {
                             }
                         }
                         String trim = outputStr.replaceAll(regex, "").trim().replaceAll(regex1, "").trim();
-                        if (!"".equals(trim)) {
+
+                        if (message[0] == null || !trim.isEmpty()) {
                             message[0] = trim;
                         }
 
